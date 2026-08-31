@@ -5,11 +5,12 @@ import { assessments } from "../../../../../db/schema";
 import { requireSession } from "../../../../../lib/server/auth";
 import { getOwnedComment } from "../../../../../lib/server/data";
 import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL, requestGeminiAssessment } from "../../../../../lib/server/gemini-assessment";
+import { jsonError } from "../../../../../lib/server/http";
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
     const session = await requireSession();
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return NextResponse.json({ error: { code: "internal_error", message: "Gemini assessment is not configured" } }, { status: 503 });
+    if (!apiKey) return jsonError("internal_error", "Gemini assessment is not configured", 503);
     const { commentId } = await params;
     const input = AssessmentRequest.parse(await request.json());
     const comment = await getOwnedComment(commentId, input.scanId, session);
@@ -21,6 +22,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ com
   } catch (error) {
     const message = error instanceof Error ? error.message : "Assessment failed";
     const status = message === "UNAUTHORIZED" ? 401 : message === "NOT_FOUND" ? 404 : message === "FORBIDDEN" ? 403 : message === "GEMINI_EMPTY_OUTPUT" ? 502 : 400;
-    return NextResponse.json({ error: { code: status === 404 ? "not_found" : status === 403 ? "forbidden" : status === 401 ? "unauthenticated" : "invalid_request", message: status >= 500 ? "Gemini assessment failed" : message } }, { status });
+    return jsonError(status === 404 ? "not_found" : status === 403 ? "forbidden" : status === 401 ? "unauthenticated" : status >= 500 ? "internal_error" : "invalid_request", status >= 500 ? "Gemini assessment failed" : message, status);
   }
 }
