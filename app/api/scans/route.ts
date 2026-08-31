@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const scanId = randomUUID();
     await db.insert(scans).values({ id: scanId, ownerId: session.githubUserId, ownerLogin: session.login, repositoryInstallationId: installationKey, repository: repository.full_name, ref: input.ref, resolvedCommit: resolved.data.sha, headCommit: resolved.data.sha, status: "queued", retentionUntil: new Date(Date.now() + 30 * 86_400_000) });
     try {
-      await octokit.rest.actions.createWorkflowDispatch({ owner: process.env.COMMENT_LENS_WORKFLOW_OWNER ?? "Builder106", repo: process.env.COMMENT_LENS_WORKFLOW_REPOSITORY ?? "code-wes-projects", workflow_id: process.env.COMMENT_LENS_WORKFLOW_ID ?? "comment-lens-scan.yml", ref: process.env.COMMENT_LENS_WORKFLOW_REF ?? "comment-lens", inputs: { repository: repository.full_name, ref: input.ref, scan_id: scanId, repository_id: String(repository.id) } });
+      await octokit.rest.actions.createWorkflowDispatch({ owner: process.env.COMMENT_LENS_WORKFLOW_OWNER ?? "Builder106", repo: process.env.COMMENT_LENS_WORKFLOW_REPOSITORY ?? "code-wes-projects", workflow_id: process.env.COMMENT_LENS_WORKFLOW_ID ?? "comment-lens-scan.yml", ref: process.env.COMMENT_LENS_WORKFLOW_REF ?? "comment-lens", inputs: { repository: repository.full_name, ref: input.ref, scan_id: scanId } });
       await db.update(scans).set({ status: "running", workflowDispatchId: scanId }).where(eq(scans.id, scanId));
     } catch (dispatchError) {
       await db.update(scans).set({ status: "failed", diagnostics: [{ code: "scan_failed", message: "Workflow dispatch failed." }], completedAt: new Date() }).where(eq(scans.id, scanId));

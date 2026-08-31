@@ -54,6 +54,18 @@ test("scan creation has a dispatch failure path", async () => {
   assert.match(route, /failed/i);
 });
 
+test("scan dispatch preserves the workflow repository identity contract", async () => {
+  const route = await source("app/api/scans/route.ts");
+  const workflow = await source("../../.github/workflows/comment-lens-scan.yml");
+
+  assert.match(route, /repository: repository\.full_name/);
+  assert.doesNotMatch(route, /repository_id:/);
+  assert.match(workflow, /TARGET_REPOSITORY.*inputs\.repository/);
+  assert.match(workflow, /owner: \$\{\{ steps\.validate\.outputs\.owner \}\}/);
+  assert.match(workflow, /repositories: \$\{\{ steps\.validate\.outputs\.repository \}\}/);
+  assert.match(workflow, /permission-contents: read/);
+});
+
 test("assessment is not part of scanner execution", async () => {
   const workflow = await source("../../.github/workflows/comment-lens-scan.yml");
   const scanner = await source("scanner/comment_lens_scanner/core.py");
