@@ -1,0 +1,11 @@
+import { cookies } from "next/headers";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+const sessionCookie = "comment_lens_session";
+export interface SessionPayload { login: string; githubUserId: string; exp: number }
+function secret() { const value = process.env.SESSION_SECRET; if (!value || value.length < 32) throw new Error("SESSION_SECRET must be configured with at least 32 characters"); return value; }
+function allowedUserId() { const value = process.env.ALLOWED_GITHUB_USER_ID; if (!value || !/^\d+$/.test(value)) throw new Error("ALLOWED_GITHUB_USER_ID must be configured as a numeric GitHub user ID"); return value; }
+export function signSession(payload: SessionPayload) { allowedUserId(); const body = Buffer.from(JSON.stringify(payload)).toString("base64url"); return `${body}.${createHmac("sha256", secret()).update(body).digest("base64url")}`; }
+export function verifySession(value: string | undefined) { if (!value) return null; const [body, mac, extra] = value.split("."); if (!body || !mac || extra) return null; let expected: string; try { expected = createHmac("sha256", secret()).update(body).digest("base64url"); } catch { return null; } if (mac.length !== expected.length || !timingSafeEqual(Buffer.from(mac), Buffer.from(expected))) return null; try { const parsed = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as SessionPayload; return parsed.exp > Date.now() && Boolean(parsed.login) && Boolean(parsed.githubUserId) && parsed.githubUserId === allowedUserId() ? parsed : null; } catch { return null; } }
+export async function requireSession() { const store = await cookies(); const session = verifySession(store.get(sessionCookie)?.value); if (!session) throw new Error("UNAUTHORIZED"); return session; }
+export function setSession(login: string, githubUserId: string) { if (githubUserId !== allowedUserId()) throw new Error("FORBIDDEN"); return { name: sessionCookie, value: signSession({ login, githubUserId, exp: Date.now() + 86_400_000 }), httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", maxAge: 86_400 }; }
+export function oauthState() { return randomBytes(24).toString("base64url"); }

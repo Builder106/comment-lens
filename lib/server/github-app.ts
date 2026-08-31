@@ -1,0 +1,10 @@
+import { createPrivateKey, createSign } from "node:crypto";
+import { Octokit } from "octokit";
+import type { SessionPayload } from "./auth";
+function required(name: string) { const value = process.env[name]?.replace(/\\n/g, "\n"); if (!value) throw new Error(`${name} is not configured`); return value; }
+function appJwt() { const now = Math.floor(Date.now() / 1000); const unsigned = `${Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url")}.${Buffer.from(JSON.stringify({ iat: now - 60, exp: now + 540, iss: required("GITHUB_APP_ID") })).toString("base64url")}`; const signer = createSign("RSA-SHA256"); signer.update(unsigned); return `${unsigned}.${signer.sign(createPrivateKey(required("GITHUB_APP_PRIVATE_KEY"))).toString("base64url")}`; }
+interface Installation { id: number; account: { login?: string; id?: number } | null }
+async function api<T>(path: string, token: string, init?: RequestInit): Promise<T> { const response = await fetch(`https://api.github.com${path}`, { ...init, headers: { accept: "application/vnd.github+json", authorization: `Bearer ${token}`, "x-github-api-version": "2022-11-28", ...init?.headers }, cache: "no-store" }); if (!response.ok) throw new Error(`GitHub API request failed with status ${response.status}`); return (await response.json()) as T; }
+async function findInstallation(session: SessionPayload) { const installations = await api<Installation[]>("/app/installations?per_page=100", appJwt()); const match = installations.find((item) => item.account?.id?.toString() === session.githubUserId || item.account?.login === session.login); if (!match) throw new Error("GITHUB_APP_INSTALLATION_NOT_FOUND"); return match; }
+export async function installationClient(session: SessionPayload) { const installation = await findInstallation(session); const result = await api<{ token: string }>(`/app/installations/${installation.id}/access_tokens`, appJwt(), { method: "POST" }); return new Octokit({ auth: result.token }); }
+export async function getInstallationId(session: SessionPayload) { return (await findInstallation(session)).id; }
