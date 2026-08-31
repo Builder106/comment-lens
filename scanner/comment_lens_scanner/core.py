@@ -15,19 +15,19 @@ from typing import Any, Iterable
 
 try:
     from tree_sitter import Language, Parser
-except ImportError:  # Optional for dependency-free help and tests.
+except ImportError:  # pragma: no cover
     Language = Parser = None  # type: ignore[assignment]
 
 try:
     from tree_sitter_languages import get_parser as get_tree_parser
-except ImportError:
+except ImportError:  # pragma: no cover
     get_tree_parser = None
 
 try:
     from pygments import lex
     from pygments.lexers import get_lexer_for_filename
     from pygments.token import Comment as CommentToken
-except ImportError:  # Optional fallback.
+except ImportError:  # pragma: no cover
     lex = get_lexer_for_filename = CommentToken = None  # type: ignore[assignment]
 
 SCHEMA_VERSION = 1
@@ -156,7 +156,7 @@ def _extract_fallback(data: bytes, path: str) -> tuple[list[tuple[int, int, str,
         try:
             lexer = get_lexer_for_filename(path)
             cursor = 0
-            for value, token in lex(text, lexer):
+            for token, value in lex(text, lexer):
                 start = len(text[:cursor].encode("utf-8")); cursor += len(value)
                 end = len(text[:cursor].encode("utf-8"))
                 if token in CommentToken or str(token).startswith("Token.Comment"):
@@ -227,9 +227,9 @@ def write_output(result: dict[str, Any], manifest_path: Path, ndjson_path: Path 
         with ndjson_path.open("w", encoding="utf-8") as stream:
             for comment in result["_comments"]: stream.write(json.dumps(comment, ensure_ascii=False) + "\n")
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Inventory source comments without executing repository code.")
     parser.add_argument("root", type=Path); parser.add_argument("--include-untracked", action="store_true"); parser.add_argument("--manifest", type=Path, default=Path("scan.json")); parser.add_argument("--ndjson", type=Path, default=Path("comments.ndjson")); parser.add_argument("--output", type=Path, help="Directory for scan.json and comments.ndjson"); parser.add_argument("--repository", help="Repository identifier"); parser.add_argument("--repository-id", help="Repository identifier"); parser.add_argument("--scan-id", help="Accepted for worker compatibility"); parser.add_argument("--exclude", action="append", default=[])
-    args = parser.parse_args(); output = args.output; manifest = output / "scan.json" if output else args.manifest; ndjson = output / "comments.ndjson" if output else args.ndjson; repository_id = args.repository_id or args.repository or os.environ.get("COMMENT_LENS_REPOSITORY_ID", args.root.name); result = scan_repository(args.root, include_untracked=args.include_untracked, exclusions=tuple(args.exclude) or DEFAULT_EXCLUSIONS, repository_id=repository_id, scan_id=args.scan_id); write_output(result, manifest, ndjson); print(json.dumps({"scanId": result["scanId"], "files": len(result["files"]), "comments": len(result["_comments"]), "diagnostics": len(result["diagnostics"]) })); return 0
+    args = parser.parse_args(argv); output = args.output; manifest = output / "scan.json" if output else args.manifest; ndjson = output / "comments.ndjson" if output else args.ndjson; repository_id = args.repository_id or args.repository or os.environ.get("COMMENT_LENS_REPOSITORY_ID", args.root.name); result = scan_repository(args.root, include_untracked=args.include_untracked, exclusions=tuple(args.exclude) or DEFAULT_EXCLUSIONS, repository_id=repository_id, scan_id=args.scan_id); write_output(result, manifest, ndjson); print(json.dumps({"scanId": result["scanId"], "files": len(result["files"]), "comments": len(result["_comments"]), "diagnostics": len(result["diagnostics"]) })); return 0
 
 if __name__ == "__main__": raise SystemExit(main())
