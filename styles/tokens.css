@@ -1,0 +1,17 @@
+/* Hallmark · genre: modern-minimal · macrostructure: workbench · tone: technical · anchor hue: evergreen */
+:root {
+  color-scheme: light;
+  --cl-paper: oklch(0.985 0.004 145);
+  --cl-surface: oklch(1 0 0);
+  --cl-surface-subtle: oklch(0.97 0.009 145);
+  --cl-ink: oklch(0.235 0.021 155);
+  --cl-muted: oklch(0.48 0.018 155);
+  --cl-rule: oklch(0.88 0.012 155);
+  --cl-accent: oklch(0.4 0.082 155);
+  --cl-accent-strong: oklch(0.31 0.061 155);
+  --cl-focus: oklch(0.47 0.125 55);
+  --cl-danger: oklch(0.49 0.15 30);
+  --cl-shadow: 0 1.25rem 3rem oklch(0.22 0.015 155 / 0.08);
+  --cl-radius: 0.875rem;
+  --cl-radius-small: 0.5rem;
+}

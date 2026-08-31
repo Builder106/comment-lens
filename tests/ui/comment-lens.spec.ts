@@ -85,3 +85,35 @@ test.describe("Comment Lens dashboard", () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+test("shows a focused GitHub setup path before authentication", async ({ page }) => {
+  await page.route("**/api/repositories", (route) => route.fulfill({
+    status: 401,
+    json: { schemaVersion: 1, error: { code: "unauthenticated", message: "Authentication required" } },
+  }));
+
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Connect GitHub to start" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Connect GitHub" })).toHaveAttribute("href", "/api/auth/github");
+  await expect(page.getByRole("heading", { name: "Filter queue" })).toHaveCount(0);
+
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test("keeps filters out of the way until a repository has a completed scan", async ({ page }) => {
+  await page.route("**/api/repositories", (route) => route.fulfill({
+    json: {
+      schemaVersion: 1,
+      repositories: [{ id: "repo-1", owner: "Builder106", name: "code-wes-projects", defaultBranch: "main", private: true }],
+    },
+  }));
+  await page.route(/\/api\/scans(?:\?|$)/, (route) => route.fulfill({ json: { schemaVersion: 1, scans: [] } }));
+
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Ready to scan code-wes-projects" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start scan" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Filter queue" })).toHaveCount(0);
+});
