@@ -77,7 +77,7 @@ test.describe("Comment Lens dashboard", () => {
     await page.route("**/api/comments/comment-1/assessment", (route) => route.fulfill({ status: 502, json: { schemaVersion: 1, error: { code: "internal_error", message: "Assessment unavailable", requestId: "request-1" } } }));
     if (await page.getByRole("button", { name: "Open detail" }).isVisible()) await page.getByRole("button", { name: "Open detail" }).click();
     await page.getByRole("button", { name: "Assess style" }).click();
-    await expect(page.getByRole("alert")).toContainText("Assessment unavailable");
+    await expect(page.getByRole("alert").filter({ hasText: "Assessment unavailable" })).toBeVisible();
   });
 
   test("passes axe checks for the selected queue view", async ({ page }) => {
