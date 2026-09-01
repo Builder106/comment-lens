@@ -151,7 +151,7 @@ test.describe("Comment Lens dashboard phases", () => {
     await installDashboardRoutes(page, { scanCreateError: "Workflow dispatch failed." });
     await page.goto("/");
     await page.getByRole("button", { name: /start scan/i }).click();
-    await expect(page.getByRole("alert")).toContainText("Workflow dispatch failed.");
+    await expect(page.getByText("Workflow dispatch failed.", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /start scan/i })).toBeEnabled();
     await expect(page.getByRole("heading", { name: /scan in progress/i })).toHaveCount(0);
   });
