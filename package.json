@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24 <27"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,6 +15,8 @@
     "test": "node --import tsx --test --test-concurrency=1 'tests/**/*.test.ts' 'contracts/tests/**/*.test.mjs'",
     "test:coverage": "node --import tsx --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include='contracts/**' --test --test-concurrency=1 'tests/**/*.test.ts' 'contracts/tests/**/*.test.mjs'",
     "test:e2e": "playwright test",
+    "test:integration": "node --import tsx --test --test-concurrency=1 'tests/integration/**/*.test.ts'",
+    "test:performance": "node --import tsx --test --test-concurrency=1 'tests/performance/**/*.test.ts'",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts"
   },
@@ -29,6 +34,7 @@
     "@axe-core/playwright": "^4.11.0",
     "@playwright/test": "^1.62.0",
     "@types/node": "^24.0.0",
+    "@types/pg": "^8.15.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "drizzle-kit": "^0.31.0",
