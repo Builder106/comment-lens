@@ -3,7 +3,7 @@
   "git": {
     "deploymentEnabled": {
       "**": false,
-      "comment-lens": true
+      "main": true
     }
   }
 }
