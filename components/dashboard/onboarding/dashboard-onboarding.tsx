@@ -18,6 +18,7 @@ export type NoRepositoryAccessProps = {
 };
 
 export type ReadyToScanProps = {
+  error?: string;
   repositoryName: string;
   ref: string;
   retentionSummary: string;
@@ -86,6 +87,7 @@ export function NoRepositoryAccess({ error, isRefreshing = false, onRefresh }: N
 }
 
 export function ReadyToScan({
+  error,
   isStarting = false,
   onStartScan,
   ref,
@@ -98,6 +100,7 @@ export function ReadyToScan({
       description="Create a review queue from the current tracked files in this repository."
     >
       <div className="cl-scan-brief" aria-label="Scan details">
+        {error ? <p className="cl-state-error" role="alert">{error}</p> : null}
         <dl>
           <div>
             <dt>Repository</dt>

@@ -56,11 +56,15 @@ const comment = {
   },
 };
 
-async function installDashboardRoutes(page: Page, options: { scans?: unknown[] } = {}) {
+async function installDashboardRoutes(page: Page, options: { scans?: unknown[]; scanCreateError?: string } = {}) {
   const scans = options.scans ?? [];
   await page.route("**/api/repositories", (route) => route.fulfill({ json: { schemaVersion: 1, repositories: [repository] } }));
   await page.route(/\/api\/scans(?:\?|$)/, async (route) => {
     if (route.request().method() === "POST") {
+      if (options.scanCreateError) {
+        await route.fulfill({ status: 502, json: { schemaVersion: 1, error: { code: "scan_failed", message: options.scanCreateError, requestId: "request-1" } } });
+        return;
+      }
       await route.fulfill({ status: 202, json: { schemaVersion: 1, ...completedScan } });
       return;
     }
@@ -141,6 +145,15 @@ test.describe("Comment Lens dashboard phases", () => {
     await expect(page.getByRole("button", { name: /start scan/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /review queue/i })).toHaveCount(0);
     await expectNoAxeViolations(page);
+  });
+
+  test("shows scan-start failures instead of silently staying ready", async ({ page }) => {
+    await installDashboardRoutes(page, { scanCreateError: "Workflow dispatch failed." });
+    await page.goto("/");
+    await page.getByRole("button", { name: /start scan/i }).click();
+    await expect(page.getByRole("alert")).toContainText("Workflow dispatch failed.");
+    await expect(page.getByRole("button", { name: /start scan/i })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /scan in progress/i })).toHaveCount(0);
   });
 
   test("reports queued scans without exposing a review queue", async ({ page }) => {
