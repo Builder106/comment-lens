@@ -1,2 +1,36 @@
-.vercel
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Production build
+/.next/
+/out/
+/build
+/dist
+
+# Testing & coverage
+/coverage
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Debug and runtime logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Environment variables
 .env*
+!.env.example
+
+# Vercel
+.vercel
+
+# System and editor files
+.DS_Store
+*.pem
+*.tsbuildinfo
