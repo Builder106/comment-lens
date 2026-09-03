@@ -1,0 +1,145 @@
+name: Comment Lens Scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: "Target repository in owner/name form"
+        required: true
+        type: string
+      ref:
+        description: "Target branch, tag, or commit"
+        required: true
+        default: "main"
+        type: string
+      scan_id:
+        description: "Control-plane scan identifier"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: comment-lens-scan-${{ inputs.repository }}-${{ inputs.scan_id }}
+  cancel-in-progress: false
+
+jobs:
+  parse:
+    name: Parse target repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Validate dispatch inputs
+        id: validate
+        env:
+          TARGET_REPOSITORY: ${{ inputs.repository }}
+          TARGET_REF: ${{ inputs.ref }}
+          SCAN_ID: ${{ inputs.scan_id }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          for name in ("TARGET_REPOSITORY", "TARGET_REF", "SCAN_ID"):
+              value = os.environ[name]
+              if not value or len(value) > 256 or "\x00" in value:
+                  raise SystemExit(f"invalid {name}")
+          if not re.fullmatch(r"[^/\s]+/[^/\s]+", os.environ["TARGET_REPOSITORY"]):
+              raise SystemExit("TARGET_REPOSITORY must be owner/name")
+          if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", os.environ["SCAN_ID"]):
+              raise SystemExit("SCAN_ID contains unsupported characters")
+          owner, repository = os.environ["TARGET_REPOSITORY"].split("/", 1)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"owner={owner}\nrepository={repository}\n")
+          PY
+
+      - name: Check out trusted scanner
+        uses: actions/checkout@v4
+        with:
+          path: trusted-source
+          persist-credentials: false
+
+      - name: Create target repository installation token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.COMMENT_LENS_GITHUB_APP_ID }}
+          private-key: ${{ secrets.COMMENT_LENS_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ steps.validate.outputs.owner }}
+          repositories: ${{ steps.validate.outputs.repository }}
+          permission-contents: read
+
+      - name: Check out target source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.ref }}
+          path: target-source
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run trusted scanner
+        working-directory: trusted-source/scanner
+        env:
+          GIT_CONFIG_NOSYSTEM: "1"
+          GIT_CONFIG_GLOBAL: /dev/null
+          GIT_CONFIG: /dev/null
+          GIT_OPTIONAL_LOCKS: "0"
+          TARGET_SOURCE: ${{ github.workspace }}/target-source
+          SCAN_ID: ${{ inputs.scan_id }}
+          REPOSITORY_ID: ${{ inputs.repository }}
+        run: python3 -m comment_lens_scanner "$TARGET_SOURCE" --scan-id "$SCAN_ID" --repository-id "$REPOSITORY_ID" --output "$RUNNER_TEMP/comment-lens-scan"
+
+      - name: Upload scan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: comment-lens-scan-${{ github.run_id }}
+          path: ${{ runner.temp }}/comment-lens-scan
+          if-no-files-found: error
+          retention-days: 1
+
+  upload:
+    name: Upload scan
+    needs: parse
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out trusted uploader
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download scan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: comment-lens-scan-${{ github.run_id }}
+          path: scan-artifact
+
+      - name: Upload signed scan
+        env:
+          UPLOAD_BASE_URL: ${{ vars.COMMENT_LENS_UPLOAD_BASE_URL }}
+          INGESTION_SIGNING_SECRET: ${{ secrets.COMMENT_LENS_INGESTION_SIGNING_SECRET }}
+          SCAN_ID: ${{ inputs.scan_id }}
+          REPOSITORY_ID: ${{ inputs.repository }}
+        run: python3 worker/upload_scan.py --artifact scan-artifact
+
+  failure:
+    name: Mark scan failed
+    if: ${{ always() && (needs.parse.result != 'success' || needs.upload.result != 'success') }}
+    needs: [parse, upload]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out trusted uploader
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Notify control plane
+        env:
+          UPLOAD_BASE_URL: ${{ vars.COMMENT_LENS_UPLOAD_BASE_URL }}
+          INGESTION_SIGNING_SECRET: ${{ secrets.COMMENT_LENS_INGESTION_SIGNING_SECRET }}
+          SCAN_ID: ${{ inputs.scan_id }}
+          REPOSITORY_ID: ${{ inputs.repository }}
+        run: python3 worker/fail_scan.py
