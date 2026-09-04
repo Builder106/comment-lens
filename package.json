@@ -44,5 +44,13 @@
     "pg": "^8.23.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@google/genai",
+      "esbuild",
+      "protobufjs",
+      "unrs-resolver"
+    ]
   }
 }

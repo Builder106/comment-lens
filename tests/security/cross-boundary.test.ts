@@ -56,7 +56,7 @@ test("scan creation has a dispatch failure path", async () => {
 
 test("scan dispatch preserves the workflow repository identity contract", async () => {
   const route = await source("app/api/scans/route.ts");
-  const workflow = await source("../../.github/workflows/comment-lens-scan.yml");
+  const workflow = await source(".github/workflows/comment-lens-scan.yml");
 
   assert.match(route, /repository: repository\.full_name/);
   assert.doesNotMatch(route, /repository_id:/);
@@ -67,7 +67,7 @@ test("scan dispatch preserves the workflow repository identity contract", async 
 });
 
 test("assessment is not part of scanner execution", async () => {
-  const workflow = await source("../../.github/workflows/comment-lens-scan.yml");
+  const workflow = await source(".github/workflows/comment-lens-scan.yml");
   const scanner = await source("scanner/comment_lens_scanner/core.py");
   assert.doesNotMatch(scanner, /GEMINI|google\.genai|interactions\.create/i);
   assert.doesNotMatch(workflow.match(/parse:[\s\S]*?(?=\n\s{2}[a-zA-Z_-]+:|$)/)?.[0] ?? "", /GEMINI|INGESTION_SIGNING_SECRET/i);
