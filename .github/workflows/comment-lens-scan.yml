@@ -54,14 +54,14 @@ jobs:
           PY
 
       - name: Check out trusted scanner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: trusted-source
           persist-credentials: false
 
       - name: Create target repository installation token
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.COMMENT_LENS_GITHUB_APP_ID }}
           private-key: ${{ secrets.COMMENT_LENS_GITHUB_APP_PRIVATE_KEY }}
@@ -70,7 +70,7 @@ jobs:
           permission-contents: read
 
       - name: Check out target source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.ref }}
@@ -92,7 +92,7 @@ jobs:
         run: python3 -m comment_lens_scanner "$TARGET_SOURCE" --scan-id "$SCAN_ID" --repository-id "$REPOSITORY_ID" --output "$RUNNER_TEMP/comment-lens-scan"
 
       - name: Upload scan artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: comment-lens-scan-${{ github.run_id }}
           path: ${{ runner.temp }}/comment-lens-scan
@@ -106,12 +106,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out trusted uploader
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Download scan artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: comment-lens-scan-${{ github.run_id }}
           path: scan-artifact
@@ -132,7 +132,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out trusted uploader
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
