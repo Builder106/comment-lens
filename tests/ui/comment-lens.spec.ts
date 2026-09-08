@@ -186,6 +186,7 @@ test.describe("Comment Lens review workspace", () => {
     await expect(page.getByLabel(/source context/i)).toContainText("rankResults");
     await expect(page.getByRole("heading", { name: /deterministic findings/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /assess style/i })).toBeVisible();
+    await expect(page.getByText("Scores prioritize a human review. They do not identify authorship.")).toBeVisible();
     for (const decision of ["Keep", "Rewrite", "Delete", "Unsure"]) {
       await expect(page.getByRole("button", { name: decision, exact: true })).toBeVisible();
     }

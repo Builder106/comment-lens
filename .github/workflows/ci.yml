@@ -36,7 +36,7 @@ jobs:
         with:
           node-version-file: .node-version
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Type check
         run: pnpm run typecheck
       - name: Lint
@@ -44,9 +44,44 @@ jobs:
       - name: Run unit tests and coverage
         run: pnpm run test:coverage
 
+  e2e:
+    name: UI E2E (Playwright)
+    needs: [secrets, check]
+    runs-on: ubuntu-24.04
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test:test@127.0.0.1:5432/comment_lens_test
+      GITHUB_CLIENT_ID: test-client
+      GITHUB_CLIENT_SECRET: test-secret
+      SESSION_SECRET: test-session-secret
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run UI E2E
+        run: pnpm run test:e2e
+      - name: Upload Playwright artifacts on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: comment-lens-playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   deploy:
     name: Trigger Vercel Deployment
-    needs: [secrets, check]
+    needs: [secrets, check, e2e]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-24.04
     steps:
