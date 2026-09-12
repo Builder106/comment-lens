@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -82,15 +82,9 @@ jobs:
   deploy:
     name: Trigger Vercel Deployment
     needs: [secrets, check, e2e]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     steps:
-      - name: Trigger Staging Deploy Hook
-        if: github.ref == 'refs/heads/staging'
-        run: |
-          curl -sS -f -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_STAGING }}"
-
       - name: Trigger Production Deploy Hook
-        if: github.ref == 'refs/heads/main'
         run: |
           curl -sS -f -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}"
