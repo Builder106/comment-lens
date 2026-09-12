@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-12: Remove obsolete staging branch #decision #deployment
+
+Deleted the unused `staging` branch and its Vercel deploy hook. `main` is now the only deployment branch, and the staging Actions secret was removed.
+
 ## 2026-09-03: Separate repository extraction #decision #architecture
 
 Extracted Comment Lens out of `code-wes-projects` into an independent repository under `Builder106/comment-lens`. Preserved the full commit history from the monorepo via `git subtree split`, added standalone GitHub Actions workflows for CI checks and repository comment scanning with single-digit major action versions, and established repository baseline documentation.
