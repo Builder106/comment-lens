@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { assertScanOwner, scanResponse } from "../../lib/server/data";
 import { requireDb, db } from "../../db";
+import type { scans } from "../../db/schema";
 
 test("assertScanOwner throws FORBIDDEN when user IDs do not match", () => {
   assert.throws(
@@ -31,7 +32,7 @@ test("scanResponse formats and validates scan record", () => {
     createdAt: now,
     completedAt: now,
   };
-  const res = scanResponse(mockScan as any);
+  const res = scanResponse(mockScan as unknown as typeof scans.$inferSelect);
   assert.equal(res.scanId, "scan_123");
   assert.equal(res.repository, "owner/repo");
   assert.equal(res.status, "complete");
@@ -53,7 +54,7 @@ test("scanResponse handles empty diagnostics and null completedAt", () => {
     createdAt: now,
     completedAt: null,
   };
-  const res = scanResponse(mockScan as any);
+  const res = scanResponse(mockScan as unknown as typeof scans.$inferSelect);
   assert.equal(res.scanId, "scan_456");
   assert.deepEqual(res.diagnostics, []);
   assert.equal(res.completedAt, null);

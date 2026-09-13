@@ -1,4 +1,5 @@
 import type { CommentKind, CommentRecord, ReviewStatus } from "../../../contracts";
+import type { CommentKind, CommentRecord, Diagnostic, ReviewStatus } from "../../../contracts";
 
 export type RepositoryContext = {
   id: string;
@@ -18,6 +19,7 @@ export type ScanSummary = {
   fileCount?: number;
   chunkCount?: number;
   diagnostics?: unknown[];
+  diagnostics?: Diagnostic[];
   createdAt?: string;
   completedAt?: string | null;
 };
