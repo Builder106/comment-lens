@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { AssessmentRequest, AssessmentResponse } from "../../../../../contracts";
 import { AssessmentRequest, AssessmentResponse, CommentRecord } from "../../../../../contracts";
 import { requireDb } from "../../../../../db";
 import { assessments } from "../../../../../db/schema";
@@ -15,7 +14,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ com
     const { commentId } = await params;
     const input = AssessmentRequest.parse(await request.json());
     const comment = await getOwnedComment(commentId, input.scanId, session);
-    const payload = comment.payload as { symbol?: unknown; score?: { findings?: unknown } };
     const payload = comment.payload as Partial<CommentRecord>;
     const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
     const assessment = await requestGeminiAssessment({ commentId, comment: comment.bodyText, language: comment.language, kind: comment.kind, symbol: payload.symbol ?? null, context: input.sourceContext === "comment_only" ? null : comment.context, findings: payload.score?.findings ?? [] }, createGeminiAssessmentClient(apiKey), model);
