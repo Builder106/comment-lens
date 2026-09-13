@@ -5,7 +5,7 @@ description = "Non-executing source comment inventory scanner for Comment Lens"
 requires-python = ">=3.12"
 dependencies = [
   "pygments>=2.17,<3",
-  "tree-sitter>=0.22,<0.26",
+  "tree-sitter>=0.22,<0.27",
   "tree-sitter-languages>=1.10,<2",
 ]
 
