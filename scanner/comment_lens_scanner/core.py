@@ -11,7 +11,7 @@ import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from collections.abc import Iterable
 
 try:
     from tree_sitter import Language, Parser
@@ -55,7 +55,7 @@ def _point(data: bytes, offset: int) -> dict[str, int]:
     column = len(before.rsplit(b"\n", 1)[-1])
     return {"line0": line, "columnByte0": column}
 
-def _span(data: bytes, start: int, end: int, precision: str = "exact") -> dict[str, Any]:
+def _span(data: bytes, start: int, end: int, precision: str = "exact") -> dict[str, object]:
     return {"startByte": start, "endByte": end, "start": _point(data, start), "end": _point(data, end), "endExclusive": True, "precision": precision}
 
 def _normalize(text: str) -> str:
@@ -85,12 +85,12 @@ def _tracked(root: Path, include_untracked: bool) -> tuple[list[str], Diagnostic
         paths.extend(str(path.relative_to(root)) for path in root.rglob("*") if path.is_file() and not path.is_symlink() and str(path.relative_to(root)) not in paths)
     return sorted(set(paths)), None
 
-def _blame(root: Path, path: str, line_count: int) -> tuple[list[dict[str, Any]], str | None]:
+def _blame(root: Path, path: str, line_count: int) -> tuple[list[dict[str, object]], str | None]:
     output, error = _git(root, ["blame", "--line-porcelain", "--", path])
     if not output:
         return ([{"startLine0": 0, "endLine0": max(0, line_count - 1), "commit": None, "authorName": None, "authorEmail": None, "authoredAt": None, "source": "unavailable"}], error)
-    spans: list[dict[str, Any]] = []
-    current: dict[str, Any] | None = None
+    spans: list[dict[str, object]] = []
+    current: dict[str, object] | None = None
     remaining = 0
     for raw in output.splitlines():
         if raw and not raw.startswith(("\t", " ")) and len(raw.split()) >= 3 and re.fullmatch(r"[0-9a-f^]+", raw.split()[0]):
@@ -108,19 +108,19 @@ def _blame(root: Path, path: str, line_count: int) -> tuple[list[dict[str, Any]]
             current["authoredAt"] = datetime.fromtimestamp(int(raw[12:]), timezone.utc).isoformat()
     return spans, None
 
-def _findings(body: str, symbol: str | None, protected: bool) -> dict[str, Any]:
+def _findings(body: str, symbol: str | None, protected: bool) -> dict[str, object]:
     if protected:
         return {"eligible": False, "priorityScore": None, "band": "protected", "ruleSetVersion": RULES_VERSION, "findings": []}
-    findings: list[dict[str, Any]] = []
+    findings: list[dict[str, object]] = []
     words = re.findall(r"\b\w+\b", body)
-    def add(rule: str, contribution: int, evidence: dict[str, Any], explanation: str) -> None:
+    def add(rule: str, contribution: int, evidence: dict[str, object], explanation: str) -> None:
         findings.append({"ruleId": rule, "contribution": contribution, "evidence": evidence, "explanation": explanation})
     if re.search(r"\b(this function|this method|this class|helper function)\b", body, re.I): add("generic_template", 12, {}, "Uses a generic explanatory template.")
     if symbol and symbol.lower() in body.lower(): add("restates_symbol", 14, {"symbol": symbol}, "Repeats the enclosing symbol name.")
     if len(words) > 45: add("excessive_verbosity", 10, {"wordCount": len(words)}, "The comment is unusually long for a source comment.")
     if len(re.findall(r"\b(may|might|could|possibly|generally|typically)\b", body, re.I)) >= 3: add("hedge_stack", 8, {}, "Contains several uncertainty qualifiers.")
     if re.search(r"\b(elegant|seamless|robust|powerful|simply|beautiful)\b", body, re.I): add("promotional_or_vague_language", 8, {}, "Uses vague or promotional wording.")
-    score = min(100, sum(item["contribution"] for item in findings))
+    score = min(100, sum(int(item["contribution"]) for item in findings))
     return {"eligible": True, "priorityScore": score, "band": "high" if score >= 40 else "review" if score >= 20 else "low", "ruleSetVersion": RULES_VERSION, "findings": findings}
 
 def _protected(body: str) -> bool:
@@ -140,7 +140,7 @@ def _extract_fallback(data: bytes, path: str) -> tuple[list[tuple[int, int, str,
             tree = get_tree_parser(language)
             tree.parse(data)
             nodes = []
-            def walk(node: Any) -> None:
+            def walk(node: object) -> None:
                 if node.type == "comment": nodes.append(node)
                 for child in node.children: walk(child)
             walk(tree.root_node)
@@ -167,7 +167,7 @@ def _extract_fallback(data: bytes, path: str) -> tuple[list[tuple[int, int, str,
             diagnostics.append(Diagnostic(path, "warning", "parse_failed", f"Pygments parse failed: {error}"))
     return [], "tree-sitter", diagnostics
 
-def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, data: bytes, start: int, end: int, kind: str, raw: str, parser: str, blame: list[dict[str, Any]], blame_error: str | None, collision: int) -> dict[str, Any]:
+def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, data: bytes, start: int, end: int, kind: str, raw: str, parser: str, blame: list[dict[str, object]], blame_error: str | None, collision: int) -> dict[str, object]:
     body = re.sub(r"^\s*(//|#|--|/\*+|\*+|<!--|'''|\"\"\")|(?:\*/|-->|'''|\"\"\")\s*$", "", raw, flags=re.M).strip()
     symbol = None
     before = data[:start].decode("utf-8", errors="replace")
@@ -182,7 +182,7 @@ def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, dat
     protected = _protected(body)
     return {"commentId": comment_id, "scanId": scan_id, "path": path, "language": _language(path) or "unknown", "kind": kind, "placement": "standalone", "rawText": raw, "bodyText": body, "rawSpan": _span(data, start, end), "bodySpan": None, "fragments": [_span(data, start, end)], "tags": re.findall(r"\b(TODO|FIXME|NOTE|HACK)\b", body, re.I), "parser": parser, "symbol": {"enclosing": {"kind": "function", "name": symbol, "qualifiedName": symbol, "signature": None, "span": _span(data, 0, start, "approximate")} , "attachedTo": None, "resolution": "tree-sitter" if parser == "tree-sitter" else "none"} if symbol else None, "git": {"available": bool(blame and blame[0].get("commit")), "primaryCommit": blame[0].get("commit") if blame else None, "blameSpans": blame, "error": blame_error}, "sourceContext": context, "score": _findings(body, symbol, protected)}
 
-def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: Iterable[str] = DEFAULT_EXCLUSIONS, repository_id: str | None = None, scan_id: str | None = None) -> dict[str, Any]:
+def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: Iterable[str] = DEFAULT_EXCLUSIONS, repository_id: str | None = None, scan_id: str | None = None) -> dict[str, object]:
     root = root.resolve(); started = datetime.now(timezone.utc).isoformat(); paths, diagnostic = _tracked(root, include_untracked); diagnostics = [asdict(diagnostic)] if diagnostic else []; files = []; comments = []
     repo_identity = repository_id or os.environ.get("COMMENT_LENS_REPOSITORY_ID") or root.name
     effective_scan_id = scan_id or "scan_" + hashlib.sha256((repo_identity + started).encode()).hexdigest()[:16]
@@ -218,7 +218,7 @@ def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: 
     completed = datetime.now(timezone.utc).isoformat()
     return {"schemaVersion": SCHEMA_VERSION, "scanId": effective_scan_id, "repoId": repo_identity, "sourceMode": "worktree", "headCommit": head, "worktreeFingerprint": hashlib.sha256("\0".join(f["path"] + str(f["contentSha256"]) for f in files).encode()).hexdigest(), "configHash": config_hash, "extractorVersion": "comment-lens-scanner/0.1.0", "parserVersions": {"tree-sitter": "0.22+", "pygments": "2.17+"}, "startedAt": started, "completedAt": completed, "files": files, "diagnostics": diagnostics, "_comments": comments}
 
-def write_output(result: dict[str, Any], manifest_path: Path, ndjson_path: Path | None = None) -> None:
+def write_output(result: dict[str, object], manifest_path: Path, ndjson_path: Path | None = None) -> None:
     manifest = {key: value for key, value in result.items() if key != "_comments"}
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

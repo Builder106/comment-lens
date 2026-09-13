@@ -10,7 +10,6 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any
 
 MAX_CHUNK_BYTES = 512 * 1024
 
@@ -61,8 +60,8 @@ def request_json(url: str, body: bytes, secret: bytes, request_id: str, reposito
                 raise RuntimeError("Upload failed after retries") from error
         time.sleep(2**attempt)
 
-def read_records(path: Path) -> list[dict[str, Any]]:
-    records: list[dict[str, Any]] = []
+def read_records(path: Path) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
     with path.open("rb") as stream:
         for line_number, line in enumerate(stream, 1):
             if not line.strip():
@@ -76,8 +75,8 @@ def read_records(path: Path) -> list[dict[str, Any]]:
             records.append(record)
     return records
 
-def build_chunks(records: list[dict[str, Any]], manifest: dict[str, Any], scan_id: str, repository_id: str) -> list[bytes]:
-    groups: list[list[dict[str, Any]]] = [[]]
+def build_chunks(records: list[dict[str, object]], manifest: dict[str, object], scan_id: str, repository_id: str) -> list[bytes]:
+    groups: list[list[dict[str, object]]] = [[]]
     for record in records:
         candidate = groups[-1] + [record]
         probe = json.dumps({"comments": candidate}, separators=(",", ":")).encode()
