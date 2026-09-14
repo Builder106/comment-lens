@@ -13,4 +13,11 @@ export async function requestGeminiAssessment(input: AssessmentInput, client: Ge
   const modelOutput: unknown = JSON.parse(interaction.output_text);
   return GeminiAssessmentOutput.parse({ ...(modelOutput as object), schemaVersion: 1, commentId: input.commentId, providerId: "google-gemini", modelId: model, promptVersion: ASSESSMENT_PROMPT_VERSION, assessedAt: new Date().toISOString() });
 }
-export function createGeminiAssessmentClient(apiKey: string): GeminiAssessmentClient { return new GoogleGenAI({ apiKey }) as unknown as GeminiAssessmentClient; }
+export function createGeminiAssessmentClient(apiKey: string): GeminiAssessmentClient {
+  const ai = new GoogleGenAI({ apiKey });
+  return {
+    interactions: {
+      create: (input: Record<string, unknown>) => (ai as any).interactions.create(input),
+    },
+  };
+}
