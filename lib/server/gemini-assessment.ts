@@ -17,6 +17,7 @@ export function createGeminiAssessmentClient(apiKey: string): GeminiAssessmentCl
   const ai = new GoogleGenAI({ apiKey });
   return {
     interactions: {
+      create: (input: Record<string, unknown>) => (ai as any).interactions.create(input),
       create: (input: Record<string, unknown>) =>
         (
           ai as unknown as {
