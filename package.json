@@ -22,7 +22,7 @@
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts"
   },
   "dependencies": {
-    "@google/genai": "^1.0.0",
+    "@google/genai": "^2.22.0",
     "@neondatabase/serverless": "^1.0.0",
     "drizzle-orm": "^0.45.2",
     "next": "^16.0.0",
