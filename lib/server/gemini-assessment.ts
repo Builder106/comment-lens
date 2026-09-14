@@ -18,6 +18,14 @@ export function createGeminiAssessmentClient(apiKey: string): GeminiAssessmentCl
   return {
     interactions: {
       create: (input: Record<string, unknown>) => (ai as any).interactions.create(input),
+      create: (input: Record<string, unknown>) =>
+        (
+          ai as unknown as {
+            interactions: {
+              create: (input: Record<string, unknown>) => Promise<{ output_text?: string }>;
+            };
+          }
+        ).interactions.create(input),
     },
   };
 }
