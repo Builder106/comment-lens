@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { requestGeminiAssessment } from "../../lib/server/gemini-assessment";
+import type { Finding, SymbolContext } from "../../contracts";
 
-const input = { commentId: "c1", comment: "Explain the value.", language: "typescript", kind: "line", symbol: { name: "value" }, context: "const value = 1;", findings: [{ ruleId: "verbosity" }] };
+const input = { commentId: "c1", comment: "Explain the value.", language: "typescript", kind: "line" as const, symbol: null as SymbolContext | null, context: "const value = 1;", findings: [{ ruleId: "verbosity", contribution: 1, evidence: { length: 20 }, explanation: "The comment is verbose." }] satisfies Finding[] };
 const client = (output: string): Parameters<typeof requestGeminiAssessment>[1] => ({ interactions: { create: async () => ({ output_text: output }) } });
 
 test("valid output is enriched with provenance without a score", async () => {
@@ -27,8 +28,9 @@ test("provider failures are propagated", async () => {
 });
 
 test("the request contains only bounded assessment inputs", async () => {
-  let received: Record<string, unknown> | undefined;
-  const inspecting = { interactions: { create: async (value: Record<string, unknown>) => { received = value; return { output_text: '{"styleLabel":"ordinary","confidence":0.2,"reasons":["brief"],"suggestedRewrite":null}' }; } } };
+  type AssessmentRequest = Parameters<Parameters<typeof requestGeminiAssessment>[1]["interactions"]["create"]>[0];
+  let received: AssessmentRequest | undefined;
+  const inspecting = { interactions: { create: async (value: AssessmentRequest) => { received = value; return { output_text: '{"styleLabel":"ordinary","confidence":0.2,"reasons":["brief"],"suggestedRewrite":null}' }; } } };
   await requestGeminiAssessment(input, inspecting, "gemini-test");
   assert.equal(received?.store, false);
   assert.equal("priorityScore" in received!, false);
