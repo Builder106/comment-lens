@@ -9,7 +9,7 @@ export function jsonError(code: ErrorCode, message: string, status: number) {
   return NextResponse.json({ schemaVersion: CONTRACT_SCHEMA_VERSION, error: { code, message, requestId: randomUUID() } }, { status });
 }
 
-export function handleError(error: Error | unknown) {
+export function handleError(error: unknown) {
   if (error instanceof ZodError) return jsonError("invalid_request", "Invalid request payload", 400);
   const code = error instanceof Error ? error.message : "";
   if (code === "UNAUTHORIZED") return jsonError("unauthenticated", "Authentication required", 401);
