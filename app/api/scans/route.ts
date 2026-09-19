@@ -8,6 +8,7 @@ import { requireSession } from "../../../lib/server/auth";
 import { listOwnedScans } from "../../../lib/server/data";
 import { getInstallationId, installationClient } from "../../../lib/server/github-app";
 import { handleError } from "../../../lib/server/http";
+import { getWorkflowConfig } from "../../../lib/server/workflow-config";
 
 export async function GET(request: Request) {
   try {
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
   try {
     const session = await requireSession();
     const input = ScanCreateRequest.parse(await request.json());
+    const workflow = getWorkflowConfig();
     const octokit = await installationClient(session);
     const repositories = await octokit.paginate(octokit.rest.apps.listReposAccessibleToInstallation, { per_page: 100 });
     const repository = repositories.find((candidate) => String(candidate.id) === input.repositoryId);
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
     const scanId = randomUUID();
     await db.insert(scans).values({ id: scanId, ownerId: session.githubUserId, ownerLogin: session.login, repositoryInstallationId: installationKey, repository: repository.full_name, ref: input.ref, resolvedCommit: resolved.data.sha, headCommit: resolved.data.sha, status: "queued", retentionUntil: new Date(Date.now() + 30 * 86_400_000) });
     try {
-      await octokit.rest.actions.createWorkflowDispatch({ owner: process.env.COMMENT_LENS_WORKFLOW_OWNER ?? "Builder106", repo: process.env.COMMENT_LENS_WORKFLOW_REPOSITORY ?? "code-wes-projects", workflow_id: process.env.COMMENT_LENS_WORKFLOW_ID ?? "comment-lens-scan.yml", ref: process.env.COMMENT_LENS_WORKFLOW_REF ?? "comment-lens", inputs: { repository: repository.full_name, ref: input.ref, scan_id: scanId } });
+      await octokit.rest.actions.createWorkflowDispatch({ owner: workflow.owner, repo: workflow.repository, workflow_id: workflow.workflowId, ref: workflow.ref, inputs: { repository: repository.full_name, ref: input.ref, scan_id: scanId } });
       await db.update(scans).set({ status: "running", workflowDispatchId: scanId }).where(eq(scans.id, scanId));
     } catch (dispatchError) {
       await db.update(scans).set({ status: "failed", diagnostics: [{ code: "scan_failed", message: "Workflow dispatch failed." }], completedAt: new Date() }).where(eq(scans.id, scanId));
