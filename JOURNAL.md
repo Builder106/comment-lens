@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-19: Fail closed on scan workflow configuration #decision #security
+
+Scan creation requires explicit workflow owner, repository, workflow ID, and ref configuration. Missing values return a configuration error before a scan row is created; a dispatch failure after creation marks the scan failed. Production targets `Builder106/comment-lens`, workflow `comment-lens-scan.yml`, ref `main`, with uploads sent to the production deployment.
+
 ## 2026-09-12: Remove obsolete staging branch #decision #deployment
 
 Deleted the unused `staging` branch and its Vercel deploy hook. `main` is now the only deployment branch, and the staging Actions secret was removed.
