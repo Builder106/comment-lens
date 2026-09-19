@@ -1,0 +1,8 @@
+title = "Comment Lens Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore the known placeholder in the historical environment template commit"
+commits = ["75f5275be932a8d4a284de8e9448ec401d511ab5"]
