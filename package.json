@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "typecheck:native": "next typegen && tsc --noEmit",
     "lint": "eslint .",
     "test": "node --import tsx --test --test-concurrency=1 'tests/**/*.test.ts' 'contracts/tests/**/*.test.mjs'",
     "test:coverage": "node --import tsx --experimental-test-coverage --test-coverage-lines=100 --test-coverage-functions=100 --test-coverage-branches=100 --test-coverage-include='contracts/**' --test --test-concurrency=1 'tests/**/*.test.ts' 'contracts/tests/**/*.test.mjs'",
@@ -43,6 +44,7 @@
     "eslint-config-next": "^16.3.5",
     "pg": "^8.23.0",
     "tsx": "^4.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "@typescript/native": "npm:typescript@^7.0.2"
   }
 }
