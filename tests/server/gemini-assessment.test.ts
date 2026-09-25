@@ -34,4 +34,16 @@ test("the request contains only bounded assessment inputs", async () => {
   await requestGeminiAssessment(input, inspecting, "gemini-test");
   assert.equal(received?.store, false);
   assert.equal("priorityScore" in received!, false);
+  assert.match(String(received?.input), /suggestedRewrite/);
+});
+
+test("valid output with suggested rewrite is returned with v2 prompt version", async () => {
+  const result = await requestGeminiAssessment(
+    input,
+    client('{"styleLabel":"template_like","confidence":0.85,"reasons":["Boilerplate phrasing."],"suggestedRewrite":"// Concise replacement"}'),
+    "gemini-test"
+  );
+  assert.equal(result.suggestedRewrite, "// Concise replacement");
+  assert.equal(result.styleLabel, "template_like");
+  assert.equal(result.promptVersion, "comment-style-v2");
 });

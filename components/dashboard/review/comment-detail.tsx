@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import type { CommentRecord, Finding, ReviewStatus } from "../../../contracts";
 import type { Assessment, ReviewDecision, ReviewMutation } from "./types";
 
@@ -17,13 +19,17 @@ export function CommentDetail({ comment, decision, assessment, note, assessmentP
   onReview: (status: ReviewMutation) => void;
 }) {
   const line = comment.rawSpan.start.line0 + 1;
+  const handleApplyRewrite = (rewrite: string) => {
+    const formatted = `Suggested rewrite:\n${rewrite}`;
+    onNoteChange(note ? `${note}\n\n${formatted}` : formatted);
+  };
   return (
     <aside className={`detail-panel ${open ? "mobile-open" : ""}`} aria-label="Selected comment detail">
       <div className="panel-heading"><div><h2>Comment detail</h2><p className="detail-path">{comment.path}:{line}</p></div><button className="close-button" type="button" aria-label="Close detail" onClick={onClose}>Close</button></div>
       <CodeContext comment={comment} firstLine={line} />
       <dl className="detail-meta"><div><dt>Language</dt><dd>{comment.language}</dd></div><div><dt>Comment type</dt><dd>{comment.kind}</dd></div><div><dt>Symbol</dt><dd>{comment.symbol?.enclosing?.name ?? "File-level"}</dd></div><div><dt>Parser</dt><dd>{comment.parser} — {comment.rawSpan.precision}</dd></div><div><dt>Commit</dt><dd>{comment.git.primaryCommit?.slice(0, 12) ?? "Unavailable"}</dd></div><div><dt>Author</dt><dd>{comment.git.blameSpans[0]?.authorName ?? "Unavailable"}</dd></div></dl>
       <DeterministicFindings comment={comment} />
-      <AssessmentPanel assessment={assessment} pending={assessmentPending ?? false} onAssess={onAssess} />
+      <AssessmentPanel assessment={assessment} pending={assessmentPending ?? false} onAssess={onAssess} onApplyRewrite={handleApplyRewrite} />
       <ReviewControls selected={decision?.status} note={note} onNoteChange={onNoteChange} onReview={onReview} />
     </aside>
   );
@@ -46,8 +52,88 @@ function FindingItem({ finding }: { finding: Finding }) {
   return <li><div><strong>{finding.ruleId.replaceAll("_", " ")}</strong><span>+{finding.contribution}</span></div><p>{finding.explanation}</p></li>;
 }
 
-export function AssessmentPanel({ assessment, pending, onAssess }: { assessment: Assessment | null; pending: boolean; onAssess: () => void }) {
-  return <section className="assessment-panel" aria-labelledby="assessment-title"><div><h3 id="assessment-title">Gemini assessment</h3><p>Optional. It uses this comment and its stored short context.</p></div>{assessment ? <div className="assessment-result" role="status"><strong>{assessmentLabels[assessment.styleLabel]} — {Math.round(assessment.confidence * 100)}% confidence</strong><ul>{assessment.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>{assessment.suggestedRewrite ? <p className="assessment-rewrite">Suggested rewrite: {assessment.suggestedRewrite}</p> : null}{assessment.modelId ? <p className="assessment-provenance">{assessment.modelId}{assessment.promptVersion ? `, prompt ${assessment.promptVersion}` : ""}</p> : null}</div> : <button className="button button-secondary" type="button" disabled={pending} onClick={onAssess}>{pending ? "Assessing style" : "Assess style"}</button>}</section>;
+export function AssessmentPanel({
+  assessment,
+  pending,
+  onAssess,
+  onApplyRewrite,
+}: {
+  assessment: Assessment | null;
+  pending: boolean;
+  onAssess: () => void;
+  onApplyRewrite?: (rewrite: string) => void;
+}) {
+  return (
+    <section className="assessment-panel" aria-labelledby="assessment-title">
+      <div>
+        <h3 id="assessment-title">Gemini assessment</h3>
+        <p>Optional. It uses this comment and its stored short context.</p>
+      </div>
+      {assessment ? (
+        <div className="assessment-result" role="status">
+          <strong>
+            {assessmentLabels[assessment.styleLabel]} — {Math.round(assessment.confidence * 100)}% confidence
+          </strong>
+          <ul>
+            {assessment.reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+          {assessment.suggestedRewrite ? (
+            <SuggestedRewriteBlock rewrite={assessment.suggestedRewrite} onApply={onApplyRewrite} />
+          ) : null}
+          {assessment.modelId ? (
+            <p className="assessment-provenance">
+              {assessment.modelId}
+              {assessment.promptVersion ? `, prompt ${assessment.promptVersion}` : ""}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <button
+          className="button button-secondary"
+          type="button"
+          disabled={pending}
+          onClick={onAssess}
+        >
+          {pending ? "Assessing style" : "Assess style"}
+        </button>
+      )}
+    </section>
+  );
+}
+
+function SuggestedRewriteBlock({ rewrite, onApply }: { rewrite: string; onApply?: (rewrite: string) => void }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(rewrite);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      // Ignore clipboard write failure
+    }
+  };
+  return (
+    <div className="assessment-rewrite-box">
+      <div className="assessment-rewrite-header">
+        <strong>Suggested rewrite</strong>
+        <div className="assessment-rewrite-actions">
+          <button type="button" className="text-button" onClick={handleCopy}>
+            {copied ? "Copied" : "Copy rewrite"}
+          </button>
+          {onApply ? (
+            <button type="button" className="text-button" onClick={() => onApply(rewrite)}>
+              Insert in note
+            </button>
+          ) : null}
+        </div>
+      </div>
+      <pre className="assessment-rewrite-pre"><code>{rewrite}</code></pre>
+    </div>
+  );
 }
 
 export function ReviewControls({ selected, note, onNoteChange, onReview }: { selected?: ReviewStatus; note: string; onNoteChange: (note: string) => void; onReview: (status: ReviewMutation) => void }) {
