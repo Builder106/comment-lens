@@ -100,6 +100,7 @@ Configure these in Vercel without exposing their values:
 - `GITHUB_APP_ID`
 - `GITHUB_APP_PRIVATE_KEY`
 - `WORKER_INGEST_SECRET`
+- `CRON_SECRET`
 - `COMMENT_LENS_WORKFLOW_OWNER`
 - `COMMENT_LENS_WORKFLOW_REPOSITORY`
 - `COMMENT_LENS_WORKFLOW_ID`
@@ -163,9 +164,12 @@ control plane and marks the scan failed. Review the GitHub Actions run before
 retrying; retries create a new scan attempt rather than changing a completed
 scan.
 
-Scan records set a retention timestamp 30 days after creation. Workflow scan
-artifacts are retained by GitHub Actions for one day. Comment Lens stores
-comments and short source context only; it does not modify target repositories.
+The daily Vercel Cron job deletes expired scans, chunks, and comments. It also
+removes review decisions and identities that no retained scan references.
+Gemini assessments expire with their scan. Set `CRON_SECRET` in Vercel so the
+scheduled request is authenticated. GitHub Actions artifacts expire after one
+day. Comment Lens stores comments and short source context only and never
+modifies target repositories.
 
 ## License
 
