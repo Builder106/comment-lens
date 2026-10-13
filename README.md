@@ -131,17 +131,17 @@ it does not modify target repositories.
 
 #### Database migration
 
-Set `DATABASE_URL` to the target PostgreSQL database, install dependencies, and
-apply committed Drizzle migrations:
+Vercel production builds apply committed Drizzle migrations before building the
+app. Preview builds skip migrations. For manual migrations in another
+environment, set `DATABASE_URL` to the target PostgreSQL database and run:
 
 ```bash
 pnpm install --frozen-lockfile
 pnpm run db:migrate
 ```
 
-Run this before serving a deployment that depends on a new migration. Do not
-run `db:generate` in production unless the schema change is intentional and the
-resulting migration is reviewed and committed first.
+Do not run `db:generate` in production unless the schema change is
+intentional and the resulting migration is reviewed and committed first.
 
 #### Production smoke test
 

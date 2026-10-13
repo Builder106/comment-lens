@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then pnpm run db:migrate; fi && pnpm run build",
   "git": {
     "deploymentEnabled": false
   },

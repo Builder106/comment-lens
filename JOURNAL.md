@@ -6,6 +6,10 @@
 
 Worker timestamp validation now uses Unix seconds, as the uploader does. Signed chunk writes and scan completion use PostgreSQL transactions, and matching completion retries are safe. A daily Vercel Cron job deletes expired scan data and orphaned review records; Gemini assessments follow the scan's retention window. Completed scans keep the manifest's parser and extractor versions.
 
+## 2026-10-13: Apply migrations before production builds #migration #deployment
+
+Vercel production builds now apply committed Drizzle migrations before the Next.js build. Preview builds skip migrations so they cannot change the production database.
+
 ## 2026-09-19: Fail closed on scan workflow configuration #decision #security
 
 Scan creation requires explicit workflow owner, repository, workflow ID, and ref configuration. Missing values return a configuration error before a scan row is created; a dispatch failure after creation marks the scan failed. Production targets `Builder106/comment-lens`, workflow `comment-lens-scan.yml`, ref `main`, with uploads sent to the production deployment.
