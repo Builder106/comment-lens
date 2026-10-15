@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-15: Specify review workspace and evidence ledger layout #decision
+
+Authored DESIGN.md to define the changed-comment review workspace, three workspace modes (local, CI, team history), and adjacent evidence ledger before implementing the prototype.
+
 ## 2026-10-13: Enforce scan retention and recover signed ingestion #retention #security
 
 Worker timestamp validation now uses Unix seconds, as the uploader does. Signed chunk writes and scan completion use PostgreSQL transactions, and matching completion retries are safe. A daily Vercel Cron job deletes expired scan data and orphaned review records; Gemini assessments follow the scan's retention window. Completed scans keep the manifest's parser and extractor versions.
