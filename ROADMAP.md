@@ -120,6 +120,11 @@ Add an editor integration after the command-line interface and CI behavior are s
 
 The extension should not implement a second parser, scoring system, or upload path. It should consume local command output and preserve the same finding identifiers and evidence.
 
+The first VS Code adapter lives in `editor/vscode`. It runs a path-limited local
+check for saved files and shows the scanner's finding IDs and evidence through
+native diagnostics. See [Editor integration](docs/editor.md) for the local
+development workflow and current behavior.
+
 ## Architecture direction
 
 Keep the scanner core independent from Next.js, PostgreSQL, GitHub authentication, and artificial intelligence providers. Add policy and output layers around the existing extraction engine:
@@ -163,6 +168,7 @@ Each roadmap phase must add the cheapest test tier that protects its changed bou
 | SARIF and other output | Output remains valid and preserves finding evidence | Contract tests |
 | CI integration | A clean, advisory, blocking, or scanner-failure result reaches the job correctly | Workflow validation and one end-to-end CI path |
 | Dashboard history | Results remain owner-scoped and review decisions persist | PostgreSQL integration and browser tests |
+| Editor integration | Selected-file reports stay partial and diagnostics preserve finding IDs and source positions | CLI integration and adapter unit tests |
 | Large repository scans | Runtime, memory, and output size stay within measured limits | Performance regression tests |
 
 Performance gates should define the workload, warm-up, sample size, percentile, and allowed variance before they become blocking checks. The existing large-comment fixture can provide the first baseline.

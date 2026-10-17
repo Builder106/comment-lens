@@ -18,6 +18,7 @@ Comment Lens is an intelligent code comment review dashboard and extraction work
 ├── db/                   # Drizzle ORM schema, migrations, and database client
 ├── lib/                  # Shared utilities and server helpers
 ├── scanner/              # Python Tree-sitter comment extraction engine
+├── editor/vscode/         # Local VS Code diagnostics adapter
 ├── styles/               # CSS tokens and styling
 ├── tests/                # Unit, integration, and Playwright tests
 └── worker/               # Ingestion upload and failure notification scripts
@@ -102,6 +103,8 @@ For comment age, local references, and cross-scan history, see
 [Maintenance findings and history](docs/maintenance.md).
 For optional, finding-specific Gemini guidance in the hosted workspace,
 see [Assisted review](docs/assisted-review.md).
+For local findings beside comments in Visual Studio Code, see
+[Editor integration](docs/editor.md).
 
 ### Installation
 

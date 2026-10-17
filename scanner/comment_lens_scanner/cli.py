@@ -6,7 +6,7 @@ import argparse
 import json
 import re
 import sys
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from urllib.parse import urlsplit
 
 from .baseline import create_baseline, load_baseline, write_baseline
@@ -126,6 +126,7 @@ def _baseline_path(root: Path, explicit: Path | None, configured: str | None, *,
 
 def _check_options(parser: argparse.ArgumentParser) -> None:
     _common(parser)
+    parser.add_argument("--path", action="append", help="Scan one repository-relative file; repeat for more files")
     parser.add_argument("--changed", help="Select changes from a Git ref or range")
     parser.add_argument("--scope", choices=("comments", "files"), default="comments", help="Use changed comment lines or all comments in changed files")
     parser.add_argument("--include-untracked", action="store_true")
@@ -168,7 +169,20 @@ def _check(args: argparse.Namespace) -> int:
     policy = load_policy(root, args.config, excludes=tuple(args.exclude), fail_on=args.fail_on)
     if args.changed and args.include_untracked:
         raise ConfigError("--include-untracked cannot be combined with --changed")
+    if args.changed and args.path:
+        raise ConfigError("--path cannot be combined with --changed")
+    if args.path and any(
+        not path
+        or path.startswith("/")
+        or PureWindowsPath(path).drive
+        or "\\" in path
+        or any(part in ("", ".", "..") for part in path.split("/"))
+        for path in args.path
+    ):
+        raise ConfigError("--path must name a repository-relative file")
     paths, ranges = changed_selection(root, args.changed) if args.changed else (None, None)
+    if args.path:
+        paths = set(args.path)
     result = scan_repository(
         root,
         include_untracked=args.include_untracked,
@@ -182,10 +196,10 @@ def _check(args: argparse.Namespace) -> int:
     report = build_report(
         result,
         policy,
-        selection=f"{args.scope} changed in {args.changed}" if args.changed else "all tracked files",
+        selection=f"{args.scope} changed in {args.changed}" if args.changed else "selected files" if args.path else "all tracked files",
         ranges=ranges if args.changed and args.scope == "comments" else None,
         baseline=baseline,
-        full_scan=args.changed is None,
+        full_scan=args.changed is None and not args.path,
         root=root,
         source=args.source,
     )

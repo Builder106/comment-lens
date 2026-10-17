@@ -1,0 +1,43 @@
+{
+  "name": "comment-lens-vscode",
+  "displayName": "Comment Lens",
+  "description": "Show local Comment Lens maintenance findings beside source comments.",
+  "version": "0.1.0",
+  "publisher": "builder106",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Linters"],
+  "extensionKind": ["workspace"],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Comment Lens runs a local scanner in the workspace."
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "Comment Lens scans files in a local Git checkout."
+    }
+  },
+  "main": "./extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "commentLens.scanFile",
+        "title": "Comment Lens: Scan Current File"
+      }
+    ],
+    "configuration": {
+      "title": "Comment Lens",
+      "properties": {
+        "commentLens.command": {
+          "type": "string",
+          "default": "comment-lens",
+          "description": "Path to the locally installed Comment Lens executable. The extension passes arguments directly without a shell."
+        }
+      }
+    }
+  }
+}

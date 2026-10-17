@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-17: Reuse local findings in the editor #decision #editor
+
+Phase 5 adds a VS Code workspace extension that invokes the installed local CLI for one saved file and renders its JSON findings as native diagnostics. The CLI accepts repeatable repository-relative `--path` selections and labels these reports partial for baseline comparisons. The extension preserves scanner finding IDs, evidence, and UTF-8 source positions, clears stale results on edits or failures, and leaves parsing, policy, and uploads outside the editor adapter.
+
 ## 2026-10-16: Bound assisted review to one finding #decision #review
 
 Phase 4 adds a separate opt-in Gemini request for one selected hosted deterministic finding. It sends the comment and that rule's evidence by default; short stored code context requires a separate checkbox. The server verifies ownership and rule membership, refuses sensitive paths, and returns advisory explanation, comment-code relationship, and keep/rewrite/remove/investigate guidance without saving it or changing scores, CI policy, review decisions, or repository files. The existing style assessment remains separate.

@@ -65,6 +65,37 @@ def test_changed_comment_selection_and_exit_codes(tmp_path: Path, capsys: pytest
     assert {item["ruleId"] for item in json.loads(capsys.readouterr().out)["findings"]} == {"todo", "fixme", "task_without_reference", "nearby_code_changed"}
 
 
+def test_path_limited_check_is_partial_and_includes_untracked_files(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _repo(tmp_path)
+    (tmp_path / "b.py").write_text("# TODO: track this separately\n", encoding="utf-8")
+    assert main(["baseline", "create", str(tmp_path)]) == 0
+    capsys.readouterr()
+
+    assert main(["check", str(tmp_path), "--path", "a.py", "--baseline", ".comment-lens-baseline.json", "--format", "json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["baseline"] is True
+    assert report["fullScan"] is False
+    assert report["summary"]["resolvedEvaluated"] is False
+    assert report["summary"]["resolved"] == 0
+    assert {item["path"] for item in report["findings"]} == {"a.py"}
+
+    assert main(["check", str(tmp_path), "--path", "a.py", "--path", "b.py", "--format", "json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["fullScan"] is False
+    assert {item["path"] for item in report["findings"]} == {"a.py", "b.py"}
+
+    (tmp_path / "new.py").write_text("# TODO: review this new file\n", encoding="utf-8")
+    assert main(["check", str(tmp_path), "--path", "new.py", "--include-untracked", "--format", "json"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["fullScan"] is False
+    assert {item["path"] for item in report["findings"]} == {"new.py"}
+
+    assert main(["check", str(tmp_path), "--path", "../outside.py", "--format", "json"]) == 2
+    assert "repository-relative" in capsys.readouterr().err
+    assert main(["check", str(tmp_path), "--path", "C:/outside.py", "--format", "json"]) == 2
+    assert "repository-relative" in capsys.readouterr().err
+
+
 def test_scan_export_formats_and_failure(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     _repo(tmp_path)
     assert main(["scan", str(tmp_path)]) == 0
