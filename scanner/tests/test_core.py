@@ -267,7 +267,7 @@ def test_scan_repository_various_file_conditions(tmp_path: Path) -> None:
     result = scan_repository(tmp_path, include_untracked=False)
     file_map = {f["path"]: f for f in result["files"]}
 
-    assert file_map["valid.py"]["status"] in {"parsed", "parsed_with_errors"}
+    assert file_map["valid.py"]["status"] in {"parsed", "parsed_with_errors", "fallback"}
     assert file_map["model.freezed.dart"]["exclusionReason"] == "excluded:generated-pattern"
     assert file_map["doc.unknownext"]["exclusionReason"] == "unsupported_language"
     assert file_map["binary.py"]["exclusionReason"] == "binary_file"

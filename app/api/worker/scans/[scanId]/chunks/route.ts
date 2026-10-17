@@ -43,7 +43,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
         const identityId = comment.commentId;
         const symbolAnchor = comment.symbol?.enclosing?.qualifiedName ?? null;
         const normalized = comment.bodyText.trim().toLowerCase();
-        const blame = comment.git.blameSpans[0];
+        const line = comment.rawSpan.start.line0;
+        const blame = comment.git.blameSpans.find((span) => span.startLine0 <= line && line <= span.endLine0);
         const todoOnly = /^(?:todo|fixme)(?:\s*[:-].*)?$/i.test(comment.bodyText.trim());
         const license = /copyright|license/i.test(normalized);
         const generated = /generated(?:\s+by|\s+file)|do not edit/i.test(normalized);

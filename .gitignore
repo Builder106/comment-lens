@@ -8,6 +8,7 @@
 /out/
 /build
 /dist
+/.comment-lens/
 
 # Testing & coverage
 /coverage

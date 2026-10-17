@@ -79,6 +79,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Install scanner dependencies
+        working-directory: trusted-source/scanner
+        run: |
+          python3 -m venv "$RUNNER_TEMP/comment-lens-venv"
+          "$RUNNER_TEMP/comment-lens-venv/bin/python" -m pip install --disable-pip-version-check .
+
       - name: Run trusted scanner
         working-directory: trusted-source/scanner
         env:
@@ -89,7 +95,7 @@ jobs:
           TARGET_SOURCE: ${{ github.workspace }}/target-source
           SCAN_ID: ${{ inputs.scan_id }}
           REPOSITORY_ID: ${{ inputs.repository }}
-        run: python3 -m comment_lens_scanner "$TARGET_SOURCE" --scan-id "$SCAN_ID" --repository-id "$REPOSITORY_ID" --output "$RUNNER_TEMP/comment-lens-scan"
+        run: "$RUNNER_TEMP/comment-lens-venv/bin/python" -m comment_lens_scanner "$TARGET_SOURCE" --scan-id "$SCAN_ID" --repository-id "$REPOSITORY_ID" --output "$RUNNER_TEMP/comment-lens-scan"
 
       - name: Upload scan artifact
         uses: actions/upload-artifact@v7

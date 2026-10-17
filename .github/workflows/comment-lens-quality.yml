@@ -1,0 +1,71 @@
+name: Comment Lens quality
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  comments:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install Comment Lens
+        run: python -m pip install ./scanner
+      - name: Scan comments and write reports
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [[ -f .comment-lens-baseline.json ]]; then
+            command=compare
+            baseline_args=(--baseline .comment-lens-baseline.json)
+          else
+            command=check
+            baseline_args=()
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            scope_args=(--changed "origin/$BASE_REF...HEAD")
+          else
+            scope_args=()
+          fi
+          set +e
+          comment-lens "$command" . "${baseline_args[@]}" "${scope_args[@]}" --source ci --format json --output .comment-lens/report.json
+          report_status=$?
+          if [[ -f .comment-lens/report.json ]]; then
+            comment-lens render --input .comment-lens/report.json --format markdown --output .comment-lens/report.md
+            markdown_status=$?
+            comment-lens render --input .comment-lens/report.json --format sarif --output .comment-lens/report.sarif
+            sarif_status=$?
+          else
+            markdown_status=2
+            sarif_status=2
+          fi
+          set -e
+          if [[ -f .comment-lens/report.md ]]; then
+            cat .comment-lens/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == pull_request && -f .comment-lens/report.sarif ]]; then
+            comment-lens annotate --input .comment-lens/report.sarif
+          fi
+          if [[ "$report_status" -ne "$markdown_status" || "$report_status" -ne "$sarif_status" ]]; then
+            exit 2
+          fi
+          exit "$report_status"
+      - name: Retain reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: comment-lens-quality-${{ github.run_id }}
+          path: .comment-lens/report.*
+          if-no-files-found: ignore
+          retention-days: 7
