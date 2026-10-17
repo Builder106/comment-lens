@@ -94,6 +94,7 @@ jobs:
           GIT_OPTIONAL_LOCKS: "0"
           TARGET_SOURCE: ${{ github.workspace }}/target-source
           SCAN_ID: ${{ inputs.scan_id }}
+          REPOSITORY_ID: ${{ inputs.repository }}
         run: |
           "$RUNNER_TEMP/comment-lens-venv/bin/python" -m comment_lens_scanner "$TARGET_SOURCE" --scan-id "$SCAN_ID" --repository-id "$REPOSITORY_ID" --output "$RUNNER_TEMP/comment-lens-scan"
 
