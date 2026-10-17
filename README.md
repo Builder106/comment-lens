@@ -187,6 +187,14 @@ Set `COMMENT_LENS_UPLOAD_BASE_URL` as a GitHub Actions repository variable to
 the production URL. The production workflow target values are
 `Builder106`, `comment-lens`, `comment-lens-scan.yml`, and `main`.
 
+Production is the default scan target. Set
+`COMMENT_LENS_WORKFLOW_TARGET=development` in a local or preview control plane
+to send scans to the development endpoint. Set the GitHub Actions variable
+`COMMENT_LENS_DEV_UPLOAD_BASE_URL` to that endpoint and the secret
+`COMMENT_LENS_DEV_INGESTION_SIGNING_SECRET` to its signing key. The development
+deployment must use the same key as `WORKER_INGEST_SECRET` and point
+`DATABASE_URL` at the development database.
+
 #### GitHub Actions variables and secrets
 
 The `comment-lens-scan.yml` workflow requires these repository settings:

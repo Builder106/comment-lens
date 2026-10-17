@@ -21,6 +21,15 @@ export class WorkflowConfigurationError extends Error {
   }
 }
 
+export type WorkflowTarget = "production" | "development";
+
+export function getWorkflowTarget(): WorkflowTarget {
+  const target = process.env.COMMENT_LENS_WORKFLOW_TARGET?.trim()
+    || (process.env.NODE_ENV === "production" ? "production" : "development");
+  if (target !== "production" && target !== "development") throw new WorkflowConfigurationError();
+  return target;
+}
+
 function requiredSafeValue(name: WorkflowConfigName): string {
   const value = process.env[name]?.trim();
   if (!value || value.length > 256 || !/^[A-Za-z0-9][A-Za-z0-9._/-]*$/.test(value) || value.includes("..")) throw new WorkflowConfigurationError();

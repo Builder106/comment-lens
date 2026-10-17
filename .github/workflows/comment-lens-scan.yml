@@ -16,6 +16,14 @@ on:
         description: "Control-plane scan identifier"
         required: true
         type: string
+      target:
+        description: "Where the worker sends scan results"
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - development
 
 permissions:
   contents: read
@@ -36,6 +44,7 @@ jobs:
           TARGET_REPOSITORY: ${{ inputs.repository }}
           TARGET_REF: ${{ inputs.ref }}
           SCAN_ID: ${{ inputs.scan_id }}
+          TARGET: ${{ inputs.target }}
         run: |
           python3 - <<'PY'
           import os
@@ -44,6 +53,8 @@ jobs:
               value = os.environ[name]
               if not value or len(value) > 256 or "\x00" in value:
                   raise SystemExit(f"invalid {name}")
+          if os.environ["TARGET"] not in {"production", "development"}:
+              raise SystemExit("invalid TARGET")
           if not re.fullmatch(r"[^/\s]+/[^/\s]+", os.environ["TARGET_REPOSITORY"]):
               raise SystemExit("TARGET_REPOSITORY must be owner/name")
           if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", os.environ["SCAN_ID"]):
@@ -125,8 +136,8 @@ jobs:
 
       - name: Upload signed scan
         env:
-          UPLOAD_BASE_URL: ${{ vars.COMMENT_LENS_UPLOAD_BASE_URL }}
-          INGESTION_SIGNING_SECRET: ${{ secrets.COMMENT_LENS_INGESTION_SIGNING_SECRET }}
+          UPLOAD_BASE_URL: ${{ inputs.target == 'development' && vars.COMMENT_LENS_DEV_UPLOAD_BASE_URL || (inputs.target == 'production' && vars.COMMENT_LENS_UPLOAD_BASE_URL) || '' }}
+          INGESTION_SIGNING_SECRET: ${{ inputs.target == 'development' && secrets.COMMENT_LENS_DEV_INGESTION_SIGNING_SECRET || (inputs.target == 'production' && secrets.COMMENT_LENS_INGESTION_SIGNING_SECRET) || '' }}
           SCAN_ID: ${{ inputs.scan_id }}
           REPOSITORY_ID: ${{ inputs.repository }}
         run: python3 worker/upload_scan.py --artifact scan-artifact
@@ -145,8 +156,8 @@ jobs:
 
       - name: Notify control plane
         env:
-          UPLOAD_BASE_URL: ${{ vars.COMMENT_LENS_UPLOAD_BASE_URL }}
-          INGESTION_SIGNING_SECRET: ${{ secrets.COMMENT_LENS_INGESTION_SIGNING_SECRET }}
+          UPLOAD_BASE_URL: ${{ inputs.target == 'development' && vars.COMMENT_LENS_DEV_UPLOAD_BASE_URL || (inputs.target == 'production' && vars.COMMENT_LENS_UPLOAD_BASE_URL) || '' }}
+          INGESTION_SIGNING_SECRET: ${{ inputs.target == 'development' && secrets.COMMENT_LENS_DEV_INGESTION_SIGNING_SECRET || (inputs.target == 'production' && secrets.COMMENT_LENS_INGESTION_SIGNING_SECRET) || '' }}
           SCAN_ID: ${{ inputs.scan_id }}
           REPOSITORY_ID: ${{ inputs.repository }}
         run: python3 worker/fail_scan.py
