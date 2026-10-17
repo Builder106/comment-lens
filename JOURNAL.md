@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-16: Bound assisted review to one finding #decision #review
+
+Phase 4 adds a separate opt-in Gemini request for one selected hosted deterministic finding. It sends the comment and that rule's evidence by default; short stored code context requires a separate checkbox. The server verifies ownership and rule membership, refuses sensitive paths, and returns advisory explanation, comment-code relationship, and keep/rewrite/remove/investigate guidance without saving it or changing scores, CI policy, review decisions, or repository files. The existing style assessment remains separate.
+
 ## 2026-10-16: Add offline maintenance history #decision #scanner
 
 Phase 3 adds evidence-backed task age, missing task reference, nearby code change, and missing local link signals to portable JSON reports. Git blame is associated with the comment's line rather than the first line of its file. Saved full reports can be compared for repeated findings and trends, while partial or failed scans do not imply resolution. The dashboard reads a source-free history summary through an explicit browser file selection and displays it beside hosted scan counts; it does not persist or upload imported reports. External URL checks and inferred team ownership remain outside this offline slice.

@@ -200,6 +200,27 @@ test.describe("Comment Lens review workspace", () => {
     await expect(page.getByText(/source files are read-only/i)).toBeVisible();
   });
 
+  test("requests guidance for one finding and opts into code context", async ({ page }) => {
+    await page.route("**/api/comments/comment-1/assist", (route) => route.fulfill({ json: {
+      schemaVersion: 1,
+      assistance: {
+        commentId: "comment-1", ruleId: "restates_symbol", providerId: "google-gemini",
+        modelId: "gemini-test", promptVersion: "comment-maintenance-v1",
+        whyItMatters: "The comment repeats the name.", relationship: "The context shows the same operation.",
+        recommendation: "investigate", suggestedRewrite: null, assessedAt: new Date().toISOString(),
+      },
+    } }));
+    await page.getByRole("button", { name: /similarity score/i }).click();
+    const first = page.waitForRequest((request) => request.url().endsWith("/assist"));
+    await page.getByRole("button", { name: "Explain selected finding" }).click();
+    expect(JSON.parse((await first).postData() ?? "{}")).toMatchObject({ ruleId: "restates_symbol", includeCodeContext: false });
+    await expect(page.getByText("The comment repeats the name.")).toBeVisible();
+    await page.getByLabel("Include stored code context in the Gemini request").check();
+    const second = page.waitForRequest((request) => request.url().endsWith("/assist"));
+    await page.getByRole("button", { name: "Explain selected finding" }).click();
+    expect(JSON.parse((await second).postData() ?? "{}")).toMatchObject({ ruleId: "restates_symbol", includeCodeContext: true });
+  });
+
   test("sends server-side filtering, sorting, and review updates", async ({ page }) => {
     const request = page.waitForRequest((item) => item.url().includes("/api/scans/scan-1/comments") && item.url().includes("path="));
     const filterToggle = page.getByRole("button", { name: /^filters$/i });

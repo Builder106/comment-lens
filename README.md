@@ -100,6 +100,8 @@ For baselines, pull request annotations, and scheduled checks, see
 [CI checks and baselines](docs/ci.md).
 For comment age, local references, and cross-scan history, see
 [Maintenance findings and history](docs/maintenance.md).
+For optional, finding-specific Gemini guidance in the hosted workspace,
+see [Assisted review](docs/assisted-review.md).
 
 ### Installation
 

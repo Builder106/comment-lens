@@ -97,6 +97,12 @@ export const AssessmentRequest = z.object({ schemaVersion: z.literal(CONTRACT_SC
 export type AssessmentRequest = z.infer<typeof AssessmentRequest>;
 export const AssessmentResponse = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), assessment: GeminiAssessmentOutput }).strict();
 export type AssessmentResponse = z.infer<typeof AssessmentResponse>;
+export const FindingAssistanceRequest = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), scanId: id, ruleId: z.string().min(1).max(128), includeCodeContext: z.boolean().default(false) }).strict();
+export type FindingAssistanceRequest = z.infer<typeof FindingAssistanceRequest>;
+export const FindingAssistance = z.object({ commentId: id, ruleId: z.string().min(1).max(128), providerId: z.string().min(1), modelId: z.string().min(1), promptVersion: z.string().min(1), whyItMatters: z.string().min(1).max(1000), relationship: z.string().min(1).max(1000), recommendation: z.enum(["keep", "rewrite", "remove", "investigate"]), suggestedRewrite: z.string().max(4000).nullable(), assessedAt: isoDate }).strict();
+export type FindingAssistance = z.infer<typeof FindingAssistance>;
+export const FindingAssistanceResponse = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), assistance: FindingAssistance }).strict();
+export type FindingAssistanceResponse = z.infer<typeof FindingAssistanceResponse>;
 export const ErrorResponse = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), error: z.object({ code: z.enum(["invalid_request", "unauthenticated", "forbidden", "not_found", "conflict", "invalid_signature", "stale_request", "incompatible_schema", "scan_failed", "internal_error"]), message: z.string().min(1).max(1000), requestId: id }).strict() }).strict();
 export type ErrorResponse = z.infer<typeof ErrorResponse>;
 export const WorkerRequestHeaders = z.object({ "x-comment-lens-timestamp": z.string().regex(/^[0-9]+$/), "x-comment-lens-signature": z.string().regex(/^sha256=[a-f0-9]{64}$/), "x-comment-lens-chunk-id": id }).strict();
