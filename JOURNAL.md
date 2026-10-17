@@ -2,6 +2,22 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-16: Add offline maintenance history #decision #scanner
+
+Phase 3 adds evidence-backed task age, missing task reference, nearby code change, and missing local link signals to portable JSON reports. Git blame is associated with the comment's line rather than the first line of its file. Saved full reports can be compared for repeated findings and trends, while partial or failed scans do not imply resolution. The dashboard reads a source-free history summary through an explicit browser file selection and displays it beside hosted scan counts; it does not persist or upload imported reports. External URL checks and inferred team ownership remain outside this offline slice.
+
+## 2026-10-16: Add CI baselines and advisory reports #decision #ci
+
+Phase 2 uses a small repository-owned JSON baseline with finding IDs, rule names, and paths. Full comparisons can report resolved findings; changed-scope comparisons only classify scanned findings as new or existing. Existing findings do not block or appear in baseline-aware SARIF annotations. A separate per-rule blocking threshold can override the global threshold. The repository workflow checks changed comments on pull requests and all tracked comments on a schedule, writes a Markdown job summary, and emits annotations from SARIF. It stays advisory until a policy opts into blocking.
+
+## 2026-10-16: Define the local CLI policy #decision #cli
+
+Phase 1 ships as a repository-installed Python package, with PyPI publication deferred. The new `comment-lens` CLI scans locally, checks changed comments or files, and exports JSON, Markdown, or SARIF. Local checks use `low`, `review`, and `high` severities and remain advisory unless a threshold is selected. `.comment-lens.toml` holds exclusions, rule severities, and thresholds without credentials; command options override it. Offline checks use locally available grammars or Pygments. Phase 2 baselines will be repository-owned files, and GitHub Actions is the first CI target. The existing hosted scan command and artifact contract remain compatible.
+
+## 2026-10-16: Install complete scanner grammar support #decision #scanner
+
+The scan workflow installs the trusted scanner in an isolated virtual environment and uses the maintained Tree-sitter language pack. Added extension mappings for the repository's JavaScript modules, SQL migrations, and TOML configuration so tracked source languages use their grammars.
+
 ## 2026-10-15: Specify review workspace and evidence ledger layout #decision
 
 Authored DESIGN.md to define the changed-comment review workspace, three workspace modes (local, CI, team history), and adjacent evidence ledger before implementing the prototype.
