@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-17: Separate scan upload targets #decision #security
+
+Scan dispatches include a target. Development scans use their own upload URL and signing key. The local app uses a schema-only Neon branch and must select `development` before hosted scans are enabled.
+
 ## 2026-10-17: Reuse local findings in the editor #decision #editor
 
 Phase 5 adds a VS Code workspace extension that invokes the installed local CLI for one saved file and renders its JSON findings as native diagnostics. The CLI accepts repeatable repository-relative `--path` selections and labels these reports partial for baseline comparisons. The extension preserves scanner finding IDs, evidence, and UTF-8 source positions, clears stale results on edits or failures, and leaves parsing, policy, and uploads outside the editor adapter.
