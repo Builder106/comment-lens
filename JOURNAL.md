@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-18: Retire provisional dashboard UI tests #decision #testing
+
+The dashboard is a temporary frontend, so its browser tests do not describe the intended product. Removed the Playwright suite and CI gate while keeping typecheck, lint, build, unit and coverage, database, scanner, worker, and secret checks. Browser tests can return when the replacement journeys are defined.
+
 ## 2026-10-17: Separate scan upload targets #decision #security
 
 Scan dispatches include a target. Development scans use their own upload URL and signing key. The local app uses a schema-only Neon branch and must select `development` before hosted scans are enabled.

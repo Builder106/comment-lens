@@ -20,7 +20,7 @@ Comment Lens is an intelligent code comment review dashboard and extraction work
 ├── scanner/              # Python Tree-sitter comment extraction engine
 ├── editor/vscode/         # Local VS Code diagnostics adapter
 ├── styles/               # CSS tokens and styling
-├── tests/                # Unit, integration, and Playwright tests
+├── tests/                # Unit, integration, and performance tests
 └── worker/               # Ingestion upload and failure notification scripts
 ```
 
@@ -152,8 +152,6 @@ python3 -m unittest discover worker -p 'test_*.py'
 pnpm run db:migrate
 pnpm run test:integration
 pnpm run test:performance
-pnpm exec playwright install --with-deps chromium
-pnpm run test:e2e
 ```
 
 The integration and performance suites require a reachable PostgreSQL database.

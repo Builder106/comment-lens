@@ -92,40 +92,9 @@ jobs:
       - name: Run worker tests
         run: python -m unittest discover worker -p 'test_*.py'
 
-  e2e:
-    name: UI E2E (Playwright)
-    needs: [secrets, check, python]
-    runs-on: ubuntu-24.04
-    env:
-      NODE_ENV: test
-    steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - name: Use Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Run UI E2E
-        run: pnpm run test:e2e
-      - name: Upload Playwright artifacts on failure
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: comment-lens-playwright-report-${{ github.run_id }}
-          path: |
-            playwright-report/
-            test-results/
-          if-no-files-found: ignore
-          retention-days: 7
-
   deploy:
     name: Trigger Vercel Deployment
-    needs: [secrets, check, python, e2e]
+    needs: [secrets, check, python]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     steps:
