@@ -35,7 +35,7 @@ function CommentQueueItem({ comment, decision, selected, onSelect }: { comment: 
   const score = comment.score.priorityScore;
   const review = decision?.status ?? "unreviewed";
   const line = comment.rawSpan.start.line0 + 1;
-  return <div role="listitem"><button id={`comment-${comment.commentId}`} aria-label={`${comment.bodyText || comment.rawText}. Similarity score ${score === null ? "protected" : score}`} className={`comment-row ${selected ? "selected" : ""}`} type="button" aria-pressed={selected} onClick={() => onSelect(comment.commentId)}><span className="comment-row-path">{comment.path}:{line}</span><span className="comment-row-score">{score === null ? "Protected" : `${score}`}</span><span className="comment-row-text">{comment.bodyText || comment.rawText}</span><span className="comment-row-meta">{comment.language} — {reviewLabels[review]}</span></button></div>;
+  return <div role="listitem"><button id={`comment-${comment.commentId}`} className={`comment-row ${selected ? "selected" : ""}`} type="button" aria-pressed={selected} onClick={() => onSelect(comment.commentId)}><span className="comment-row-path">{comment.path}:{line}</span><span className="comment-row-score">{score === null ? "Protected" : `${score}`}</span><span className="comment-row-text">{comment.bodyText || comment.rawText}</span><span className="comment-row-meta">{comment.language} — {reviewLabels[review]}</span></button></div>;
 }
 
 function QueueEmpty({ loading }: { loading: boolean }) {
