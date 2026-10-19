@@ -158,9 +158,11 @@ def test_group_adjacent_standalone_line_comments() -> None:
     data = b"# first\n#\n# second\n\n# separated\ncode  # inline\n# after inline\n"
     tokens = (b"# first", b"#", b"# second", b"# separated", b"# inline", b"# after inline")
     comments = []
+    cursor = 0
     for token in tokens:
-        start = data.index(token)
+        start = data.index(token, cursor)
         comments.append((start, start + len(token), "line", token.decode()))
+        cursor = start + len(token)
 
     grouped = core._group_adjacent_line_comments(data, comments)
 

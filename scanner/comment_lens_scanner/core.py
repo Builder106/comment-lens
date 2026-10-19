@@ -171,6 +171,9 @@ def _findings(body: str, symbol: str | None, protected: bool) -> dict[str, objec
     score = min(100, sum(int(item["contribution"]) for item in findings))
     return {"eligible": True, "priorityScore": score, "band": "high" if score >= 40 else "review" if score >= 20 else "low", "ruleSetVersion": RULES_VERSION, "findings": findings}
 
+def _comment_body(raw: str) -> str:
+    return re.sub(r"^\s*(//|#|--|/\*+|\*+|<!--|'''|\"\"\")|(?:\*/|-->|'''|\"\"\")\s*$", "", raw, flags=re.M).strip()
+
 def _protected(body: str) -> bool:
     normalized = body.strip()
     return bool(
@@ -182,7 +185,7 @@ def _group_adjacent_line_comments(data: bytes, comments: list[tuple[int, int, st
     grouped: list[tuple[int, int, str, str]] = []
     for start, end, kind, raw in sorted(comments, key=lambda item: item[0]):
         if grouped:
-            previous_start, previous_end, previous_kind, _ = grouped[-1]
+            previous_start, previous_end, previous_kind, previous_raw = grouped[-1]
             between = data[previous_end:start] if start >= previous_end else b"\0"
             previous_ends_at_line_start = previous_end > previous_start and data[previous_end - 1:previous_end] == b"\n"
             previous_prefix_start = data.rfind(b"\n", 0, previous_start) + 1
@@ -195,6 +198,8 @@ def _group_adjacent_line_comments(data: bytes, comments: list[tuple[int, int, st
                 and not between.strip(b" \t\r\n")
                 and previous_is_standalone
                 and current_is_standalone
+                and not _protected(_comment_body(previous_raw))
+                and not _protected(_comment_body(raw))
                 and end - previous_start <= MAX_COMMENT_BYTES
             ):
                 grouped[-1] = (previous_start, end, "line", data[previous_start:end].decode("utf-8", errors="replace"))
@@ -247,7 +252,7 @@ def _extract_fallback(data: bytes, path: str, *, offline: bool = False) -> tuple
     return [], None, diagnostics
 
 def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, data: bytes, start: int, end: int, kind: str, raw: str, parser: str, blame: list[dict[str, object]], blame_error: str | None, collision: int) -> dict[str, object]:
-    body = re.sub(r"^\s*(//|#|--|/\*+|\*+|<!--|'''|\"\"\")|(?:\*/|-->|'''|\"\"\")\s*$", "", raw, flags=re.M).strip()
+    body = _comment_body(raw)
     symbol = None
     before = data[:start].decode("utf-8", errors="replace")
     names = re.findall(r"(?:function|class|def|struct|fn)\s+([A-Za-z_]\w*)", before[-2000:])

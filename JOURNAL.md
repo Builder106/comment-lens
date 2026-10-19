@@ -4,7 +4,7 @@
 
 ## 2026-10-19: Group adjacent line comments for review #decision #scanner
 
-The scanner groups adjacent standalone line comments into one review item. Inline comments and blocks separated by blank lines stay separate.
+The scanner groups adjacent standalone line comments into one review item. Inline comments, TODO/FIXME directives, and blocks separated by blank lines stay separate.
 
 ## 2026-10-18: Use neutral surfaces in the redesigned UI #decision #design
 
