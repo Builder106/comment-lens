@@ -1,10 +1,10 @@
 # Comment Lens
 
-Comment Lens is an intelligent code comment review dashboard and extraction workspace. It pairs an AST-driven comment scanner with a task-oriented dashboard to review, triage, and evaluate code comments, actionable TODOs, and architectural notes across repositories.
+Comment Lens extracts code comments and gives maintainers a place to review them. The hosted workspace pairs each comment with source context and scanner evidence, then records a decision without changing repository files. A local CLI, CI reports, and a VS Code adapter use the same scanner findings.
 
 ## Architecture
 
-- **Dashboard**: Next.js App Router workspace with task-first connection, scan state handling, and queue-based comment review.
+- **Review workspace**: Next.js App Router interface for repository scans, evidence inspection, review decisions, export, and maintenance history.
 - **Scanner**: Python-based AST extractor utilizing Tree-sitter with Pygments fallback to extract comments and code context while enforcing strict retention boundaries.
 - **Worker & Ingestion**: Signed ingestion pipeline and control-plane dispatch workflow for asynchronous repository analysis.
 - **Database**: Drizzle ORM schema backed by PostgreSQL for scan metadata and comment records.
@@ -13,13 +13,12 @@ Comment Lens is an intelligent code comment review dashboard and extraction work
 
 ```
 ├── app/                  # Next.js App Router routes and layouts
-├── components/           # UI components including CommentLensDashboard
+├── components/           # Review workspace UI
 ├── contracts/            # Type definitions and request/response contracts
 ├── db/                   # Drizzle ORM schema, migrations, and database client
 ├── lib/                  # Shared utilities and server helpers
 ├── scanner/              # Python Tree-sitter comment extraction engine
 ├── editor/vscode/         # Local VS Code diagnostics adapter
-├── styles/               # CSS tokens and styling
 ├── tests/                # Unit, integration, and performance tests
 └── worker/               # Ingestion upload and failure notification scripts
 ```
@@ -239,8 +238,8 @@ After deployment and configuration verification, use an authorized account:
 
 #### Failure, retry, and retention behavior
 
-If dispatch fails, the scan is marked failed and the dashboard exposes a retry
-action. If parsing or upload fails, the workflow's failure job notifies the
+If dispatch fails, the scan is marked failed and the workspace lets you start
+another scan. If parsing or upload fails, the workflow's failure job notifies the
 control plane and marks the scan failed. Review the GitHub Actions run before
 retrying; retries create a new scan attempt rather than changing a completed
 scan.

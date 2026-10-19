@@ -1,6 +1,14 @@
-# JOURNAL — Comment Lens
+# Comment Lens journal
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
+
+## 2026-10-18: Use neutral surfaces in the redesigned UI #decision #design
+
+Replace the warm cream backgrounds with neutral gray-white surfaces and cool gray rules. Keep graphite text, cobalt accents, and the existing page composition.
+
+## 2026-10-18: Build the evidence-first review workspace #decision #design
+
+The replacement frontend keeps the repository and scan visible above a filterable comment queue and selected evidence. Rule contributions shape a small evidence trace drawn from scan data. Review decisions, JSON export, browser-local maintenance history, and opt-in Gemini requests stay beside the relevant comment or scan. The interface uses the existing hosted API contracts and keeps scan, error, empty, protected, and mobile detail states explicit. Browser coverage should now be written for these journeys before a release gate is restored.
 
 ## 2026-10-18: Retire provisional dashboard UI tests #decision #testing
 
