@@ -5,10 +5,7 @@ import { getOwnedComment } from "../../../../../lib/server/data";
 import { requestGeminiAssistance } from "../../../../../lib/server/gemini-assistance";
 import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL } from "../../../../../lib/server/gemini-assessment";
 import { handleError, jsonError } from "../../../../../lib/server/http";
-
-function sensitivePath(path: string): boolean {
-  return path.split("/").some((part) => /^(?:\.env(?:\..*)?|\.npmrc|\.pypirc|\.ssh|id_(?:rsa|ed25519)|(?:secrets?|credentials?)(?:[._-].*)?)$/i.test(part) || /\.(?:pem|key|p12|pfx)$/i.test(part));
-}
+import { sensitivePath } from "../../../../../lib/server/sensitive-path";
 
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {

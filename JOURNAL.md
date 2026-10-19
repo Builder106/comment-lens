@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Add whole-scan review batches #feature #review
+
+The workspace can prepare retained suggestions in five-comment Gemini batches, default to unchanged, skip protected and sensitive comments before sending, and resume from saved outcomes. Comment text is always disclosed before start; source excerpts stay opt-in. Suggestions remain review-only and do not modify repository files.
+
 ## 2026-10-19: Group adjacent line comments for review #decision #scanner
 
 The scanner groups adjacent standalone line comments into one review item. Inline comments, TODO/FIXME directives, and blocks separated by blank lines stay separate.

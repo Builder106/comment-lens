@@ -3,7 +3,7 @@ import { createHash, createHmac } from "node:crypto";
 import test from "node:test";
 import { and, eq } from "drizzle-orm";
 import { listComments } from "../../lib/server/data";
-import { assessments, chunks, commentIdentities, comments, repositoryInstallations, reviewDecisions, scans } from "../../db/schema";
+import { assessments, chunks, commentIdentities, comments, repositoryInstallations, reviewDecisions, scans, scanImprovements } from "../../db/schema";
 import { POST as uploadChunk } from "../../app/api/worker/scans/[scanId]/chunks/route";
 import { POST as completeScan } from "../../app/api/worker/scans/[scanId]/complete/route";
 import { GET as runRetention } from "../../app/api/cron/retention/route";
@@ -175,11 +175,24 @@ integration("the retention route removes expired scan data and orphaned review r
     { identityId: "identity-expired", commentId: "comment-expired", ownerId: "u-a", providerId: "test", model: "test", promptVersion: "1", contextScope: "comment_only", payload: {}, retentionUntil: new Date(Date.now() + 86_400_000) },
     { identityId: "identity-shared", commentId: "comment-shared-current", ownerId: "u-a", providerId: "test", model: "test", promptVersion: "1", contextScope: "comment_only", payload: {}, retentionUntil: new Date(0) },
   ]);
+  await fixture.db.insert(scanImprovements).values({
+    scanId: "scan-active",
+    commentId: "comment-shared-current",
+    identityId: "identity-shared",
+    ownerId: "u-a",
+    providerId: "google-gemini",
+    model: "gemini-test",
+    promptVersion: "comment-improvement-v1",
+    contextScope: "comment_only",
+    payload: { commentId: "comment-shared-current", outcome: "leave_as_is" },
+    retentionUntil: new Date(0),
+  });
 
   const response = await runRetention(new Request("https://comment-lens.test/api/cron/retention", { headers: { authorization: "Bearer test-cron-secret-at-least-16" } }));
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.expiredScans, 1);
+  assert.equal(result.expiredImprovements, 1);
   assert.equal(result.removedIdentities, 1);
   assert.equal((await fixture.db.select().from(scans).where(eq(scans.id, "scan-expired"))).length, 0);
   assert.equal((await fixture.db.select().from(scans).where(eq(scans.id, "scan-active"))).length, 1);
@@ -187,6 +200,7 @@ integration("the retention route removes expired scan data and orphaned review r
   assert.equal((await fixture.db.select().from(commentIdentities).where(eq(commentIdentities.id, "identity-expired"))).length, 0);
   assert.equal((await fixture.db.select().from(reviewDecisions)).length, 1);
   assert.equal((await fixture.db.select().from(assessments)).length, 0);
+  assert.equal((await fixture.db.select().from(scanImprovements)).length, 0);
 });
 
 if (fixture) test.after(async () => closePostgresFixture(fixture.pool));

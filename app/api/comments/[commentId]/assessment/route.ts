@@ -6,6 +6,7 @@ import { requireSession } from "../../../../../lib/server/auth";
 import { getOwnedComment, getOwnedScan } from "../../../../../lib/server/data";
 import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL, requestGeminiAssessment } from "../../../../../lib/server/gemini-assessment";
 import { jsonError } from "../../../../../lib/server/http";
+import { sensitivePath } from "../../../../../lib/server/sensitive-path";
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
     const session = await requireSession();
@@ -15,6 +16,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ com
     const input = AssessmentRequest.parse(await request.json());
     const scan = await getOwnedScan(input.scanId, session);
     const comment = await getOwnedComment(commentId, input.scanId, session);
+    if (sensitivePath(comment.path)) return jsonError("forbidden", "Assisted review is unavailable for sensitive paths", 403);
     const payload = comment.payload as Partial<CommentRecord>;
     const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
     const assessment = await requestGeminiAssessment({ commentId, comment: comment.bodyText, language: comment.language, kind: CommentRecord.shape.kind.parse(comment.kind), symbol: payload.symbol ?? null, context: input.sourceContext === "comment_only" ? null : comment.context, findings: payload.score?.findings ?? [] }, createGeminiAssessmentClient(apiKey), model);

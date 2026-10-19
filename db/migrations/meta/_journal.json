@@ -15,6 +15,13 @@
       "when": 1791898901000,
       "tag": "0001_assessment_retention",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792444079216,
+      "tag": "0002_scan_improvements",
+      "breakpoints": true
     }
   ]
 }

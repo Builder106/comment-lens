@@ -1,11 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "../../../db/schema";
 
-const migrationPath = resolve(dirname(fileURLToPath(import.meta.url)), "../../../db/migrations/0000_wise_maginty.sql");
+const migrationDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "../../../db/migrations");
 
 export async function createPostgresFixture() {
   const url = process.env.COMMENT_LENS_TEST_DATABASE_URL ?? process.env.DATABASE_URL;
@@ -15,9 +15,12 @@ export async function createPostgresFixture() {
   const db = drizzle(pool, { schema });
   await pool.query("DROP SCHEMA public CASCADE");
   await pool.query("CREATE SCHEMA public");
-  const migration = await readFile(migrationPath, "utf8");
-  for (const statement of migration.split(/--> statement-breakpoint/).map((part) => part.trim()).filter(Boolean)) {
-    await pool.query(statement);
+  const migrations = (await readdir(migrationDirectory)).filter((name) => /^\d+_.+\.sql$/.test(name)).sort();
+  for (const name of migrations) {
+    const migration = await readFile(resolve(migrationDirectory, name), "utf8");
+    for (const statement of migration.split(/--> statement-breakpoint/).map((part) => part.trim()).filter(Boolean)) {
+      await pool.query(statement);
+    }
   }
   return { db, pool };
 }

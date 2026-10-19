@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { CommentImprovement, ScanImprovementRequest } from "../index.ts";
 
 const schemaPath = fileURLToPath(new URL("../schema.json", import.meta.url));
 
@@ -28,6 +29,32 @@ test("schema declares worker and manifest contracts", async () => {
   assert.ok(schema.$defs.workerFailureResponse);
   assert.ok(schema.$defs.scan);
   assert.ok(schema.$defs.scanList);
+  assert.ok(schema.$defs.commentImprovement);
+  assert.ok(schema.$defs.scanImprovementRequest);
+  assert.ok(schema.$defs.scanImprovements);
+  assert.ok(schema.$defs.scanImprovementBatchResponse);
+});
+
+test("whole-scan outcomes require rewrite text only for suggested edits", () => {
+  const base = {
+    commentId: "comment-1",
+    reasons: ["The sentence is clear."],
+    providerId: "google-gemini",
+    modelId: "gemini-test",
+    promptVersion: "comment-improvement-v1",
+    contextScope: "comment_only",
+    assessedAt: "2026-10-19T12:00:00.000Z",
+  };
+  assert.equal(CommentImprovement.safeParse({ ...base, outcome: "leave_as_is", suggestedRewrite: null }).success, true);
+  assert.equal(CommentImprovement.safeParse({ ...base, outcome: "suggest_rewrite", suggestedRewrite: "// Clear wording." }).success, true);
+  assert.equal(CommentImprovement.safeParse({ ...base, outcome: "suggest_rewrite", suggestedRewrite: null }).success, false);
+  assert.equal(CommentImprovement.safeParse({ ...base, outcome: "leave_as_is", suggestedRewrite: "// Changed wording." }).success, false);
+});
+
+test("whole-scan batches require unique comment identifiers", () => {
+  const request = { schemaVersion: 1, scanId: "scan-1", commentIds: ["comment-1", "comment-2"] };
+  assert.equal(ScanImprovementRequest.safeParse(request).success, true);
+  assert.equal(ScanImprovementRequest.safeParse({ ...request, commentIds: ["comment-1", "comment-1"] }).success, false);
 });
 
 test("v1 preserves the review and assessment boundaries", async () => {

@@ -1,6 +1,6 @@
 import { count, eq, inArray, lte, notExists } from "drizzle-orm";
 import { requireTransactionalDb } from "../../db";
-import { assessments, chunks, commentIdentities, comments, reviewDecisions, scans } from "../../db/schema";
+import { assessments, chunks, commentIdentities, comments, reviewDecisions, scans, scanImprovements } from "../../db/schema";
 
 export async function purgeExpiredData(now = new Date()) {
   const db = requireTransactionalDb();
@@ -13,6 +13,7 @@ export async function purgeExpiredData(now = new Date()) {
     await tx.delete(comments).where(inArray(comments.scanId, expiredScanIds));
     await tx.delete(scans).where(inArray(scans.id, expiredScanIds));
 
+    const expiredImprovements = await tx.delete(scanImprovements).where(lte(scanImprovements.retentionUntil, now)).returning({ commentId: scanImprovements.commentId });
     const expiredAssessments = await tx.delete(assessments).where(lte(assessments.retentionUntil, now)).returning({ id: assessments.identityId });
     const orphanIdentityIds = tx.select({ id: commentIdentities.id }).from(commentIdentities).where(
       notExists(tx.select({ id: comments.id }).from(comments).where(eq(comments.identityId, commentIdentities.id))),
@@ -24,6 +25,7 @@ export async function purgeExpiredData(now = new Date()) {
 
     return {
       expiredScans: Number(expiredScanCount?.value ?? 0),
+      expiredImprovements: expiredImprovements.length,
       expiredAssessments: expiredAssessments.length,
       removedIdentities: removedIdentities.length,
     };

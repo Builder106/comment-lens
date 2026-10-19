@@ -97,6 +97,16 @@ export const AssessmentRequest = z.object({ schemaVersion: z.literal(CONTRACT_SC
 export type AssessmentRequest = z.infer<typeof AssessmentRequest>;
 export const AssessmentResponse = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), assessment: GeminiAssessmentOutput }).strict();
 export type AssessmentResponse = z.infer<typeof AssessmentResponse>;
+export const CommentImprovementOutcome = z.enum(["leave_as_is", "suggest_rewrite", "needs_human_review"]);
+export type CommentImprovementOutcome = z.infer<typeof CommentImprovementOutcome>;
+export const CommentImprovement = z.object({ commentId: id, outcome: CommentImprovementOutcome, reasons: z.array(z.string().min(1).max(1000)).min(1).max(3), suggestedRewrite: z.string().min(1).max(4000).nullable(), providerId: z.string().min(1), modelId: z.string().min(1), promptVersion: z.string().min(1), contextScope: z.enum(["not_sent", "comment_only", "comment_and_code"]), assessedAt: isoDate }).strict().superRefine((value, context) => { if (value.outcome === "suggest_rewrite" && !value.suggestedRewrite) context.addIssue({ code: z.ZodIssueCode.custom, path: ["suggestedRewrite"], message: "A rewrite suggestion must include replacement text" }); if (value.outcome !== "suggest_rewrite" && value.suggestedRewrite !== null) context.addIssue({ code: z.ZodIssueCode.custom, path: ["suggestedRewrite"], message: "Only rewrite suggestions may include replacement text" }); });
+export type CommentImprovement = z.infer<typeof CommentImprovement>;
+export const ScanImprovementRequest = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), scanId: id, commentIds: z.array(id).min(1).max(5), includeCodeContext: z.boolean().default(false) }).strict().superRefine((value, context) => { if (new Set(value.commentIds).size !== value.commentIds.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ["commentIds"], message: "Comment IDs must be unique" }); });
+export type ScanImprovementRequest = z.infer<typeof ScanImprovementRequest>;
+export const ScanImprovementsResponse = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), configured: z.boolean(), improvements: z.array(CommentImprovement) }).strict();
+export type ScanImprovementsResponse = z.infer<typeof ScanImprovementsResponse>;
+export const ScanImprovementBatchResponse = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), improvements: z.array(CommentImprovement).min(1).max(5) }).strict();
+export type ScanImprovementBatchResponse = z.infer<typeof ScanImprovementBatchResponse>;
 export const FindingAssistanceRequest = z.object({ schemaVersion: z.literal(CONTRACT_SCHEMA_VERSION), scanId: id, ruleId: z.string().min(1).max(128), includeCodeContext: z.boolean().default(false) }).strict();
 export type FindingAssistanceRequest = z.infer<typeof FindingAssistanceRequest>;
 export const FindingAssistance = z.object({ commentId: id, ruleId: z.string().min(1).max(128), providerId: z.string().min(1), modelId: z.string().min(1), promptVersion: z.string().min(1), whyItMatters: z.string().min(1).max(1000), relationship: z.string().min(1).max(1000), recommendation: z.enum(["keep", "rewrite", "remove", "investigate"]), suggestedRewrite: z.string().max(4000).nullable(), assessedAt: isoDate }).strict();
