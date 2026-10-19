@@ -154,6 +154,24 @@ def test_protected_patterns() -> None:
     assert _protected("standard developer note") is False
 
 
+def test_group_adjacent_standalone_line_comments() -> None:
+    data = b"# first\n#\n# second\n\n# separated\ncode  # inline\n# after inline\n"
+    tokens = (b"# first", b"#", b"# second", b"# separated", b"# inline", b"# after inline")
+    comments = []
+    for token in tokens:
+        start = data.index(token)
+        comments.append((start, start + len(token), "line", token.decode()))
+
+    grouped = core._group_adjacent_line_comments(data, comments)
+
+    assert [comment[3] for comment in grouped] == [
+        "# first\n#\n# second",
+        "# separated",
+        "# inline",
+        "# after inline",
+    ]
+
+
 def test_extract_fallback_tree_sitter_and_pygments() -> None:
     data = b"# Single line comment\n'''\nBlock comment\n'''\ndef test():\n    pass\n"
 

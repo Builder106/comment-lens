@@ -35,6 +35,7 @@ SCHEMA_VERSION = 1
 RULES_VERSION = "1"
 MAX_FILE_BYTES = 5 * 1024 * 1024
 MAX_CONTEXT_BYTES = 8 * 1024
+MAX_COMMENT_BYTES = 64 * 1024
 DEFAULT_EXCLUSIONS = (".git", "node_modules", ".dart_tool", "build", "dist", "coverage", "target", ".venv", "Pods", "DerivedData", "vendor", "third_party", "generated")
 GENERATED_SUFFIXES = (".g.dart", ".freezed.dart")
 FILENAMES = {"CMakeLists.txt", "Dockerfile", "Makefile", "Podfile"}
@@ -177,6 +178,30 @@ def _protected(body: str) -> bool:
         or re.fullmatch(r"(?:TODO|FIXME)(?:\s*[:\-].*)?", normalized, re.I)
     )
 
+def _group_adjacent_line_comments(data: bytes, comments: list[tuple[int, int, str, str]]) -> list[tuple[int, int, str, str]]:
+    grouped: list[tuple[int, int, str, str]] = []
+    for start, end, kind, raw in sorted(comments, key=lambda item: item[0]):
+        if grouped:
+            previous_start, previous_end, previous_kind, _ = grouped[-1]
+            between = data[previous_end:start] if start >= previous_end else b"\0"
+            previous_ends_at_line_start = previous_end > previous_start and data[previous_end - 1:previous_end] == b"\n"
+            previous_prefix_start = data.rfind(b"\n", 0, previous_start) + 1
+            current_prefix_start = data.rfind(b"\n", 0, start) + 1
+            previous_is_standalone = not data[previous_prefix_start:previous_start].strip(b" \t\r")
+            current_is_standalone = not data[current_prefix_start:start].strip(b" \t\r")
+            if (
+                previous_kind == kind == "line"
+                and between.count(b"\n") == (0 if previous_ends_at_line_start else 1)
+                and not between.strip(b" \t\r\n")
+                and previous_is_standalone
+                and current_is_standalone
+                and end - previous_start <= MAX_COMMENT_BYTES
+            ):
+                grouped[-1] = (previous_start, end, "line", data[previous_start:end].decode("utf-8", errors="replace"))
+                continue
+        grouped.append((start, end, kind, raw))
+    return grouped
+
 def _extract_fallback(data: bytes, path: str, *, offline: bool = False) -> tuple[list[tuple[int, int, str, str]], str | None, list[Diagnostic]]:
     text = data.decode("utf-8")
     found: list[tuple[int, int, str, str]] = []
@@ -194,7 +219,7 @@ def _extract_fallback(data: bytes, path: str, *, offline: bool = False) -> tuple
             for node in nodes:
                 raw = data[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
                 found.append((node.start_byte, node.end_byte, "block" if raw.lstrip().startswith(("/*", "<!--", "'''", '"""')) else "line", raw))
-            return sorted(found), "tree-sitter", diagnostics
+            return _group_adjacent_line_comments(data, found), "tree-sitter", diagnostics
         except Exception as error:
             diagnostics.append(Diagnostic(path, "warning", "parse_failed", f"Tree-sitter parse failed: {error}"))
     else:
@@ -216,7 +241,7 @@ def _extract_fallback(data: bytes, path: str, *, offline: bool = False) -> tuple
                 end = len(text[:cursor].encode("utf-8"))
                 if token in CommentToken or str(token).startswith("Token.Comment"):
                     found.append((start, end, "line" if "Single" in str(token) else "block", value))
-            return found, "pygments", diagnostics
+            return _group_adjacent_line_comments(data, found), "pygments", diagnostics
         except Exception as error:
             diagnostics.append(Diagnostic(path, "warning", "parse_failed", f"Pygments parse failed: {error}"))
     return [], None, diagnostics
