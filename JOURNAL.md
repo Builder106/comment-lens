@@ -6,6 +6,10 @@
 
 The scanner groups adjacent standalone line comments into one review item. Inline comments, TODO/FIXME directives, and blocks separated by blank lines stay separate.
 
+## 2026-10-19: Add a cautious whole-scan improvement path #direction #review
+
+Keep one-comment-at-a-time review and add an opt-in whole-scan workflow that can leave comments unchanged, suggest narrow wording edits, or route uncertain cases to a person. Show a summary and diff, and require an explicit action before creating a patch or pull request; never merge generated edits automatically.
+
 ## 2026-10-18: Use neutral surfaces in the redesigned UI #decision #design
 
 Replace the warm cream backgrounds with neutral gray-white surfaces and cool gray rules. Keep graphite text, cobalt accents, and the existing page composition.

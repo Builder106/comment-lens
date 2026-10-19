@@ -103,16 +103,23 @@ The dashboard should aggregate local and CI results without making the CLI depen
 
 ## Phase 4: optional assisted review
 
-Add artificial intelligence only where it improves a selected finding and preserves user control. The existing optional Gemini integration can support this phase.
+Keep the existing one-finding Gemini guidance for people who want to review comments one at a time. Add a separate, opt-in whole-scan workflow for people who want Comment Lens to prepare improvements across a scan.
 
 Potential capabilities include:
 
 - Explaining why a finding may matter
 - Summarizing the code and comment relationship
-- Suggesting a replacement or removal for a selected comment
+- Suggesting a replacement for a selected comment
 - Grouping related findings for a maintainer review session
+- Reviewing all comments in a scan and preparing safe wording edits in one pass
 
-Assisted review must remain opt-in, non-blocking, server-side, and bounded to the selected finding and its required context. Comment Lens must never rewrite or delete repository content automatically in the first assisted-review release.
+The whole-scan workflow must return one of three outcomes for each comment: leave it as-is, suggest a rewrite, or ask for human review. Leaving a good comment unchanged is an expected result. Scanner scores and rule matches may order review work, but they must not decide whether prose needs improvement.
+
+Only suggest narrow clarity or grammar edits that preserve technical meaning. Keep protected comments and comments on sensitive paths unchanged, and send ambiguous cases to human review. Do not suggest deleting comments in the whole-scan workflow.
+
+Show a summary and the exact diff before any proposed change reaches a repository. Let users inspect suggestions individually or create one reviewable batch proposal. Creating a patch or pull request requires an explicit user action. Never commit to the default branch or merge a proposal automatically.
+
+Assisted review must remain opt-in, non-blocking, and server-side. The existing one-finding request stays bounded to its selected finding and required context. For whole-scan review, explain what comment text and source context will be sent before the user starts; source context remains a separate opt-in choice. Do not rewrite or delete repository content without an explicit user action.
 
 ## Phase 5: editor integration
 
@@ -154,6 +161,8 @@ Comment Lens should preserve these boundaries as it expands:
 - Add sensitive-path exclusions and optional context redaction before expanding uploads
 - Keep deterministic findings reproducible without an artificial intelligence provider
 - Keep optional assisted review separate from blocking policy evaluation
+- Treat whole-scan suggestions as proposals and require an explicit action before creating a patch or pull request
+- Never merge generated comment edits automatically
 - Avoid becoming a general code reviewer, issue tracker, or autonomous refactoring tool
 
 ## Verification gates
@@ -181,6 +190,9 @@ Comment Lens reaches the next maturity level when:
 - A team can introduce CI checks without fixing historical findings first
 - Every blocking finding includes deterministic evidence and a source location
 - Local, CI, and dashboard results use compatible identifiers and meanings
+- A reviewer can inspect comments one at a time or prepare a whole-scan batch
+- Whole-scan review leaves sound comments unchanged, proposes limited wording edits, and routes uncertainty to a person
+- Every batch change is visible in a diff and requires an explicit action before it reaches a repository
 - The dashboard shows maintenance trends rather than only a single scan result
 - Optional artificial intelligence improves selected reviews without becoming a required dependency
 
