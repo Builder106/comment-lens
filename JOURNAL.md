@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-20: Review comments for maintainers #decision #gemini
+
+Scan-wide Gemini review now asks whether a developer can understand each comment beside its code. It leaves clear comments alone, keeps informal wording, and uses lowercase openings for suggested edits. The server rejects emoji in suggested text and routes existing emoji to a person when removal may change meaning.
+
 ## 2026-10-19: Add whole-scan review batches #feature #review
 
 The workspace can prepare retained suggestions in five-comment Gemini batches, default to unchanged, skip protected and sensitive comments before sending, and resume from saved outcomes. Comment text is always disclosed before start; source excerpts stay opt-in. Suggestions remain review-only and do not modify repository files.
