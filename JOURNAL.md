@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Filter Gemini review candidates #feature #review
+
+The queue can filter for suggested edits or comments that need a person. The combined candidate view keeps the existing priority order across pages, and its count in the batch summary opens that filtered queue.
+
 ## 2026-10-20: Review comments for maintainers #decision #gemini
 
 Scan-wide Gemini review now asks whether a developer can understand each comment beside its code. It leaves clear comments alone, keeps informal wording, and uses lowercase openings for suggested edits. The server rejects emoji in suggested text and routes existing emoji to a person when removal may change meaning.

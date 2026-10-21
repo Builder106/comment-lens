@@ -2,8 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import type { CommentImprovementOutcome, CommentKind } from "../../contracts";
 import type { GeminiAssessmentClient } from "./gemini-assessment";
+import { SCAN_IMPROVEMENT_PROMPT_VERSION } from "./scan-improvement-version";
 
-export const SCAN_IMPROVEMENT_PROMPT_VERSION = "comment-improvement-v2";
+export { SCAN_IMPROVEMENT_PROMPT_VERSION } from "./scan-improvement-version";
 
 const EMOJI_PATTERN = /(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F|\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|\p{Emoji_Modifier})/u;
 

@@ -15,6 +15,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ scan
     const session = await requireSession();
     const { scanId } = await params;
     const url = new URL(request.url);
+    const geminiReviewValue = url.searchParams.get("geminiReview");
+    const geminiReview = geminiReviewValue === null ? undefined : z.enum(["candidates", "suggest_rewrite", "needs_human_review"]).parse(geminiReviewValue);
     const query = CommentQuery.parse({
       schemaVersion: Number(url.searchParams.get("schemaVersion") ?? CONTRACT_SCHEMA_VERSION),
       scanId: url.searchParams.get("scanId") ?? scanId,
@@ -35,7 +37,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ scan
       pageSize: url.searchParams.has("pageSize") ? Number(url.searchParams.get("pageSize")) : undefined,
     });
     if (query.scanId !== scanId) throw new Error("FORBIDDEN");
-    const result = await listComments(scanId, query, session);
+    const result = await listComments(scanId, { ...query, geminiReview }, session);
     const response = CommentPageResponse.parse({
       schemaVersion: CONTRACT_SCHEMA_VERSION,
       items: result.items.map((row) => row.comment.payload),

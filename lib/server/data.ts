@@ -1,12 +1,16 @@
-import { and, asc, count, desc, eq, gte, ilike, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, exists, gt, gte, ilike, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { requireDb } from "../../db";
-import { assessments, chunks, commentIdentities, comments, repositoryInstallations, reviewDecisions, scans } from "../../db/schema";
+import { assessments, chunks, commentIdentities, comments, repositoryInstallations, reviewDecisions, scanImprovements, scans } from "../../db/schema";
 import { ScanRecord as ScanRecordSchema, type CommentQuery } from "../../contracts";
 import type { SessionPayload } from "./auth";
+import { SCAN_IMPROVEMENT_PROMPT_VERSION } from "./scan-improvement-version";
+
+type GeminiReviewFilter = "candidates" | "suggest_rewrite" | "needs_human_review";
 
 export type CommentListOptions = Partial<Pick<CommentQuery, "q" | "status" | "language" | "kind" | "path" | "minScore" | "maxScore" | "author" | "protected" | "generated" | "license" | "todo" | "sort">> & {
   page: number;
   pageSize: number;
+  geminiReview?: GeminiReviewFilter;
 };
 
 export function assertScanOwner(scan: { ownerId: string }, session: SessionPayload) {
@@ -58,7 +62,7 @@ export async function getLatestOwnedComment(commentId: string, session: SessionP
   return row.comment;
 }
 
-function commentConditions(scanId: string, options: CommentListOptions) {
+function commentConditions(scanId: string, options: CommentListOptions, db: ReturnType<typeof requireDb>, ownerId?: string) {
   const conditions = [eq(comments.scanId, scanId)];
   if (options.q) {
     const term = `%${options.q}%`;
@@ -76,6 +80,21 @@ function commentConditions(scanId: string, options: CommentListOptions) {
   if (options.generated !== undefined) conditions.push(eq(comments.generated, options.generated));
   if (options.license !== undefined) conditions.push(eq(comments.license, options.license));
   if (options.todo !== undefined) conditions.push(eq(comments.todoOnly, options.todo));
+  if (options.geminiReview) {
+    const outcome = sql<string>`${scanImprovements.payload}->>'outcome'`;
+    const outcomeCondition = options.geminiReview === "candidates"
+      ? inArray(outcome, ["suggest_rewrite", "needs_human_review"])
+      : eq(outcome, options.geminiReview);
+    const improvementConditions = [
+      eq(scanImprovements.scanId, scanId),
+      eq(scanImprovements.commentId, comments.id),
+      eq(scanImprovements.promptVersion, SCAN_IMPROVEMENT_PROMPT_VERSION),
+      gt(scanImprovements.retentionUntil, new Date()),
+      outcomeCondition,
+    ];
+    if (ownerId) improvementConditions.push(eq(scanImprovements.ownerId, ownerId));
+    conditions.push(exists(db.select({ commentId: scanImprovements.commentId }).from(scanImprovements).where(and(...improvementConditions))));
+  }
   return conditions;
 }
 
@@ -89,7 +108,7 @@ function orderByFor(sort: CommentListOptions["sort"]) {
 export async function listComments(scanId: string, options: CommentListOptions, session?: SessionPayload) {
   const db = requireDb();
   if (session) await getOwnedScan(scanId, session);
-  const conditions = commentConditions(scanId, options);
+  const conditions = commentConditions(scanId, options, db, session?.githubUserId);
   const offset = (options.page - 1) * options.pageSize;
   const [totalRow, rows] = await Promise.all([
     db.select({ value: count() }).from(comments).leftJoin(reviewDecisions, eq(reviewDecisions.identityId, comments.identityId)).where(and(...conditions)),
