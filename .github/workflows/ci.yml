@@ -85,12 +85,18 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v9
+      - name: Reject Any in Python annotations
+        run: uvx --from ruff==0.17.1 ruff check --select ANN401 scanner worker
       - name: Install scanner and test dependencies
         run: python -m pip install --upgrade pip && python -m pip install -e scanner pytest
       - name: Run scanner tests
         run: python -m pytest scanner/tests
       - name: Run worker tests
         run: python -m unittest discover worker -p 'test_*.py'
+        env:
+          PYTHONWARNINGS: "error::DeprecationWarning"
 
   deploy:
     name: Trigger Vercel Deployment

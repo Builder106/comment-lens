@@ -105,3 +105,7 @@ Replaced the initial landing-page treatment with a task-first review workspace. 
 ## 2026-08-30: Comment Lens production boundaries #decision #security
 
 Kept Tree-sitter as the primary parser with Pygments fallback, retained only comments and short source context, and separated deterministic review-priority scoring from optional on-demand AI assessment. GitHub App installation tokens, signed worker chunks, and owner-scoped persistence form the security boundary without modifying any target repository files.
+
+## 2026-10-23: Reject Any annotations and deprecated APIs #decision
+
+Ruff ANN401 now covers the scanner and worker Python code. Scanner and worker tests fail on Python DeprecationWarning, and Ruff runs from a pinned CI-only command.
