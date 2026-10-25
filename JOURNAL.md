@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-24: Add brand favicon and application icons #branding #design
+
+Add adaptive vector SVG icons and multi-resolution ICO assets for Comment Lens, replacing the default Next.js placeholder. The icon places the three tilted cobalt comment lines on a neutral plate with hairline borders and light/dark scheme adaptation, matching the workspace brand mark.
+
 ## 2026-10-21: Filter Gemini review candidates #feature #review
 
 The queue can filter for suggested edits or comments that need a person. The combined candidate view keeps the existing priority order across pages, and its count in the batch summary opens that filtered queue.

@@ -5,6 +5,13 @@ import "./workspace.css";
 export const metadata: Metadata = {
   title: "Review workspace | Comment Lens",
   description: "Inspect code comments, review the evidence, and record decisions for a repository scan.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #D9DDE3; }
+    .bar { fill: #315CC6; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #181B20; stroke: #2E3339; }
+      .bar { fill: #4B7CF6; }
+    }
+  </style>
+  <rect class="bg" x="1" y="1" width="30" height="30" rx="6.5" stroke-width="1.5"/>
+  <g transform="rotate(-11 16 16)">
+    <rect class="bar" x="10.5" y="8.5" width="13.5" height="3.2" rx="1.6"/>
+    <rect class="bar" x="6" y="14.4" width="20" height="3.2" rx="1.6"/>
+    <rect class="bar" x="7.5" y="20.3" width="13" height="3.2" rx="1.6"/>
+  </g>
+</svg>
