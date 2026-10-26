@@ -51,10 +51,21 @@ def request_json(url: str, body: bytes, secret: bytes, request_id: str, reposito
                     raise RuntimeError(f"Upload returned HTTP {response.status}")
             return
         except urllib.error.HTTPError as error:
+            detail = ""
+            try:
+                payload = json.loads(error.read(4096).decode("utf-8"))
+                response_error = payload.get("error") if isinstance(payload, dict) else None
+                if isinstance(response_error, dict):
+                    code = response_error.get("code")
+                    message = response_error.get("message")
+                    if isinstance(code, str) and isinstance(message, str):
+                        detail = f" ({code}: {message[:500]})"
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                pass
             if error.code < 500 and error.code != 429:
-                raise RuntimeError(f"Upload rejected with HTTP {error.code}") from error
+                raise RuntimeError(f"Upload rejected with HTTP {error.code}{detail}") from error
             if attempt == 3:
-                raise RuntimeError(f"Upload failed with HTTP {error.code}") from error
+                raise RuntimeError(f"Upload failed with HTTP {error.code}{detail}") from error
         except (urllib.error.URLError, TimeoutError) as error:
             if attempt == 3:
                 raise RuntimeError("Upload failed after retries") from error

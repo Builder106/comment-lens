@@ -1,7 +1,9 @@
 import hashlib
 import hmac
+import io
 import json
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 from upload_scan import build_chunks, request_json
@@ -46,6 +48,18 @@ class UploadScanTests(unittest.TestCase):
         self.assertEqual(captured["X-comment-lens-signature"], f"sha256={expected}")
         self.assertEqual(captured["X-comment-lens-timestamp"], "1700000000")
         self.assertEqual(captured["X-comment-lens-repository-id"], "owner/repo")
+
+    def test_http_errors_include_only_structured_api_details(self) -> None:
+        error = urllib.error.HTTPError(
+            "https://example.test/api",
+            409,
+            "Conflict",
+            None,
+            io.BytesIO(b'{"error":{"code":"conflict","message":"Incomplete chunk set","requestId":"request-1"}}'),
+        )
+        with patch("upload_scan.urllib.request.urlopen", side_effect=error):
+            with self.assertRaisesRegex(RuntimeError, "HTTP 409 \\(conflict: Incomplete chunk set\\)"):
+                request_json("https://example.test/api", b"{}", b"secret", "scan-1:0", "owner/repo")
 
 
 if __name__ == "__main__":
