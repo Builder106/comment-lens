@@ -8,7 +8,7 @@ import { handleError } from "../../../../../lib/server/http";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const { commentId } = await params;
     const body = ReviewDecisionRequest.parse(await request.json());
     const comment = await getLatestOwnedComment(commentId, session);

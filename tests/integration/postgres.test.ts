@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createHash, createHmac } from "node:crypto";
+import { createHash, createHmac, generateKeyPairSync } from "node:crypto";
 import test from "node:test";
 import { and, eq } from "drizzle-orm";
 import { listComments } from "../../lib/server/data";
@@ -7,6 +7,11 @@ import { assessments, chunks, commentIdentities, comments, repositoryInstallatio
 import { POST as uploadChunk } from "../../app/api/worker/scans/[scanId]/chunks/route";
 import { POST as completeScan } from "../../app/api/worker/scans/[scanId]/complete/route";
 import { GET as runRetention } from "../../app/api/cron/retention/route";
+import { GET as readScan } from "../../app/api/scans/[scanId]/route";
+import { GET as readComments } from "../../app/api/scans/[scanId]/comments/route";
+import { GET as exportScan } from "../../app/api/scans/[scanId]/export/route";
+import { PATCH as reviewComment } from "../../app/api/comments/[commentId]/review/route";
+import { POST as createScan } from "../../app/api/scans/route";
 import { closePostgresFixture, createPostgresFixture, resetPostgresFixture } from "../fixtures/postgres/factory";
 
 const fixture = await createPostgresFixture();
@@ -201,6 +206,104 @@ integration("the retention route removes expired scan data and orphaned review r
   assert.equal((await fixture.db.select().from(reviewDecisions)).length, 1);
   assert.equal((await fixture.db.select().from(assessments)).length, 0);
   assert.equal((await fixture.db.select().from(scanImprovements)).length, 0);
+});
+
+integration("bearer clients can scan organizations, review owned results, and cannot access other owners", async (context) => {
+  assert(fixture);
+  await resetPostgresFixture(fixture.pool);
+  const token = "integration-only-token-".padEnd(64, "x");
+  const names = ["COMMENT_LENS_API_TOKEN_SHA256", "COMMENT_LENS_API_LOGIN", "ALLOWED_GITHUB_USER_ID", "COMMENT_LENS_GITHUB_ORGANIZATIONS", "GITHUB_APP_ID", "GITHUB_APP_PRIVATE_KEY", "COMMENT_LENS_WORKFLOW_OWNER", "COMMENT_LENS_WORKFLOW_REPOSITORY", "COMMENT_LENS_WORKFLOW_ID", "COMMENT_LENS_WORKFLOW_REF", "COMMENT_LENS_WORKFLOW_TARGET"] as const;
+  const saved = names.map((name) => process.env[name]);
+  try {
+    process.env.COMMENT_LENS_API_TOKEN_SHA256 = createHash("sha256").update(token).digest("hex");
+    process.env.COMMENT_LENS_API_LOGIN = "alice";
+    process.env.ALLOWED_GITHUB_USER_ID = "42";
+    await fixture.db.insert(repositoryInstallations).values({ id: "api-install", installationId: 10, ownerLogin: "alice", ownerId: "42", repositoryId: "r-api", repository: "alice/repo", defaultBranch: "main" });
+    await fixture.db.insert(scans).values([
+      { id: "api-owned", ownerId: "42", ownerLogin: "alice", repositoryInstallationId: "api-install", repository: "alice/repo", ref: "main", status: "complete", resolvedCommit: "commit-api" },
+      { id: "api-other", ownerId: "43", ownerLogin: "bob", repositoryInstallationId: "api-install", repository: "alice/repo", ref: "main", status: "complete", resolvedCommit: "commit-api" },
+    ]);
+    await fixture.db.insert(commentIdentities).values({ id: "api-identity", repositoryInstallationId: "api-install", path: "src/example.ts", kind: "line", normalizedBody: "example", placement: "standalone" });
+    await fixture.db.insert(comments).values({ id: "comment-retry", scanId: "api-owned", identityId: "api-identity", path: "src/example.ts", language: "typescript", kind: "line", placement: "standalone", bodyText: "example", rawText: "// example", payload: commentRecord("api-owned"), priorityScore: 0 });
+    const request = (path: string, method = "GET", body?: object) => new Request(`https://comment-lens.test/api/${path}`, { method, headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+    const params = { params: Promise.resolve({ scanId: "api-owned" }) };
+    const scan = await readScan(request("scans/api-owned"), params);
+    assert.equal(scan.status, 200);
+    assert.equal((await scan.json()).status, "complete");
+    const result = await readComments(request("scans/api-owned/comments"), params);
+    assert.equal(result.status, 200);
+    assert.equal((await result.json()).items[0].commentId, "comment-retry");
+    const review = await reviewComment(request("comments/comment-retry/review", "PATCH", { schemaVersion: 1, status: "keep", note: "API review" }), { params: Promise.resolve({ commentId: "comment-retry" }) });
+    assert.equal(review.status, 200);
+    const exported = await exportScan(request("scans/api-owned/export"), params);
+    assert.equal(exported.status, 200);
+    assert.equal((await exported.json())[0].review.status, "keep");
+    const other = { params: Promise.resolve({ scanId: "api-other" }) };
+    assert.equal((await readScan(request("scans/api-other"), other)).status, 404);
+    assert.equal((await exportScan(request("scans/api-other/export"), other)).status, 404);
+    process.env.COMMENT_LENS_GITHUB_ORGANIZATIONS = "SankofaForge";
+    process.env.GITHUB_APP_ID = "123";
+    process.env.GITHUB_APP_PRIVATE_KEY = generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+    process.env.COMMENT_LENS_WORKFLOW_OWNER = "alice";
+    process.env.COMMENT_LENS_WORKFLOW_REPOSITORY = "comment-lens";
+    process.env.COMMENT_LENS_WORKFLOW_ID = "comment-lens-scan.yml";
+    process.env.COMMENT_LENS_WORKFLOW_REF = "main";
+    process.env.COMMENT_LENS_WORKFLOW_TARGET = "development";
+    let dispatchCount = 0;
+    context.mock.method(globalThis, "fetch", async (input: string | URL | Request, init?: RequestInit) => {
+      const url = new URL(input instanceof Request ? input.url : input.toString());
+      const json = (body: unknown) => {
+        const response = Response.json(body);
+        Object.defineProperty(response, "url", { value: url.href });
+        return response;
+      };
+      const authorization = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined)).get("authorization");
+      if (url.pathname === "/app/installations") return json([
+        { id: 10, account: { id: 42, login: "alice", type: "User" } },
+        { id: 20, account: { id: 50, login: "SankofaForge", type: "Organization" } },
+      ]);
+      if (url.pathname === "/app/installations/10/access_tokens") return json({ token: "control-token" });
+      if (url.pathname === "/app/installations/20/access_tokens") return json({ token: "target-token" });
+      if (url.pathname === "/installation/repositories") return json({
+        total_count: 1,
+        repositories: authorization?.includes("target-token")
+          ? [{ id: 99, name: "project", full_name: "SankofaForge/project", owner: { login: "SankofaForge" }, private: true, fork: false, default_branch: "main" }]
+          : [{ id: 98, name: "comment-lens", full_name: "alice/comment-lens", owner: { login: "alice" }, private: true, fork: false, default_branch: "main" }],
+      });
+      if (url.pathname === "/repos/SankofaForge/project/commits/main") {
+        assert.match(authorization ?? "", /target-token/);
+        return json({ sha: "organization-commit" });
+      }
+      if (url.pathname === "/repos/alice/comment-lens/actions/workflows/comment-lens-scan.yml/dispatches") {
+        assert.match(authorization ?? "", /control-token/);
+        const dispatch = JSON.parse(String(init?.body)) as { inputs: { repository: string; target: string } };
+        assert.equal(dispatch.inputs.repository, "SankofaForge/project");
+        assert.equal(dispatch.inputs.target, "development");
+        dispatchCount++;
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Unexpected GitHub path ${url.pathname}`);
+    });
+    const started = await createScan(request("scans", "POST", { schemaVersion: 1, repositoryId: "99", ref: "main" }));
+    assert.equal(started.status, 202);
+    const startedScan = await started.json();
+    assert.equal(dispatchCount, 1);
+    const [stored] = await fixture.db.select().from(scans).where(eq(scans.id, startedScan.scanId));
+    assert.equal(stored.ownerId, "42");
+    assert.equal(stored.repositoryInstallationId, "20:99");
+    assert.equal(stored.resolvedCommit, "organization-commit");
+    assert.equal(stored.status, "running");
+    const denied = await createScan(request("scans", "POST", { schemaVersion: 1, repositoryId: "unavailable", ref: "main" }));
+    assert.equal(denied.status, 403);
+    assert.equal(dispatchCount, 1);
+    process.env.COMMENT_LENS_API_TOKEN_SHA256 = createHash("sha256").update("rotated-token").digest("hex");
+    assert.equal((await readScan(request("scans/api-owned"), params)).status, 401);
+  } finally {
+    names.forEach((name, index) => {
+      if (saved[index] === undefined) delete process.env[name];
+      else process.env[name] = saved[index];
+    });
+  }
 });
 
 if (fixture) test.after(async () => closePostgresFixture(fixture.pool));

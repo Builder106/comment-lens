@@ -32,9 +32,9 @@ function policyOutcome(commentId: string, outcome: "leave_as_is" | "needs_human_
   });
 }
 
-export async function GET(_request: Request, { params }: { params: Promise<{ scanId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ scanId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const { scanId } = await params;
     await getOwnedScan(scanId, session);
     const rows = await requireDb().select({ payload: scanImprovements.payload }).from(scanImprovements).where(and(
@@ -55,7 +55,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sca
 
 export async function POST(request: Request, { params }: { params: Promise<{ scanId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const { scanId } = await params;
     const input = ScanImprovementRequest.parse(await request.json());
     if (input.scanId !== scanId) throw new Error("FORBIDDEN");

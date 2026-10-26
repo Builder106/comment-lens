@@ -12,7 +12,7 @@ function optionalBoolean(value: string | null) {
 
 export async function GET(request: Request, { params }: { params: Promise<{ scanId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const { scanId } = await params;
     const url = new URL(request.url);
     const geminiReviewValue = url.searchParams.get("geminiReview");

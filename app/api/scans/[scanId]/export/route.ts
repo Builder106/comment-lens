@@ -3,9 +3,9 @@ import { requireSession } from "../../../../../lib/server/auth";
 import { getOwnedScan, listComments } from "../../../../../lib/server/data";
 import { handleError } from "../../../../../lib/server/http";
 
-export async function GET(_: Request, { params }: { params: Promise<{ scanId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ scanId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const { scanId } = await params;
     await getOwnedScan(scanId, session);
     const encoder = new TextEncoder();

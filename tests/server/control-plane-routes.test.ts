@@ -8,7 +8,7 @@ const root = new URL("../../app/api/", import.meta.url);
 test("control-plane routes use installation-scoped access", async () => {
   const repositories = await readFile(new URL("repositories/route.ts", root), "utf8");
   const scans = await readFile(new URL("scans/route.ts", root), "utf8");
-  assert.match(repositories, /installationClient/);
+  assert.match(repositories, /listAccessibleRepositories/);
   assert.match(scans, /createWorkflowDispatch/);
   assert.doesNotMatch(repositories, /GITHUB_TOKEN/);
 });
@@ -21,7 +21,7 @@ test("workflow configuration is required and has no stale defaults", async () =>
     assert.throws(() => getWorkflowConfig(), WorkflowConfigurationError);
     const scans = await readFile(new URL("scans/route.ts", root), "utf8");
     assert.doesNotMatch(scans, /code-wes-projects|\?\? "comment-lens"/);
-    assert.ok(scans.indexOf("getWorkflowConfig()") < scans.indexOf("installationClient(session)"));
+    assert.ok(scans.indexOf("getWorkflowConfig()") < scans.indexOf("listAccessibleRepositories(session)"));
     assert.ok(scans.indexOf("getWorkflowConfig()") < scans.indexOf("requireDb()"));
   } finally {
     for (const name of names) {

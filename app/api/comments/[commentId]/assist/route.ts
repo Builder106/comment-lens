@@ -9,7 +9,7 @@ import { sensitivePath } from "../../../../../lib/server/sensitive-path";
 
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const { commentId } = await params;
     const input = FindingAssistanceRequest.parse(await request.json());
     const comment = await getOwnedComment(commentId, input.scanId, session);

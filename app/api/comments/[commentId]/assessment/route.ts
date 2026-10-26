@@ -9,7 +9,7 @@ import { jsonError } from "../../../../../lib/server/http";
 import { sensitivePath } from "../../../../../lib/server/sensitive-path";
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
-    const session = await requireSession();
+    const session = await requireSession(request);
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return jsonError("internal_error", "Gemini assessment is not configured", 503);
     const { commentId } = await params;
