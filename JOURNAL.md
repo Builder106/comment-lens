@@ -10,6 +10,8 @@ Reuse the hosted JSON endpoints for scripts with a bearer token verified against
 
 Keep each comment's Git context to the comment and nearby code lines; repeating a full file map bloats upload records. Read Tree-sitter comments from the tree returned by `Parser.parse`, and retain structured API error codes and messages when an upload fails so conflicts can be diagnosed.
 
+Use the normalized comment body for collision counting so delimiter spacing cannot give equivalent comments the same identity. Keep the completion count check strict; it exposed two duplicate IDs that would otherwise have been silently omitted.
+
 ## 2026-10-24: Add brand favicon and application icons #branding #design
 
 Add adaptive vector SVG icons and multi-resolution ICO assets for Comment Lens, replacing the default Next.js placeholder. The icon places the three tilted cobalt comment lines on a neutral plate with hairline borders and light/dark scheme adaptation, matching the workspace brand mark.
