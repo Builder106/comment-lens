@@ -233,12 +233,17 @@ def test_comment_record_construction(tmp_path: Path) -> None:
         scan_id="scan-123",
         path="sum.py",
         data=code,
-        start=29,
-        end=45,
+        start=28,
+        end=44,
         kind="line",
         raw="# helper comment",
         parser="tree-sitter",
-        blame=[{"commit": "123456"}],
+        blame=[
+            {"startLine0": 0, "endLine0": 0, "commit": "654321", "authorName": "Other", "authorEmail": "other@example.test", "authoredAt": None, "source": "commit"},
+            {"startLine0": 1, "endLine0": 1, "commit": "123456", "authorName": "Test", "authorEmail": "test@example.test", "authoredAt": None, "source": "commit"},
+            {"startLine0": 2, "endLine0": 2, "commit": "abcdef", "authorName": "Other", "authorEmail": "other@example.test", "authoredAt": None, "source": "commit"},
+            {"startLine0": 20, "endLine0": 20, "commit": "987654", "authorName": "Other", "authorEmail": "other@example.test", "authoredAt": None, "source": "commit"},
+        ],
         blame_error=None,
         collision=0,
     )
@@ -246,6 +251,11 @@ def test_comment_record_construction(tmp_path: Path) -> None:
     assert record["symbol"]["enclosing"]["name"] == "calculateSum"
     assert record["git"]["available"] is True
     assert record["git"]["primaryCommit"] == "123456"
+    assert record["git"]["blameSpans"] == [
+        {"startLine0": 0, "endLine0": 0, "commit": "654321", "authorName": "Other", "authorEmail": "other@example.test", "authoredAt": None, "source": "commit"},
+        {"startLine0": 1, "endLine0": 1, "commit": "123456", "authorName": "Test", "authorEmail": "test@example.test", "authoredAt": None, "source": "commit"},
+        {"startLine0": 2, "endLine0": 2, "commit": "abcdef", "authorName": "Other", "authorEmail": "other@example.test", "authoredAt": None, "source": "commit"},
+    ]
 
 
 def test_scan_repository_various_file_conditions(tmp_path: Path) -> None:

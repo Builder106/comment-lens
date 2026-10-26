@@ -267,7 +267,16 @@ def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, dat
     primary_blame = next((item for item in blame if "startLine0" in item and "endLine0" in item and item["startLine0"] <= start_line <= item["endLine0"]), None)
     if primary_blame is None and blame and "startLine0" not in blame[0]:
         primary_blame = blame[0]
-    return {"commentId": comment_id, "scanId": scan_id, "path": path, "language": _language(path) or "unknown", "kind": kind, "placement": "standalone", "rawText": raw, "bodyText": body, "rawSpan": _span(data, start, end), "bodySpan": None, "fragments": [_span(data, start, end)], "tags": re.findall(r"\b(TODO|FIXME|NOTE|HACK)\b", body, re.I), "parser": parser, "symbol": {"enclosing": {"kind": "function", "name": symbol, "qualifiedName": symbol, "signature": None, "span": _span(data, 0, start, "approximate")} , "attachedTo": None, "resolution": "tree-sitter" if parser == "tree-sitter" else "none"} if symbol else None, "git": {"available": bool(primary_blame and primary_blame.get("commit")), "primaryCommit": primary_blame.get("commit") if primary_blame else None, "blameSpans": blame, "error": blame_error}, "sourceContext": context, "score": _findings(body, symbol, protected)}
+    relevant_lines = {*range(max(0, start_line - 5), start_line), start_line, *range(end_line + 1, end_line + 6)}
+    comment_blame = []
+    for item in blame:
+        span_start = item.get("startLine0")
+        span_end = item.get("endLine0")
+        if isinstance(span_start, int) and isinstance(span_end, int) and any(span_start <= line <= span_end for line in relevant_lines):
+            comment_blame.append(item)
+    if primary_blame and primary_blame not in comment_blame:
+        comment_blame.append(primary_blame)
+    return {"commentId": comment_id, "scanId": scan_id, "path": path, "language": _language(path) or "unknown", "kind": kind, "placement": "standalone", "rawText": raw, "bodyText": body, "rawSpan": _span(data, start, end), "bodySpan": None, "fragments": [_span(data, start, end)], "tags": re.findall(r"\b(TODO|FIXME|NOTE|HACK)\b", body, re.I), "parser": parser, "symbol": {"enclosing": {"kind": "function", "name": symbol, "qualifiedName": symbol, "signature": None, "span": _span(data, 0, start, "approximate")} , "attachedTo": None, "resolution": "tree-sitter" if parser == "tree-sitter" else "none"} if symbol else None, "git": {"available": bool(primary_blame and primary_blame.get("commit")), "primaryCommit": primary_blame.get("commit") if primary_blame else None, "blameSpans": comment_blame, "error": blame_error}, "sourceContext": context, "score": _findings(body, symbol, protected)}
 
 def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: Iterable[str] = DEFAULT_EXCLUSIONS, repository_id: str | None = None, scan_id: str | None = None, selected_paths: Iterable[str] | None = None, offline: bool = False) -> dict[str, object]:
     root = root.resolve(); started = datetime.now(timezone.utc).isoformat(); paths, diagnostic = _tracked(root, include_untracked); diagnostics = [asdict(diagnostic)] if diagnostic else []; files = []; comments = []
