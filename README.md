@@ -104,6 +104,8 @@ For optional, finding-specific Gemini guidance in the hosted workspace,
 see [Assisted review](docs/assisted-review.md).
 For local findings beside comments in Visual Studio Code, see
 [Editor integration](docs/editor.md).
+For bearer authentication, scripted hosted scans, and account-wide scan commands,
+see [Hosted API](docs/api.md).
 
 ### Installation
 
@@ -131,7 +133,7 @@ owner: Builder106
 repository: comment-lens
 workflow: comment-lens-scan.yml
 ref: main
-upload base URL: https://comment-lens-sankofa-forge.vercel.app
+upload base URL: https://comment-lens-review.vercel.app
 ```
 
 The four `COMMENT_LENS_WORKFLOW_*` values are required. The application fails
@@ -167,6 +169,8 @@ Configure these in Vercel without exposing their values:
 - `DATABASE_URL`
 - `SESSION_SECRET`
 - `ALLOWED_GITHUB_USER_ID`
+- `COMMENT_LENS_API_TOKEN_SHA256` and `COMMENT_LENS_API_LOGIN` (optional, for programmatic access)
+- `COMMENT_LENS_GITHUB_ORGANIZATIONS` (optional, for explicitly allowed organization installations)
 - `GITHUB_APP_CLIENT_ID`
 - `GITHUB_APP_CLIENT_SECRET`
 - `GITHUB_APP_ID`
