@@ -317,7 +317,7 @@ def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: 
             for start, end, kind, raw in extracted:
                 before = data[:start].decode("utf-8", errors="replace")
                 names = re.findall(r"(?:function|class|def|struct|fn)\s+([A-Za-z_]\w*)", before[-2000:])
-                key = (kind, _normalize(raw), names[-1] if names else None)
+                key = (kind, _normalize(_comment_body(raw)), names[-1] if names else None)
                 collision = occurrences.get(key, 0)
                 occurrences[key] = collision + 1
                 comments.append(_comment_record(root, repo_identity, effective_scan_id, path, data, start, end, kind, raw, parser, blame, blame_error, collision))

@@ -258,6 +258,27 @@ def test_comment_record_construction(tmp_path: Path) -> None:
     ]
 
 
+def test_scan_repository_keeps_ids_unique_for_equivalent_comments(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "config", "user.name", "Test"], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "config", "user.email", "test@example.com"], check=True)
+    (tmp_path / "example.py").write_text(
+        "def example():\n"
+        "    # repeated\n"
+        "    value = 1\n"
+        "    #repeated\n"
+        "    return value\n"
+    )
+    subprocess.run(["git", "-C", str(tmp_path), "add", "."], check=True)
+    subprocess.run(["git", "-C", str(tmp_path), "commit", "-m", "initial", "--quiet"], check=True)
+
+    result = scan_repository(tmp_path, repository_id="Builder106/qforge", scan_id="scan-test")
+    comments = result["_comments"]
+
+    assert [comment["bodyText"] for comment in comments] == ["repeated", "repeated"]
+    assert len({comment["commentId"] for comment in comments}) == len(comments)
+
+
 def test_scan_repository_various_file_conditions(tmp_path: Path) -> None:
     # 1. Setup git repo
     subprocess.run(["git", "init", "--quiet", str(tmp_path)], check=True)
