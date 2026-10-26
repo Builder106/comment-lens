@@ -6,6 +6,10 @@
 
 Reuse the hosted JSON endpoints for scripts with a bearer token verified against a configured SHA-256 digest and mapped to the existing authorized GitHub owner. Invalid bearer credentials fail before cookie fallback. Explicitly configured organization installations extend repository access; source reads use the target installation and workflow dispatch uses the control-plane installation. A dependency-free Node client previews fleet selection before submission and preserves the standard fork, profile, and configuration repository exclusions. Security unit tests cover credential rejection and installation scope; integration tests cover bearer access to owned scan data. Deployment settings and the worker upload URL require separate configuration before live scans.
 
+## 2026-10-26: Keep scanner records within upload limits #scanner #worker
+
+Keep each comment's Git context to the comment and nearby code lines; repeating a full file map bloats upload records. Read Tree-sitter comments from the tree returned by `Parser.parse`, and retain structured API error codes and messages when an upload fails so conflicts can be diagnosed.
+
 ## 2026-10-24: Add brand favicon and application icons #branding #design
 
 Add adaptive vector SVG icons and multi-resolution ICO assets for Comment Lens, replacing the default Next.js placeholder. The icon places the three tilted cobalt comment lines on a neutral plate with hairline borders and light/dark scheme adaptation, matching the workspace brand mark.
