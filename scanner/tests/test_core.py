@@ -190,13 +190,14 @@ def test_extract_fallback_tree_sitter_and_pygments() -> None:
     mock_tree.root_node = mock_root
 
     mock_parser = MagicMock()
-    mock_parser.parse.return_value = None
-    mock_tree_parser = MagicMock(return_value=mock_tree)
+    mock_parser.parse.return_value = mock_tree
+    mock_tree_parser = MagicMock(return_value=mock_parser)
 
     with patch.object(core, "get_tree_parser", mock_tree_parser):
         results, parser, diags = _extract_fallback(data, "test.py")
         assert len(results) >= 1
         assert parser == "tree-sitter"
+        mock_parser.parse.assert_called_once_with(data)
 
     # Test tree-sitter parse failure handling
     mock_bad_tree = MagicMock()

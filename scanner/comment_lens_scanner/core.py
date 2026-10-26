@@ -214,8 +214,8 @@ def _extract_fallback(data: bytes, path: str, *, offline: bool = False) -> tuple
     language = _tree_sitter_language(path)
     if get_tree_parser and language and (not offline or _has_offline_parser(language)):
         try:
-            tree = get_tree_parser(language)
-            tree.parse(data)
+            parser = get_tree_parser(language)
+            tree = parser.parse(data)
             nodes = []
             def walk(node: object) -> None:
                 if node.type == "comment": nodes.append(node)
