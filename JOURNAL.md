@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-27: Add fixture-only comment voice evaluation #decision #gemini
+
+Keep prompt experiments out of retained scan data. The live runner sends six original QForge comments to the current prompt in batches of five, with no code context and `store: false`. It prints each assessment beside the historical edit and never writes database rows. The v3 pilot left all six unchanged. Five historical edits changed punctuation or rhythm; one shortened a useful explanation. V4 allows a narrow style rewrite for wording that sounds generic, templated, or overworked, while preserving author voice and useful detail. The v4 pilot suggested one punctuation-only rewrite, changing the reset-defaults em dash to a colon, and left five comments unchanged, including the explanatory catch comment. It kept the meaning and detail but chose a colon where the historical edit used parentheses. Deleted-comment examples stay out because the current result schema cannot represent removal.
+
 ## 2026-10-26: Add authenticated hosted API access #decision #api
 
 Reuse the hosted JSON endpoints for scripts with a bearer token verified against a configured SHA-256 digest and mapped to the existing authorized GitHub owner. Invalid bearer credentials fail before cookie fallback. Explicitly configured organization installations extend repository access; source reads use the target installation and workflow dispatch uses the control-plane installation. A dependency-free Node client previews fleet selection before submission and preserves the standard fork, profile, and configuration repository exclusions. Security unit tests cover credential rejection and installation scope; integration tests cover bearer access to owned scan data. Deployment settings and the worker upload URL require separate configuration before live scans.
