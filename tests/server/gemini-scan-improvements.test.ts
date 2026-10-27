@@ -33,7 +33,12 @@ test("whole-scan review defaults to unchanged and does not store Gemini requests
   assert.equal(request?.store, false);
   assert.match(String(request?.input), /A clear, useful comment should remain unchanged/);
   assert.match(String(request?.input), /repository developer can understand the comment beside its code/);
-  assert.match(String(request?.input), /Match the source comment's capitalization, punctuation, contractions, and level of formality/);
+  assert.match(String(request?.input), /Suggest a rewrite for a clear comprehension problem or a specific style problem/);
+  assert.match(String(request?.input), /Allow a style rewrite when phrasing sounds generic, templated, or overworked/);
+  assert.match(String(request?.input), /Do not infer who wrote a comment or judge its authorship/);
+  assert.match(String(request?.input), /Match the source comment's capitalization, contractions, and level of formality/);
+  assert.match(String(request?.input), /Do not preserve an em dash only because it is in the source/);
+  assert.match(String(request?.input), /Do not replace every em dash/);
   assert.match(String(request?.input), /concrete explanations of a reason, constraint, gotcha, or non-obvious behavior/);
   assert.match(String(request?.input), /generic function summaries, section labels, or step-by-step narration/);
   assert.doesNotMatch(String(request?.input), /lowercase letter/);

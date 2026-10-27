@@ -1,1 +1,1 @@
-export const SCAN_IMPROVEMENT_PROMPT_VERSION = "comment-improvement-v3";
+export const SCAN_IMPROVEMENT_PROMPT_VERSION = "comment-improvement-v4";
