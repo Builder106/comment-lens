@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-27: Tighten fleet review suggestions #decision #gemini
+
+The v4 fleet pass stopped after 2,490 of 10,726 comments following repeated 502s. Forty-two of the 50 stored rewrites changed punctuation or box-drawing dividers without improving wording. V5 filters those edits, asks Gemini to preserve each author's punctuation and rhythm, and records only safe provider status metadata when a request fails. The full-fleet pass will stop after three consecutive failed batches, and its suggestions remain advisory.
+
 ## 2026-10-27: Add fixture-only comment voice evaluation #decision #gemini
 
 Keep prompt experiments out of retained scan data. The live runner sends six original QForge comments to the current prompt in batches of five, with no code context and `store: false`. It prints each assessment beside the historical edit and never writes database rows. The v3 pilot left all six unchanged. Five historical edits changed punctuation or rhythm; one shortened a useful explanation. V4 allows a narrow style rewrite for wording that sounds generic, templated, or overworked, while preserving author voice and useful detail. The v4 pilot suggested one punctuation-only rewrite, changing the reset-defaults em dash to a colon, and left five comments unchanged, including the explanatory catch comment. It kept the meaning and detail but chose a colon where the historical edit used parentheses. Deleted-comment examples stay out because the current result schema cannot represent removal.
