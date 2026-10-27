@@ -2,6 +2,14 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-27: Enable Next.js ESLint rules #ci #decision
+
+The existing ESLint command now loads the Next.js Core Web Vitals and TypeScript presets. The flat config previously had an empty rules object, so the job enforced no lint rules.
+
+## 2026-10-27: Audit production packages and Python deprecations #ci #decision
+
+CI now audits production Node packages and runs Ruff's `UP` checks on the scanner and worker. Scanner coverage remains inactive because CI does not install `pytest-cov`.
+
 ## 2026-10-27: Tighten fleet review suggestions #decision #gemini
 
 The v4 fleet pass stopped after 2,490 of 10,726 comments following repeated 502s. Forty-two of the 50 stored rewrites changed punctuation or box-drawing dividers without improving wording. V5 filters those edits, asks Gemini to preserve each author's punctuation and rhythm, and records only safe provider status metadata when a request fails. The full-fleet pass will stop after three consecutive failed batches, and its suggestions remain advisory.
