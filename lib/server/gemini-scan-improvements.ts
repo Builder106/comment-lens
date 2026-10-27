@@ -64,6 +64,12 @@ function needsHumanReview(item: GeminiScanImprovement, reason: string): GeminiSc
   return { ...item, outcome: "needs_human_review", reasons: [reason], suggestedRewrite: null };
 }
 
+function onlyChangesPunctuationCaseSpacingOrDivider(original: string, rewrite: string): boolean {
+  const words = (value: string) => value.replace(/[\p{P}\s\u2500-\u257F]/gu, "").toLowerCase();
+  const originalWords = words(original);
+  return originalWords.length > 0 && originalWords === words(rewrite);
+}
+
 export async function requestGeminiScanImprovements(
   inputs: ScanImprovementInput[],
   client: GeminiAssessmentClient,
@@ -78,16 +84,20 @@ export async function requestGeminiScanImprovements(
     "Choose leave_as_is by default. A clear, useful comment should remain unchanged.",
     "A priority score or rule match does not prove that wording needs improvement.",
     "Use each comment's language.",
-    "Suggest a rewrite for a clear comprehension problem or a specific style problem.",
-    "Allow a style rewrite when phrasing sounds generic, templated, or overworked.",
+    "Suggest a rewrite only for a clear comprehension problem or a specific style problem.",
+    "A style problem must identify specific words that sound unnatural, repetitive, or unclear.",
+    "Do not treat punctuation preference as a style problem.",
+    "Do not suggest a rewrite if it only changes punctuation, capitalization, spacing, or section dividers.",
+    "Prefer the original wording when both versions are clear.",
+    "Do not shorten a clear comment for concision alone.",
     "Do not infer who wrote a comment or judge its authorship.",
     "Make only the smallest safe wording change.",
     "Preserve technical meaning, intent, uncertainty, and useful detail.",
     "Write like a developer leaving a useful note for a teammate or their future self, not polished documentation.",
-    "Match the source comment's capitalization, contractions, and level of formality.",
-    "Do not preserve an em dash only because it is in the source.",
-    "Use a colon to introduce an explanation, a comma for a short continuation, or parentheses for a short aside when that fits better.",
-    "Keep an em dash when it marks a clear interruption or contrast. Do not replace every em dash.",
+    "Keep the author's punctuation, capitalization, contractions, and sentence rhythm when they are clear.",
+    "Correct a typo only when the intended word is clear from the comment.",
+    "Name the specific wording or comprehension problem in each rewrite reason.",
+    "Do not use vague reasons such as 'sounds generic' or 'improves readability'.",
     "Prefer concrete explanations of a reason, constraint, gotcha, or non-obvious behavior.",
     "Do not rewrite only to add generic function summaries, section labels, or step-by-step narration that repeats visible code.",
     "Do not add facts or remove a comment.",
@@ -132,6 +142,14 @@ export async function requestGeminiScanImprovements(
     }
     if (EMOJI_PATTERN.test(input.comment) && item.outcome === "leave_as_is") {
       return needsHumanReview(item, "This comment contains an emoji. A person must confirm that removing it will preserve the meaning.");
+    }
+    if (item.outcome === "suggest_rewrite" && item.suggestedRewrite && onlyChangesPunctuationCaseSpacingOrDivider(input.comment, item.suggestedRewrite)) {
+      return {
+        ...item,
+        outcome: "leave_as_is",
+        reasons: ["This edit only changes punctuation, capitalization, spacing, or section dividers. The original wording stays."],
+        suggestedRewrite: null,
+      };
     }
     return item;
   });
