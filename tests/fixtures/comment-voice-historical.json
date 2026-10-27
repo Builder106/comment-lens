@@ -1,0 +1,56 @@
+[
+  {
+    "id": "qforge-app-header",
+    "repository": "Builder106/qforge",
+    "commit": "0234aa0305bd0e36b39145e6396da9e4b4c3cd28",
+    "path": "web/app.js",
+    "category": "punctuation",
+    "comment": "/* ============================================================================\n * app.js — main thread: asciinema-player tabs + xterm.js terminal + WASM runner\n *\n * The page respects the user's prefers-color-scheme: dark and light themes are\n * propagated through CSS variables, the asciinema-player theme prop, and the\n * xterm.js theme object. A media query listener re-creates the player and\n * re-themes the terminal when the OS preference flips at runtime.\n * ============================================================================ */",
+    "historicalEdit": "/* ============================================================================\n * app.js: main thread: asciinema-player tabs + xterm.js terminal + WASM runner\n *\n * The page respects the user's prefers-color-scheme: dark and light themes are\n * propagated through CSS variables, the asciinema-player theme prop, and the\n * xterm.js theme object. A media query listener re-creates the player and\n * re-themes the terminal when the OS preference flips at runtime.\n * ============================================================================ */"
+  },
+  {
+    "id": "qforge-autoplay-retry",
+    "repository": "Builder106/qforge",
+    "commit": "0234aa0305bd0e36b39145e6396da9e4b4c3cd28",
+    "path": "web/app.js",
+    "category": "punctuation",
+    "comment": "/* Autoplay if the player is on-screen at creation time (e.g. tab switch\n * while the section is in view). play() returns a Promise that can reject\n * if the cast hasn't loaded yet — swallow that and rely on the observer\n * to retry once the section becomes visible again. */",
+    "historicalEdit": "/* Autoplay if the player is on-screen at creation time (e.g. tab switch\n * while the section is in view). play() returns a Promise that can reject\n * if the cast hasn't loaded yet: swallow that and rely on the observer\n * to retry once the section becomes visible again. */"
+  },
+  {
+    "id": "qforge-visibility-threshold",
+    "repository": "Builder106/qforge",
+    "commit": "0234aa0305bd0e36b39145e6396da9e4b4c3cd28",
+    "path": "web/app.js",
+    "category": "punctuation-and-rhythm",
+    "comment": "/* IntersectionObserver: play when the player scrolls into view, pause when\n * it scrolls out. Threshold 0.25 means a quarter of the player must be\n * visible — avoids triggering when only a sliver pokes into the viewport. */",
+    "historicalEdit": "/* IntersectionObserver: play when the player scrolls into view, pause when\n * it scrolls out. Threshold 0.25 means a quarter of the player must be\n * visible, avoiding triggering when only a sliver pokes into the viewport. */"
+  },
+  {
+    "id": "qforge-player-catch",
+    "repository": "Builder106/qforge",
+    "commit": "0234aa0305bd0e36b39145e6396da9e4b4c3cd28",
+    "path": "web/app.js",
+    "category": "detail-trimmed",
+    "comment": "/* player not ready or already in target state */",
+    "historicalEdit": "/* ignore */"
+  },
+  {
+    "id": "qforge-demos-table",
+    "repository": "Builder106/qforge",
+    "commit": "0234aa0305bd0e36b39145e6396da9e4b4c3cd28",
+    "path": "web/app.js",
+    "category": "punctuation",
+    "comment": "/* DEMOS table — each demo declares which DOM input ids feed its argv.\n * Order in `args` matches the positional argv parsing in the C source\n * (e.g. dqn_trader.c reads argv[1]=episodes, [2]=γ, [3]=lr, [4]=ε-decay).\n * If `args` is omitted the demo runs with its built-in defaults. */",
+    "historicalEdit": "/* DEMOS table: each demo declares which DOM input ids feed its argv.\n * Order in `args` matches the positional argv parsing in the C source\n * (e.g. dqn_trader.c reads argv[1]=episodes, [2]=γ, [3]=lr, [4]=ε-decay).\n * If `args` is omitted the demo runs with its built-in defaults. */"
+  },
+  {
+    "id": "qforge-reset-defaults",
+    "repository": "Builder106/qforge",
+    "commit": "0234aa0305bd0e36b39145e6396da9e4b4c3cd28",
+    "path": "web/app.js",
+    "category": "punctuation",
+    "comment": "/* Defaults for the reset button — keyed by input id. */",
+    "historicalEdit": "/* Defaults for the reset button (keyed by input id). */"
+  }
+]
