@@ -11,7 +11,11 @@ import { requireDb } from "../../../../../db";
 import { comments, scanImprovements } from "../../../../../db/schema";
 import { requireSession } from "../../../../../lib/server/auth";
 import { getOwnedScan } from "../../../../../lib/server/data";
-import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL } from "../../../../../lib/server/gemini-assessment";
+import {
+  createGeminiAssessmentClient,
+  DEFAULT_GEMINI_MODEL,
+  safeGeminiErrorMetadata,
+} from "../../../../../lib/server/gemini-assessment";
 import { requestGeminiScanImprovements, SCAN_IMPROVEMENT_PROMPT_VERSION } from "../../../../../lib/server/gemini-scan-improvements";
 import { handleError, jsonError } from "../../../../../lib/server/http";
 import { sensitivePath } from "../../../../../lib/server/sensitive-path";
@@ -106,7 +110,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
             assessedAt: new Date().toISOString(),
           }));
         }
-      } catch {
+      } catch (error) {
+        console.error("Gemini scan improvement request failed", safeGeminiErrorMetadata(error));
         return jsonError("internal_error", "Whole-scan review is temporarily unavailable", 502);
       }
     }

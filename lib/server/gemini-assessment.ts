@@ -10,6 +10,27 @@ type GeminiInteractionRequest = Parameters<GeminiInteractionCreate>[0];
 
 export interface AssessmentInput { commentId: string; comment: string; language: string | null; kind: CommentKind; symbol: SymbolContext | null; context: string | null; findings: Finding[]; }
 export interface GeminiAssessmentClient { interactions: { create(input: GeminiInteractionRequest): Promise<{ output_text?: string }> } }
+export function safeGeminiErrorMetadata(error: unknown): { name: string; status?: number; code?: string } {
+  const value = typeof error === "object" && error !== null ? error as Record<string, unknown> : {};
+  const name = typeof value.name === "string"
+    && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value.name)
+    ? value.name
+    : "UnknownError";
+  const status = typeof value.status === "number"
+    && Number.isInteger(value.status)
+    && value.status >= 100
+    && value.status <= 599
+    ? value.status
+    : undefined;
+  const code = typeof value.code === "string" && /^[A-Z0-9_]{1,64}$/.test(value.code)
+    ? value.code
+    : undefined;
+  return {
+    name,
+    ...(status === undefined ? {} : { status }),
+    ...(code === undefined ? {} : { code }),
+  };
+}
 function promptFor(input: AssessmentInput): string {
   return [
     "You are a code comment reviewer prioritizing comments for maintenance and readability.",

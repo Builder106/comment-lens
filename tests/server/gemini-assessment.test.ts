@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { requestGeminiAssessment } from "../../lib/server/gemini-assessment";
+import { requestGeminiAssessment, safeGeminiErrorMetadata } from "../../lib/server/gemini-assessment";
 import type { Finding, SymbolContext } from "../../contracts";
 
 const input = { commentId: "c1", comment: "Explain the value.", language: "typescript", kind: "line" as const, symbol: null as SymbolContext | null, context: "const value = 1;", findings: [{ ruleId: "verbosity", contribution: 1, evidence: { length: 20 }, explanation: "The comment is verbose." }] satisfies Finding[] };
@@ -46,4 +46,24 @@ test("valid output with suggested rewrite is returned with v2 prompt version", a
   assert.equal(result.suggestedRewrite, "// Concise replacement");
   assert.equal(result.styleLabel, "template_like");
   assert.equal(result.promptVersion, "comment-style-v2");
+});
+
+test("safe Gemini error metadata omits messages and arbitrary fields", () => {
+  const error = Object.assign(new Error("private comment text"), {
+    status: 503,
+    code: "SERVICE_UNAVAILABLE",
+    requestBody: "private request data",
+  });
+
+  assert.deepEqual(safeGeminiErrorMetadata(error), {
+    name: "Error",
+    status: 503,
+    code: "SERVICE_UNAVAILABLE",
+  });
+});
+
+test("safe Gemini error metadata rejects unbounded labels and invalid statuses", () => {
+  const error = { name: "Comment text", status: 999, code: "private error detail" };
+
+  assert.deepEqual(safeGeminiErrorMetadata(error), { name: "UnknownError" });
 });
