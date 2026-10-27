@@ -6,6 +6,10 @@
 
 Reuse the hosted JSON endpoints for scripts with a bearer token verified against a configured SHA-256 digest and mapped to the existing authorized GitHub owner. Invalid bearer credentials fail before cookie fallback. Explicitly configured organization installations extend repository access; source reads use the target installation and workflow dispatch uses the control-plane installation. A dependency-free Node client previews fleet selection before submission and preserves the standard fork, profile, and configuration repository exclusions. Security unit tests cover credential rejection and installation scope; integration tests cover bearer access to owned scan data. Deployment settings and the worker upload URL require separate configuration before live scans.
 
+## 2026-10-26: Preserve human comment voice #decision #gemini
+
+Use comments from older original Builder106 repositories and explicit cleanup diffs as provisional style evidence. Gemini preserves each source comment's capitalization, punctuation, contractions, and formality; it favors concrete reasons, constraints, and gotchas over generic function narration or step labels. Remove the blanket lowercase opening rule because it erases local voice, and leave clear comments unchanged.
+
 ## 2026-10-26: Keep scanner records within upload limits #scanner #worker
 
 Keep each comment's Git context to the comment and nearby code lines; repeating a full file map bloats upload records. Read Tree-sitter comments from the tree returned by `Parser.parse`, and retain structured API error codes and messages when an upload fails so conflicts can be diagnosed.
