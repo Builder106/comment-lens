@@ -1,11 +1,8 @@
-const WORKFLOW_CONFIG_NAMES = [
-  "COMMENT_LENS_WORKFLOW_OWNER",
-  "COMMENT_LENS_WORKFLOW_REPOSITORY",
-  "COMMENT_LENS_WORKFLOW_ID",
-  "COMMENT_LENS_WORKFLOW_REF",
-] as const;
-
-type WorkflowConfigName = (typeof WORKFLOW_CONFIG_NAMES)[number];
+type WorkflowConfigName =
+  | "COMMENT_LENS_WORKFLOW_OWNER"
+  | "COMMENT_LENS_WORKFLOW_REPOSITORY"
+  | "COMMENT_LENS_WORKFLOW_ID"
+  | "COMMENT_LENS_WORKFLOW_REF";
 
 export interface WorkflowConfig {
   owner: string;
