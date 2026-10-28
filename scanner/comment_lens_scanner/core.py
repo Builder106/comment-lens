@@ -9,7 +9,7 @@ import os
 import re
 import subprocess
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from collections.abc import Iterable
 
@@ -153,7 +153,7 @@ def _blame(root: Path, path: str, line_count: int) -> tuple[list[dict[str, objec
         elif current is not None and raw.startswith("author-mail "):
             current["authorEmail"] = raw[12:].strip("<>")
         elif current is not None and raw.startswith("author-time "):
-            current["authoredAt"] = datetime.fromtimestamp(int(raw[12:]), timezone.utc).isoformat()
+            current["authoredAt"] = datetime.fromtimestamp(int(raw[12:]), UTC).isoformat()
     return spans, None
 
 def _findings(body: str, symbol: str | None, protected: bool) -> dict[str, object]:
@@ -279,7 +279,7 @@ def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, dat
     return {"commentId": comment_id, "scanId": scan_id, "path": path, "language": _language(path) or "unknown", "kind": kind, "placement": "standalone", "rawText": raw, "bodyText": body, "rawSpan": _span(data, start, end), "bodySpan": None, "fragments": [_span(data, start, end)], "tags": re.findall(r"\b(TODO|FIXME|NOTE|HACK)\b", body, re.I), "parser": parser, "symbol": {"enclosing": {"kind": "function", "name": symbol, "qualifiedName": symbol, "signature": None, "span": _span(data, 0, start, "approximate")} , "attachedTo": None, "resolution": "tree-sitter" if parser == "tree-sitter" else "none"} if symbol else None, "git": {"available": bool(primary_blame and primary_blame.get("commit")), "primaryCommit": primary_blame.get("commit") if primary_blame else None, "blameSpans": comment_blame, "error": blame_error}, "sourceContext": context, "score": _findings(body, symbol, protected)}
 
 def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: Iterable[str] = DEFAULT_EXCLUSIONS, repository_id: str | None = None, scan_id: str | None = None, selected_paths: Iterable[str] | None = None, offline: bool = False) -> dict[str, object]:
-    root = root.resolve(); started = datetime.now(timezone.utc).isoformat(); paths, diagnostic = _tracked(root, include_untracked); diagnostics = [asdict(diagnostic)] if diagnostic else []; files = []; comments = []
+    root = root.resolve(); started = datetime.now(UTC).isoformat(); paths, diagnostic = _tracked(root, include_untracked); diagnostics = [asdict(diagnostic)] if diagnostic else []; files = []; comments = []
     repo_identity = repository_id or os.environ.get("COMMENT_LENS_REPOSITORY_ID") or root.name
     effective_scan_id = scan_id or "scan_" + hashlib.sha256((repo_identity + started).encode()).hexdigest()[:16]
     exclusion_set = tuple(exclusions); selection = set(selected_paths) if selected_paths is not None else None; head, _ = _git(root, ["rev-parse", "HEAD"]); head = head.strip() or None
@@ -322,7 +322,7 @@ def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: 
                 occurrences[key] = collision + 1
                 comments.append(_comment_record(root, repo_identity, effective_scan_id, path, data, start, end, kind, raw, parser, blame, blame_error, collision))
     config_hash = hashlib.sha256(json.dumps(sorted(exclusion_set)).encode()).hexdigest()
-    completed = datetime.now(timezone.utc).isoformat()
+    completed = datetime.now(UTC).isoformat()
     return {"schemaVersion": SCHEMA_VERSION, "scanId": effective_scan_id, "repoId": repo_identity, "sourceMode": "worktree", "headCommit": head, "worktreeFingerprint": hashlib.sha256("\0".join(f["path"] + str(f["contentSha256"]) for f in files).encode()).hexdigest(), "configHash": config_hash, "extractorVersion": "comment-lens-scanner/0.1.0", "parserVersions": {"tree-sitter-language-pack": "1+", "pygments": "2.17+"}, "startedAt": started, "completedAt": completed, "files": files, "diagnostics": diagnostics, "_comments": comments}
 
 def write_output(result: dict[str, object], manifest_path: Path, ndjson_path: Path | None = None) -> None:

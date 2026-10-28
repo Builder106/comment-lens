@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .policy import ConfigError
@@ -46,7 +46,7 @@ def load_report(path: Path, *, require_date: bool = True) -> dict[str, object]:
 def summarize_reports(reports: list[dict[str, object]]) -> dict[str, object]:
     if not reports:
         raise ConfigError("at least one report is required")
-    ordered = sorted(reports, key=lambda report: (datetime.fromisoformat(report["generatedAt"]).astimezone(timezone.utc), report["repository"], report["scanId"]))
+    ordered = sorted(reports, key=lambda report: (datetime.fromisoformat(report["generatedAt"]).astimezone(UTC), report["repository"], report["scanId"]))
     seen: set[tuple[str, str]] = set()
     latest: dict[str, dict[str, object]] = {}
     latest_full: dict[str, dict[str, object]] = {}

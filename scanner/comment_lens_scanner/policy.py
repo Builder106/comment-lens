@@ -7,7 +7,7 @@ import json
 import re
 import tomllib
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
 
@@ -186,7 +186,7 @@ def findings_for_comment(comment: dict[str, object], policy: Policy, *, as_of: d
     if vague_terms:
         add("promotional_or_vague_language", {"terms": vague_terms}, "Comment uses vague or promotional wording.")
     if "git" in comment:
-        for rule, evidence, message in signals(comment, as_of=as_of or datetime.now(timezone.utc), age_days=policy.age_days, root=root):
+        for rule, evidence, message in signals(comment, as_of=as_of or datetime.now(UTC), age_days=policy.age_days, root=root):
             add(rule, evidence, message)
     return findings
 
