@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { ChangeEvent, FormEvent } from "react";
 import type {
   CommentImprovement, CommentImprovementOutcome, CommentPageResponse, CommentRecord, FindingAssistance, GeminiAssessmentOutput,
@@ -115,6 +116,54 @@ export function ReviewWorkspace() {
   }, { leave_as_is: 0, suggest_rewrite: 0, needs_human_review: 0 });
   const reviewCandidateCount = improvementCounts.suggest_rewrite + improvementCounts.needs_human_review;
 
+  const [repositoryKey, setRepositoryKey] = useState(repositoryId);
+  if (repositoryKey !== repositoryId) {
+    setRepositoryKey(repositoryId);
+    setLoadingScans(Boolean(repositoryId));
+    setScans([]);
+    setScanId("");
+    setScan(null);
+    setPage(null);
+    setSelectedId("");
+  }
+
+  const [scanKey, setScanKey] = useState(scanId);
+  if (scanKey !== scanId) {
+    setScanKey(scanId);
+    setScan(scans.find((item) => item.scanId === scanId) ?? null);
+    setPage(null);
+    setSelectedId("");
+    setDetailOpen(false);
+    setBatchProgress(null);
+    setBatchStopping(false);
+    setScanImprovements({});
+    setBatchConfigured(null);
+    setIncludeBatchCode(false);
+  }
+
+  const draftKey = JSON.stringify([selected?.commentId, currentDecision?.status, currentDecision?.note]);
+  const [appliedDraftKey, setAppliedDraftKey] = useState(draftKey);
+  if (appliedDraftKey !== draftKey) {
+    setAppliedDraftKey(draftKey);
+    setDecisionDraft(currentDecision?.status === "unreviewed" ? "" : currentDecision?.status ?? "");
+    setNoteDraft(currentDecision?.note ?? "");
+    setAssistance(null);
+    setAssessment(null);
+    setRuleId(selected?.score.findings[0]?.ruleId ?? "");
+    setIncludeCode(false);
+    setAssistOpen(false);
+  }
+
+  const pageKey = JSON.stringify([scanId, scan?.status, pageNumber, filters]);
+  const [requestedPageKey, setRequestedPageKey] = useState(pageKey);
+  if (requestedPageKey !== pageKey) {
+    setRequestedPageKey(pageKey);
+    if (scanId && scan?.status === "complete") setLoadingPage(true);
+  }
+
+  const scansRef = useRef(scans);
+  useEffect(() => { scansRef.current = scans; }, [scans]);
+
   useEffect(() => {
     let live = true;
     api<{ repositories: RepositoryRef[] }>("/api/repositories").then((result) => {
@@ -130,14 +179,8 @@ export function ReviewWorkspace() {
   }, []);
 
   useEffect(() => {
-    if (!repositoryId) { setScans([]); setScanId(""); return; }
+    if (!repositoryId) return;
     let live = true;
-    setLoadingScans(true);
-    setScans([]);
-    setScanId("");
-    setScan(null);
-    setPage(null);
-    setSelectedId("");
     api<{ scans: ScanRecord[] }>(`/api/scans?repositoryId=${encodeURIComponent(repositoryId)}&limit=50`).then((result) => {
       if (!live) return;
       setScans(result.scans);
@@ -148,12 +191,9 @@ export function ReviewWorkspace() {
   }, [repositoryId]);
 
   useEffect(() => {
-    if (!scanId) { setScan(null); return; }
+    if (!scanId) return;
     let live = true;
     let timer: number | undefined;
-    setPage(null);
-    setSelectedId("");
-    setDetailOpen(false);
     const refresh = () => {
       api<ScanRecord>(`/api/scans/${encodeURIComponent(scanId)}`).then((result) => {
         if (!live) return;
@@ -162,15 +202,14 @@ export function ReviewWorkspace() {
         if (result.status === "complete" || result.status === "failed") window.clearInterval(timer);
       }).catch((cause: unknown) => { if (live) setError(readableError(cause)); });
     };
-    const current = scans.find((item) => item.scanId === scanId) ?? null;
-    setScan(current);
+    const current = scansRef.current.find((item) => item.scanId === scanId) ?? null;
     refresh();
     if (!current || current.status === "queued" || current.status === "running") timer = window.setInterval(refresh, 6000);
     return () => { live = false; window.clearInterval(timer); };
   }, [scanId]);
 
-  const loadComments = useCallback(async (signal?: AbortSignal) => {
-    if (!scanId || scan?.status !== "complete") return;
+  const loadComments = useCallback((signal?: AbortSignal): Promise<void> => {
+    if (!scanId || scan?.status !== "complete") return Promise.resolve();
     const params = new URLSearchParams({ page: String(pageNumber), pageSize: "50", sort: filters.sort });
     if (filters.q) params.set("q", filters.q);
     if (filters.status !== "all") params.set("status", filters.status);
@@ -178,22 +217,20 @@ export function ReviewWorkspace() {
       if (filters[key]) params.set(key, filters[key]);
     }
     if (filters.geminiReview !== "all") params.set("geminiReview", filters.geminiReview);
-    setLoadingPage(true);
-    try {
-      const result = await api<CommentPageResponse>(`/api/scans/${encodeURIComponent(scanId)}/comments?${params}`, { signal });
+    return api<CommentPageResponse>(`/api/scans/${encodeURIComponent(scanId)}/comments?${params}`, { signal }).then((result) => {
       if (signal?.aborted) return;
       setPage(result);
       setSelectedId((current) => result.items.some((item) => item.commentId === current) ? current : result.items[0]?.commentId ?? "");
       setError("");
-    } catch (cause) {
+    }).catch((cause: unknown) => {
       if (!signal?.aborted) setError(readableError(cause));
-    } finally {
+    }).finally(() => {
       if (!signal?.aborted) setLoadingPage(false);
-    }
+    });
   }, [scanId, scan?.status, pageNumber, filters]);
 
   useEffect(() => {
-    if (scan?.status !== "complete") { setPage(null); return; }
+    if (scan?.status !== "complete") return;
     const controller = new AbortController();
     void loadComments(controller.signal);
     return () => controller.abort();
@@ -203,11 +240,6 @@ export function ReviewWorkspace() {
     batchAbort.current?.abort();
     batchAbort.current = null;
     batchStopRequested.current = false;
-    setBatchProgress(null);
-    setBatchStopping(false);
-    setScanImprovements({});
-    setBatchConfigured(null);
-    setIncludeBatchCode(false);
   }, [scanId]);
 
   useEffect(() => {
@@ -222,16 +254,6 @@ export function ReviewWorkspace() {
   }, [scanId, scan?.status]);
 
   useEffect(() => () => { batchAbort.current?.abort(); }, []);
-
-  useEffect(() => {
-    setDecisionDraft(currentDecision?.status === "unreviewed" ? "" : currentDecision?.status ?? "");
-    setNoteDraft(currentDecision?.note ?? "");
-    setAssistance(null);
-    setAssessment(null);
-    setRuleId(selected?.score.findings[0]?.ruleId ?? "");
-    setIncludeCode(false);
-    setAssistOpen(false);
-  }, [selected?.commentId, currentDecision?.status, currentDecision?.note]);
 
   function applySearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -283,6 +305,7 @@ export function ReviewWorkspace() {
       setNotice(`${decisionDraft[0].toUpperCase()}${decisionDraft.slice(1)} decision saved.`);
       if (filters.status !== "all" && filters.status !== decisionDraft) {
         setDetailOpen(false);
+        setLoadingPage(true);
         await loadComments();
       }
     } catch (cause) { setError(readableError(cause)); }
@@ -379,7 +402,7 @@ export function ReviewWorkspace() {
     <a className="skip-link" href="#main">Skip to workspace</a>
     <div className="app-shell">
       <header className="site-header">
-        <a className="wordmark" href="/" aria-label="Comment Lens home"><span className="brand-mark" aria-hidden="true"><span /><span /><span /></span><span>Comment<span className="wordmark-light">Lens</span></span></a>
+        <Link className="wordmark" href="/" aria-label="Comment Lens home"><span className="brand-mark" aria-hidden="true"><span /><span /><span /></span><span>Comment<span className="wordmark-light">Lens</span></span></Link>
         <nav aria-label="Primary"><a href={siteDocs} target="_blank" rel="noreferrer">Documentation <span aria-hidden="true">↗</span></a><a href="https://github.com/Builder106/comment-lens" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a></nav>
       </header>
       <main id="main" tabIndex={-1}>
@@ -399,7 +422,7 @@ export function ReviewWorkspace() {
             </section>
             <div className={`review-grid ${detailOpen ? "detail-open" : ""}`}>
             <section className="queue-panel" aria-labelledby="queue-heading"><div className="queue-heading"><div><h2 id="queue-heading">Review queue</h2></div><span>{page?.total ?? scan.commentCount} comments</span></div><form className="search-form" onSubmit={applySearch}><label className="visually-hidden" htmlFor="queue-search">Search comments and paths</label><input id="queue-search" type="search" value={search} maxLength={200} placeholder="Search comments or paths" onChange={(event) => setSearch(event.target.value)} /><button type="submit">Search</button></form><div className="queue-tools"><label>State<select value={filters.status} onChange={(event) => changeFilter("status", event.target.value as Filters["status"])}><option value="all">All states</option><option value="unreviewed">Unreviewed</option>{decisions.map((item) => <option key={item} value={item}>{item[0].toUpperCase()}{item.slice(1)}</option>)}</select></label><label>Sort<select value={filters.sort} onChange={(event) => changeFilter("sort", event.target.value as Sort)}><option value="score">Priority</option><option value="path">Path</option><option value="age">Newest</option><option value="status">Review state</option></select></label><label>Gemini result<select value={filters.geminiReview} disabled={Object.keys(scanImprovements).length === 0} onChange={(event) => changeFilter("geminiReview", event.target.value as GeminiReviewFilter)}><option value="all">All comments</option><option value="candidates">Review candidates</option><option value="suggest_rewrite">Suggested edits</option><option value="needs_human_review">Needs a person</option></select></label><button className="filter-toggle" type="button" aria-expanded={advanced} onClick={() => setAdvanced(!advanced)}>More filters <span aria-hidden="true">{advanced ? "−" : "+"}</span></button></div>{advanced && <div className="advanced-filters"><label>Path<input value={filters.path} onChange={(event) => changeFilter("path", event.target.value)} placeholder="src/" /></label><label>Author<input value={filters.author} onChange={(event) => changeFilter("author", event.target.value)} /></label><label>Language<input value={filters.language} onChange={(event) => changeFilter("language", event.target.value)} /></label><label>Comment kind<select value={filters.kind} onChange={(event) => changeFilter("kind", event.target.value)}><option value="">Any</option>{["line", "block", "doc_line", "doc_block", "markup", "shebang", "preprocessor", "special", "unknown"].map((kind) => <option key={kind} value={kind}>{kind.replaceAll("_", " ")}</option>)}</select></label><label>Minimum score<input type="number" min="0" max="100" value={filters.minScore} onChange={(event) => changeFilter("minScore", event.target.value)} /></label><label>Maximum score<input type="number" min="0" max="100" value={filters.maxScore} onChange={(event) => changeFilter("maxScore", event.target.value)} /></label>{(["protected", "generated", "license", "todo"] as const).map((key) => <label key={key}>{key[0].toUpperCase()}{key.slice(1)}<select value={filters[key]} onChange={(event) => changeFilter(key, event.target.value)}><option value="">Any</option><option value="true">Yes</option><option value="false">No</option></select></label>)}<button type="button" onClick={() => { setFilters(initialFilters); setSearch(""); setPageNumber(1); }}>Clear filters</button></div>}<p className="queue-caption">Priority scores sort the queue. Review the source before deciding.</p>{loadingPage && <p className="loading-inline" role="status">Loading comments…</p>}{page && page.items.length ? <ol className="comment-list">{page.items.map((item) => { const review = page.decisions.find((entry) => entry.commentId === item.commentId); const active = selected?.commentId === item.commentId; return <li key={item.commentId}><button ref={(node) => { rowRefs.current[item.commentId] = node; }} className={active ? "comment-row selected" : "comment-row"} type="button" aria-current={active ? "true" : undefined} onClick={() => openComment(item.commentId)}><span className="row-top"><code title={item.path}>{item.path}:{line(item)}</code><strong>{priority(item)}</strong></span><span className="row-text">{item.bodyText || item.rawText}</span><span className="row-bottom"><span>{item.score.findings[0]?.ruleId ?? (item.score.eligible ? "No priority signals" : "Protected from scoring")}</span><span>{review?.status ?? "Unreviewed"}</span>{scanImprovements[item.commentId] && <span>{improvementLabel(scanImprovements[item.commentId].outcome)}</span>}</span></button></li>; })}</ol> : page && !loadingPage ? <div className="queue-empty"><strong>{scan.commentCount === 0 ? "No comments in this scan." : "No comments match these filters."}</strong><p>{scan.commentCount === 0 ? "Try a different ref or repository." : "Clear filters or search for another path or phrase."}</p></div> : null}{page && page.total > page.pageSize && <div className="pagination"><button type="button" disabled={pageNumber <= 1} onClick={() => setPageNumber((value) => value - 1)}>Previous</button><span>Page {page.page} of {Math.ceil(page.total / page.pageSize)}</span><button type="button" disabled={!page.hasNextPage} onClick={() => setPageNumber((value) => value + 1)}>Next</button></div>}</section>
-            <section className="detail-panel" ref={detailRef} tabIndex={-1} aria-labelledby="detail-heading"><div className="mobile-detail-head"><button type="button" onClick={closeDetail}>← Back to queue</button></div>{selected ? <><div className="detail-heading"><div><h2 id="detail-heading">The comment, in context.</h2></div><span className={`priority-label band-${selected.score.band}`}>{priority(selected)}</span></div><div className="location-line"><code>{selected.path}:{line(selected)}</code><span>{selected.language} | {selected.kind.replaceAll("_", " ")}</span></div><blockquote className="comment-quote">{selected.rawText}</blockquote><div className="source-block"><div className="block-heading"><h3>Source context</h3><span>{selected.parser} | {selected.placement.replaceAll("_", " ")}</span></div>{selected.sourceContext ? <pre><code>{selected.sourceContext}</code></pre> : <p>Short source context was not available for this comment.</p>}</div><div className="evidence-block"><div className="block-heading"><h3>Priority signals</h3><span>{selected.score.findings.length} {selected.score.findings.length === 1 ? "signal" : "signals"} matched</span></div>{!selected.score.eligible ? <p>The scanner excludes this comment from priority scoring, but keeps it in the queue for context.</p> : !selected.score.findings.length ? <p>No priority signals matched. This scan lists all comments, including ones with no signals. A score of 0 means no points were added to its review order; it says nothing about the comment's quality.</p> : <ol className="finding-list">{selected.score.findings.map((finding) => <li key={finding.ruleId}><div className="finding-head"><code>{finding.ruleId.replaceAll("_", " ")}</code><span>+{finding.contribution} points</span></div><div className="evidence-trace" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(2, finding.contribution))}%` }} /></div><p>{finding.explanation}</p>{Object.keys(finding.evidence).length > 0 && <details><summary>Why it matched</summary><dl>{Object.entries(finding.evidence).map(([key, value]) => <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{Array.isArray(value) ? value.join(", ") : String(value ?? "Unknown")}</dd></div>)}</dl></details>}</li>)}</ol>}<p className="fine-print">Priority scoring v{selected.score.ruleSetVersion} sorts the queue. It does not judge comment quality.</p></div><div className="provenance"><h3>Provenance</h3><dl><div><dt>Symbol</dt><dd>{selected.symbol?.enclosing?.qualifiedName ?? selected.symbol?.attachedTo?.qualifiedName ?? "Not resolved"}</dd></div><div><dt>Git author</dt><dd>{selected.git.blameSpans[0]?.authorName ?? "Unavailable"}</dd></div><div><dt>Last change</dt><dd>{time(selected.git.blameSpans[0]?.authoredAt ?? null)}</dd></div></dl></div>{scanImprovements[selected.commentId] && <section className="improvement-result" aria-label="Whole-scan review result"><div className="block-heading"><h3>Whole-scan review</h3><span>{improvementLabel(scanImprovements[selected.commentId].outcome)}. {scanImprovements[selected.commentId].contextScope === "comment_and_code" ? "Source excerpt included" : scanImprovements[selected.commentId].contextScope === "not_sent" ? "Not sent to Gemini" : "Comment only"}</span></div>{scanImprovements[selected.commentId].reasons.map((reason, index) => <p key={index}>{reason}</p>)}{scanImprovements[selected.commentId].suggestedRewrite && <div className="improvement-comparison"><div><h4>Current comment</h4><pre>{selected.rawText}</pre></div><div><h4>Suggested wording</h4><pre>{scanImprovements[selected.commentId].suggestedRewrite}</pre></div></div>}<p className="fine-print">This is a proposal for review. Comment Lens has not changed repository files.</p></section>}<form className="decision-form" onSubmit={saveDecision}><div className="block-heading"><h3>Make the call</h3><span>{currentDecision ? `Saved ${time(currentDecision.updatedAt)}` : "Not reviewed"}</span></div><p>Decisions and private notes stay in Comment Lens. They do not edit repository files.</p><fieldset><legend>Review decision</legend><div className="decision-options">{decisions.map((item) => <label key={item} className={decisionDraft === item ? "chosen" : ""}><input type="radio" name="decision" value={item} checked={decisionDraft === item} onChange={() => setDecisionDraft(item)} /><span>{item[0].toUpperCase()}{item.slice(1)}</span></label>)}</div></fieldset><label className="note-label" htmlFor="review-note">Private note <span>Optional</span></label><textarea id="review-note" maxLength={4000} rows={3} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="What should the next reviewer know?" /><div className="decision-actions"><button className="primary-button" type="submit" disabled={!decisionDraft || busy === "decision"}>{busy === "decision" ? "Saving…" : "Save review"}</button>{currentDecision && <span>Current: {currentDecision.status}</span>}</div></form><div className="assist-section"><button className="assist-toggle" type="button" aria-expanded={assistOpen} onClick={() => setAssistOpen(!assistOpen)}>Gemini assistance (optional) <span aria-hidden="true">{assistOpen ? "−" : "+"}</span></button>{assistOpen && <div className="assist-body"><p>Gemini can explain a matched priority signal or assess the comment's wording. It does not change the priority score or make the review decision.</p><label>Priority signal<select value={ruleId} onChange={(event) => { setRuleId(event.target.value); setAssistance(null); }}>{selected.score.findings.length ? selected.score.findings.map((finding) => <option key={finding.ruleId} value={finding.ruleId}>{finding.ruleId.replaceAll("_", " ")}</option>) : <option value="">No priority signal available</option>}</select></label><label className="check-label"><input type="checkbox" checked={includeCode} onChange={(event) => setIncludeCode(event.target.checked)} /> Include stored source excerpt</label><p className="fine-print">Both requests send the comment, language, and kind to Gemini. Signal explanations also send the selected signal's evidence. Style assessments also use the resolved symbol and priority signals. The source excerpt is sent only when you check the box. Explanations are not saved; style assessments stay with the scan until it expires. Gemini request storage is disabled.</p><div className="assist-actions"><button type="button" disabled={!ruleId || busy === "assist"} onClick={requestAssistance}>{busy === "assist" ? "Requesting…" : "Explain selected signal"}</button><button type="button" disabled={busy === "assessment"} onClick={requestAssessment}>{busy === "assessment" ? "Assessing…" : "Assess comment style"}</button></div>{assistance && <div className="ai-result"><h4>Signal explanation</h4><p><strong>Why it matters:</strong> {assistance.whyItMatters}</p><p><strong>Relationship to this comment:</strong> {assistance.relationship}</p><p><strong>Suggested review:</strong> {assistance.recommendation}</p>{assistance.suggestedRewrite && <div><strong>Suggested rewrite</strong><pre>{assistance.suggestedRewrite}</pre></div>}</div>}{assessment && <div className="ai-result"><h4>Comment style: {assessment.styleLabel.replaceAll("_", " ")}</h4>{assessment.reasons.map((reason, index) => <p key={index}>{reason}</p>)}{assessment.suggestedRewrite && <div><strong>Suggested rewrite</strong><pre>{assessment.suggestedRewrite}</pre></div>}</div>}</div>}</div></> : <div className="detail-empty"><h2 id="detail-heading">Select a comment to inspect it.</h2><p>Its source, priority signals, and review controls will appear here.</p></div>}</section>
+            <section className="detail-panel" ref={detailRef} tabIndex={-1} aria-labelledby="detail-heading"><div className="mobile-detail-head"><button type="button" onClick={closeDetail}>← Back to queue</button></div>{selected ? <><div className="detail-heading"><div><h2 id="detail-heading">The comment, in context.</h2></div><span className={`priority-label band-${selected.score.band}`}>{priority(selected)}</span></div><div className="location-line"><code>{selected.path}:{line(selected)}</code><span>{selected.language} | {selected.kind.replaceAll("_", " ")}</span></div><blockquote className="comment-quote">{selected.rawText}</blockquote><div className="source-block"><div className="block-heading"><h3>Source context</h3><span>{selected.parser} | {selected.placement.replaceAll("_", " ")}</span></div>{selected.sourceContext ? <pre><code>{selected.sourceContext}</code></pre> : <p>Short source context was not available for this comment.</p>}</div><div className="evidence-block"><div className="block-heading"><h3>Priority signals</h3><span>{selected.score.findings.length} {selected.score.findings.length === 1 ? "signal" : "signals"} matched</span></div>{!selected.score.eligible ? <p>The scanner excludes this comment from priority scoring, but keeps it in the queue for context.</p> : !selected.score.findings.length ? <p>No priority signals matched. This scan lists all comments, including ones with no signals. A score of 0 means no points were added to its review order; it says nothing about the comment&apos;s quality.</p> : <ol className="finding-list">{selected.score.findings.map((finding) => <li key={finding.ruleId}><div className="finding-head"><code>{finding.ruleId.replaceAll("_", " ")}</code><span>+{finding.contribution} points</span></div><div className="evidence-trace" aria-hidden="true"><span style={{ width: `${Math.min(100, Math.max(2, finding.contribution))}%` }} /></div><p>{finding.explanation}</p>{Object.keys(finding.evidence).length > 0 && <details><summary>Why it matched</summary><dl>{Object.entries(finding.evidence).map(([key, value]) => <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{Array.isArray(value) ? value.join(", ") : String(value ?? "Unknown")}</dd></div>)}</dl></details>}</li>)}</ol>}<p className="fine-print">Priority scoring v{selected.score.ruleSetVersion} sorts the queue. It does not judge comment quality.</p></div><div className="provenance"><h3>Provenance</h3><dl><div><dt>Symbol</dt><dd>{selected.symbol?.enclosing?.qualifiedName ?? selected.symbol?.attachedTo?.qualifiedName ?? "Not resolved"}</dd></div><div><dt>Git author</dt><dd>{selected.git.blameSpans[0]?.authorName ?? "Unavailable"}</dd></div><div><dt>Last change</dt><dd>{time(selected.git.blameSpans[0]?.authoredAt ?? null)}</dd></div></dl></div>{scanImprovements[selected.commentId] && <section className="improvement-result" aria-label="Whole-scan review result"><div className="block-heading"><h3>Whole-scan review</h3><span>{improvementLabel(scanImprovements[selected.commentId].outcome)}. {scanImprovements[selected.commentId].contextScope === "comment_and_code" ? "Source excerpt included" : scanImprovements[selected.commentId].contextScope === "not_sent" ? "Not sent to Gemini" : "Comment only"}</span></div>{scanImprovements[selected.commentId].reasons.map((reason, index) => <p key={index}>{reason}</p>)}{scanImprovements[selected.commentId].suggestedRewrite && <div className="improvement-comparison"><div><h4>Current comment</h4><pre>{selected.rawText}</pre></div><div><h4>Suggested wording</h4><pre>{scanImprovements[selected.commentId].suggestedRewrite}</pre></div></div>}<p className="fine-print">This is a proposal for review. Comment Lens has not changed repository files.</p></section>}<form className="decision-form" onSubmit={saveDecision}><div className="block-heading"><h3>Make the call</h3><span>{currentDecision ? `Saved ${time(currentDecision.updatedAt)}` : "Not reviewed"}</span></div><p>Decisions and private notes stay in Comment Lens. They do not edit repository files.</p><fieldset><legend>Review decision</legend><div className="decision-options">{decisions.map((item) => <label key={item} className={decisionDraft === item ? "chosen" : ""}><input type="radio" name="decision" value={item} checked={decisionDraft === item} onChange={() => setDecisionDraft(item)} /><span>{item[0].toUpperCase()}{item.slice(1)}</span></label>)}</div></fieldset><label className="note-label" htmlFor="review-note">Private note <span>Optional</span></label><textarea id="review-note" maxLength={4000} rows={3} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="What should the next reviewer know?" /><div className="decision-actions"><button className="primary-button" type="submit" disabled={!decisionDraft || busy === "decision"}>{busy === "decision" ? "Saving…" : "Save review"}</button>{currentDecision && <span>Current: {currentDecision.status}</span>}</div></form><div className="assist-section"><button className="assist-toggle" type="button" aria-expanded={assistOpen} onClick={() => setAssistOpen(!assistOpen)}>Gemini assistance (optional) <span aria-hidden="true">{assistOpen ? "−" : "+"}</span></button>{assistOpen && <div className="assist-body"><p>Gemini can explain a matched priority signal or assess the comment&apos;s wording. It does not change the priority score or make the review decision.</p><label>Priority signal<select value={ruleId} onChange={(event) => { setRuleId(event.target.value); setAssistance(null); }}>{selected.score.findings.length ? selected.score.findings.map((finding) => <option key={finding.ruleId} value={finding.ruleId}>{finding.ruleId.replaceAll("_", " ")}</option>) : <option value="">No priority signal available</option>}</select></label><label className="check-label"><input type="checkbox" checked={includeCode} onChange={(event) => setIncludeCode(event.target.checked)} /> Include stored source excerpt</label><p className="fine-print">Both requests send the comment, language, and kind to Gemini. Signal explanations also send the selected signal&apos;s evidence. Style assessments also use the resolved symbol and priority signals. The source excerpt is sent only when you check the box. Explanations are not saved; style assessments stay with the scan until it expires. Gemini request storage is disabled.</p><div className="assist-actions"><button type="button" disabled={!ruleId || busy === "assist"} onClick={requestAssistance}>{busy === "assist" ? "Requesting…" : "Explain selected signal"}</button><button type="button" disabled={busy === "assessment"} onClick={requestAssessment}>{busy === "assessment" ? "Assessing…" : "Assess comment style"}</button></div>{assistance && <div className="ai-result"><h4>Signal explanation</h4><p><strong>Why it matters:</strong> {assistance.whyItMatters}</p><p><strong>Relationship to this comment:</strong> {assistance.relationship}</p><p><strong>Suggested review:</strong> {assistance.recommendation}</p>{assistance.suggestedRewrite && <div><strong>Suggested rewrite</strong><pre>{assistance.suggestedRewrite}</pre></div>}</div>}{assessment && <div className="ai-result"><h4>Comment style: {assessment.styleLabel.replaceAll("_", " ")}</h4>{assessment.reasons.map((reason, index) => <p key={index}>{reason}</p>)}{assessment.suggestedRewrite && <div><strong>Suggested rewrite</strong><pre>{assessment.suggestedRewrite}</pre></div>}</div>}</div>}</div></> : <div className="detail-empty"><h2 id="detail-heading">Select a comment to inspect it.</h2><p>Its source, priority signals, and review controls will appear here.</p></div>}</section>
           </div></>}
         </>}
       </main>
