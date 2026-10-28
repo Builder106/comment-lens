@@ -44,10 +44,10 @@ function setup() {
     },
     commands: { registerCommand: (_name, callback) => { listeners.command = callback; return { dispose() {} }; } },
   };
-  const module = { exports: {} };
+  const extensionModule = { exports: {} };
   vm.runInNewContext(source, {
     Buffer,
-    module,
+    module: extensionModule,
     require: (name) => name === "vscode" ? vscode : name === "node:child_process" ? {
       execFile: (command, args, options, callback) => {
         const child = { command, args, options, callback, killed: false, kill() { this.killed = true; } };
@@ -57,7 +57,7 @@ function setup() {
     } : require(name),
   });
   const subscriptions = [];
-  module.exports.activate({ subscriptions });
+  extensionModule.exports.activate({ subscriptions });
   return { diagnostics, document, file, listeners, processes, root, subscriptions };
 }
 
