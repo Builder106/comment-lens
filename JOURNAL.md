@@ -143,3 +143,7 @@ Kept Tree-sitter as the primary parser with Pygments fallback, retained only com
 ## 2026-10-23: Reject Any annotations and deprecated APIs #decision
 
 Ruff ANN401 now covers the scanner and worker Python code. Scanner and worker tests fail on Python DeprecationWarning, and Ruff runs from a pinned CI-only command.
+
+## 2026-10-28: Lint gate cleanup and render-time resets #ci #decision
+
+The Next.js ESLint presets enabled on 2026-10-27 had never run against the code, so the first full run reported 13 errors. The review workspace reset state inside effects, which the React Hooks rule flags as cascading renders. It now resets scan, repository, draft, and loading state during render when the controlling key changes, and the scan poller reads scans through a ref so it does not restart on every refresh. loadComments is a promise chain because the rule treats any setState inside an async function called from an effect as synchronous. The VS Code extension entry stays CommonJS and the scanner fixtures stay unlinted, since they are deliberate inputs. Browser behavior of the workspace is covered by CI integration and performance jobs, not by the unit run.
