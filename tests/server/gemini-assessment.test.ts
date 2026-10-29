@@ -1,10 +1,54 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { requestGeminiAssessment, safeGeminiErrorMetadata } from "../../lib/server/gemini-assessment";
+import { getGeminiApiKeys, requestGeminiAssessment, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "../../lib/server/gemini-assessment";
 import type { Finding, SymbolContext } from "../../contracts";
 
 const input = { commentId: "c1", comment: "Explain the value.", language: "typescript", kind: "line" as const, symbol: null as SymbolContext | null, context: "const value = 1;", findings: [{ ruleId: "verbosity", contribution: 1, evidence: { length: 20 }, explanation: "The comment is verbose." }] satisfies Finding[] };
 const client = (output: string): Parameters<typeof requestGeminiAssessment>[1] => ({ interactions: { create: async () => ({ output_text: output }) } });
+
+test("numbered Gemini project keys take precedence and keep their configured order", () => {
+  assert.deepEqual(getGeminiApiKeys({
+    GEMINI_API_KEY: "legacy-key",
+    GEMINI_API_KEY_1: " first-key ",
+    GEMINI_API_KEY_2: "second-key",
+    GEMINI_API_KEY_3: "",
+    GEMINI_API_KEY_4: "fourth-key",
+  }), ["first-key", "second-key", "fourth-key"]);
+});
+
+test("the legacy Gemini key remains a fallback", () => {
+  assert.deepEqual(getGeminiApiKeys({ GEMINI_API_KEY: " legacy-key " }), ["legacy-key"]);
+});
+
+test("Gemini key fallback starts at the active project and advances on HTTP 429", async () => {
+  const tried: string[] = [];
+  const result = await withGeminiApiKeyFallback(["key-1", "key-2", "key-3"], 1, async (apiKey) => {
+    tried.push(apiKey);
+    if (apiKey === "key-2") throw Object.assign(new Error("limited"), { status: 429 });
+    return "ok";
+  });
+
+  assert.deepEqual(tried, ["key-2", "key-3"]);
+  assert.deepEqual(result, { result: "ok", keyIndex: 2 });
+});
+
+test("Gemini key fallback stops on errors other than HTTP 429", async () => {
+  const tried: string[] = [];
+  await assert.rejects(withGeminiApiKeyFallback(["key-1", "key-2"], 0, async (apiKey) => {
+    tried.push(apiKey);
+    throw Object.assign(new Error("invalid key"), { status: 403 });
+  }), /invalid key/);
+  assert.deepEqual(tried, ["key-1"]);
+});
+
+test("Gemini key fallback returns the final 429 when every project is limited", async () => {
+  const tried: string[] = [];
+  await assert.rejects(withGeminiApiKeyFallback(["key-1", "key-2"], 0, async (apiKey) => {
+    tried.push(apiKey);
+    throw Object.assign(new Error(`${apiKey} limited`), { status: 429 });
+  }), /key-2 limited/);
+  assert.deepEqual(tried, ["key-1", "key-2"]);
+});
 
 test("valid output is enriched with provenance without a score", async () => {
   const result = await requestGeminiAssessment(input, client('{"styleLabel":"ordinary","confidence":0.4,"reasons":["It is concise."],"suggestedRewrite":null}'), "gemini-test");

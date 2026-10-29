@@ -14,7 +14,10 @@ import { getOwnedScan } from "../../../../../lib/server/data";
 import {
   createGeminiAssessmentClient,
   DEFAULT_GEMINI_MODEL,
+  GEMINI_API_KEY_INDEX_HEADER,
+  getGeminiApiKeys,
   safeGeminiErrorMetadata,
+  withGeminiApiKeyFallback,
 } from "../../../../../lib/server/gemini-assessment";
 import { requestGeminiScanImprovements, SCAN_IMPROVEMENT_PROMPT_VERSION } from "../../../../../lib/server/gemini-scan-improvements";
 import { handleError, jsonError } from "../../../../../lib/server/http";
@@ -49,7 +52,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ scan
     ));
     return NextResponse.json(ScanImprovementsResponse.parse({
       schemaVersion: 1,
-      configured: Boolean(process.env.GEMINI_API_KEY),
+      configured: getGeminiApiKeys().length > 0,
       improvements: rows.map((row) => CommentImprovement.parse(row.payload)),
     }));
   } catch (error) {
@@ -72,6 +75,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
     const byId = new Map(rows.map((row) => [row.id, row]));
     const results = new Map<string, ReturnType<typeof policyOutcome>>();
     const candidates: { row: typeof rows[number]; payload: CommentRecord }[] = [];
+    let usedGeminiKeyIndex: number | null = null;
 
     for (const commentId of input.commentIds) {
       const row = byId.get(commentId);
@@ -89,17 +93,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
     }
 
     if (candidates.length) {
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) return jsonError("internal_error", "Whole-scan review is not configured", 503);
+      const apiKeys = getGeminiApiKeys();
+      if (apiKeys.length === 0) return jsonError("internal_error", "Whole-scan review is not configured", 503);
       try {
         const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
-        const modelResults = await requestGeminiScanImprovements(candidates.map(({ row, payload }) => ({
-          commentId: row.id,
-          comment: row.rawText,
-          language: row.language,
-          kind: payload.kind,
-          context: input.includeCodeContext ? row.context?.slice(0, 2048) ?? null : null,
-        })), createGeminiAssessmentClient(apiKey), model);
+        const startIndexValue = Number(request.headers.get(GEMINI_API_KEY_INDEX_HEADER));
+        const startIndex = Number.isInteger(startIndexValue) && startIndexValue >= 0 && startIndexValue < apiKeys.length ? startIndexValue : 0;
+        const { result: modelResults, keyIndex } = await withGeminiApiKeyFallback(apiKeys, startIndex, (apiKey) =>
+          requestGeminiScanImprovements(candidates.map(({ row, payload }) => ({
+            commentId: row.id,
+            comment: row.rawText,
+            language: row.language,
+            kind: payload.kind,
+            context: input.includeCodeContext ? row.context?.slice(0, 2048) ?? null : null,
+          })), createGeminiAssessmentClient(apiKey, 1), model));
+        usedGeminiKeyIndex = keyIndex;
         for (const result of modelResults) {
           results.set(result.commentId, CommentImprovement.parse({
             ...result,
@@ -111,7 +119,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
           }));
         }
       } catch (error) {
-        console.error("Gemini scan improvement request failed", safeGeminiErrorMetadata(error));
+        const metadata = safeGeminiErrorMetadata(error);
+        console.error("Gemini scan improvement request failed", metadata);
+        if (metadata.status === 429) return jsonError("rate_limited", "All configured Gemini keys hit a rate limit", 429);
         return jsonError("internal_error", "Whole-scan review is temporarily unavailable", 502);
       }
     }
@@ -153,7 +163,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
         },
       });
     }
-    return NextResponse.json(ScanImprovementBatchResponse.parse({ schemaVersion: 1, improvements }));
+    const response = NextResponse.json(ScanImprovementBatchResponse.parse({ schemaVersion: 1, improvements }));
+    if (usedGeminiKeyIndex !== null) response.headers.set(GEMINI_API_KEY_INDEX_HEADER, String(usedGeminiKeyIndex));
+    return response;
   } catch (error) {
     if (error instanceof SyntaxError) return jsonError("invalid_request", "Invalid request payload", 400);
     return handleError(error);

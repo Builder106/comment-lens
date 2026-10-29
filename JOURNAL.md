@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-29: Rotate Gemini project keys on rate limits #decision #gemini
+
+Gemini routes read `GEMINI_API_KEY_1` through `GEMINI_API_KEY_4` in order. They start with the key index sent by the client and try the next configured key after HTTP 429. Successful responses return that index in `x-comment-lens-gemini-key-index` for the next batch. A 429 after every key fails tells the runner to wait for quota to reset. These routes set SDK retries to one so each key gets one attempt before failover. If no numbered key is set, routes use `GEMINI_API_KEY`.
+
 ## 2026-10-27: Enable Next.js ESLint rules #ci #decision
 
 The existing ESLint command now loads the Next.js Core Web Vitals and TypeScript presets. The flat config previously had an empty rules object, so the job enforced no lint rules.

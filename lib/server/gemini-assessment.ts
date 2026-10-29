@@ -4,12 +4,41 @@ import type { CommentKind, Finding, SymbolContext } from "../../contracts";
 
 export const ASSESSMENT_PROMPT_VERSION = "comment-style-v2";
 export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
+export const GEMINI_API_KEY_INDEX_HEADER = "x-comment-lens-gemini-key-index";
 const assessmentSchema = { type: "object", additionalProperties: false, properties: { styleLabel: { type: "string", enum: ["ordinary", "template_like", "overexplained", "uncertain", "protected"] }, confidence: { type: "number", minimum: 0, maximum: 1 }, reasons: { type: "array", minItems: 1, maxItems: 3, items: { type: "string", minLength: 1, maxLength: 1000 } }, suggestedRewrite: { type: ["string", "null"], maxLength: 65536 } }, required: ["styleLabel", "confidence", "reasons", "suggestedRewrite"] } as const;
 type GeminiInteractionCreate = InstanceType<typeof GoogleGenAI>["interactions"]["create"];
 type GeminiInteractionRequest = Parameters<GeminiInteractionCreate>[0];
 
 export interface AssessmentInput { commentId: string; comment: string; language: string | null; kind: CommentKind; symbol: SymbolContext | null; context: string | null; findings: Finding[]; }
 export interface GeminiAssessmentClient { interactions: { create(input: GeminiInteractionRequest): Promise<{ output_text?: string }> } }
+export function getGeminiApiKeys(environment: Record<string, string | undefined> = process.env): string[] {
+  const numberedKeys = [1, 2, 3, 4]
+    .map((index) => environment[`GEMINI_API_KEY_${index}`]?.trim())
+    .filter((key): key is string => Boolean(key));
+  const configuredKeys = numberedKeys.length > 0 ? numberedKeys : [environment.GEMINI_API_KEY?.trim()];
+  return [...new Set(configuredKeys.filter((key): key is string => Boolean(key)))];
+}
+
+export async function withGeminiApiKeyFallback<T>(
+  apiKeys: string[],
+  startIndex: number,
+  request: (apiKey: string) => Promise<T>,
+): Promise<{ result: T; keyIndex: number }> {
+  if (apiKeys.length === 0) throw new Error("GEMINI_API_KEY_MISSING");
+  const firstIndex = Number.isInteger(startIndex) && startIndex >= 0 && startIndex < apiKeys.length ? startIndex : 0;
+  let lastRateLimitError: unknown;
+  for (let offset = 0; offset < apiKeys.length; offset += 1) {
+    const keyIndex = (firstIndex + offset) % apiKeys.length;
+    try {
+      return { result: await request(apiKeys[keyIndex]), keyIndex };
+    } catch (error) {
+      if (safeGeminiErrorMetadata(error).status !== 429) throw error;
+      lastRateLimitError = error;
+    }
+  }
+  throw lastRateLimitError;
+}
+
 export function safeGeminiErrorMetadata(error: unknown): {
   name: string;
   status?: number;
@@ -109,8 +138,8 @@ export async function requestGeminiAssessment(input: AssessmentInput, client: Ge
   if (typeof modelOutput !== "object" || modelOutput === null || Array.isArray(modelOutput)) throw new Error("GEMINI_INVALID_OUTPUT");
   return GeminiAssessmentOutput.parse({ ...modelOutput, schemaVersion: 1, commentId: input.commentId, providerId: "google-gemini", modelId: model, promptVersion: ASSESSMENT_PROMPT_VERSION, assessedAt: new Date().toISOString() });
 }
-export function createGeminiAssessmentClient(apiKey: string): GeminiAssessmentClient {
-  const ai = new GoogleGenAI({ apiKey });
+export function createGeminiAssessmentClient(apiKey: string, retryAttempts = 5): GeminiAssessmentClient {
+  const ai = new GoogleGenAI({ apiKey, httpOptions: { retryOptions: { attempts: retryAttempts } } });
   return {
     interactions: {
       create: async (input) => {

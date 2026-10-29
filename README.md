@@ -181,7 +181,8 @@ Configure these in Vercel without exposing their values:
 - `COMMENT_LENS_WORKFLOW_REPOSITORY`
 - `COMMENT_LENS_WORKFLOW_ID`
 - `COMMENT_LENS_WORKFLOW_REF`
-- `GEMINI_API_KEY` (optional)
+- `GEMINI_API_KEY_1` through `GEMINI_API_KEY_4` (optional, tried in order when a project returns HTTP 429)
+- `GEMINI_API_KEY` (optional legacy single-key fallback when no numbered keys are set)
 - `GEMINI_MODEL` (optional)
 
 Set `COMMENT_LENS_UPLOAD_BASE_URL` as a GitHub Actions repository variable to
@@ -237,7 +238,8 @@ After deployment and configuration verification, use an authorized account:
 4. Confirm signed chunks are accepted and the scan count matches the manifest.
 5. Confirm the review queue loads, a review decision persists, and duplicate
    chunk delivery remains idempotent.
-6. Request the optional Gemini assessment if `GEMINI_API_KEY` is configured.
+6. Request the optional Gemini assessment if a numbered Gemini key or
+   `GEMINI_API_KEY` is configured.
 7. Export the scan as JSON and confirm the download completes.
 
 #### Failure, retry, and retention behavior

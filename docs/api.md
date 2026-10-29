@@ -25,6 +25,8 @@ Install the GitHub App on each selected repository. Organization access is an ex
 
 API credentials grant the authorized owner's hosted API access, including review mutations and optional AI requests. Worker ingestion and retention endpoints keep their separate signing and cron credentials. API authentication is disabled until all required API settings are valid. An invalid Authorization header returns 401, even when a browser cookie is also present.
 
+Set `GEMINI_API_KEY_1` through `GEMINI_API_KEY_4` in the order to use them. The client can send the current key index in `x-comment-lens-gemini-key-index`. Comment Lens tries that key first and moves to the next configured key after HTTP 429. A successful response returns the index for the next batch. If you set no numbered keys, the app uses `GEMINI_API_KEY`. Do not send key values in API requests or commit them.
+
 The API token has no automatic expiry. Replace or remove `COMMENT_LENS_API_TOKEN_SHA256` and redeploy to rotate or revoke it. Changing the API digest leaves browser sessions valid.
 
 For this deployment, set the GitHub Actions variable `COMMENT_LENS_UPLOAD_BASE_URL` to `https://comment-lens-review.vercel.app`. Set the GitHub App callback URL to `https://comment-lens-review.vercel.app/api/auth/github/callback`. Worker ingestion routes must be reachable without an interactive Vercel login. Deployment protection can block workers even when an authenticated browser can open the dashboard.
@@ -80,4 +82,4 @@ Send `Authorization: Bearer TOKEN` on every request and `Content-Type: applicati
 | POST | `/api/comments/{commentId}/assist` | Explicitly request help for one finding. |
 | POST | `/api/comments/{commentId}/assessment` | Explicitly request an AI style assessment. |
 
-AI POST endpoints can incur provider costs and send comment data to Gemini. They retain their existing context controls and ownership checks; see [assisted review](assisted-review.md). API errors use `{schemaVersion: 1, error: {code, message, requestId}}`. Typical statuses are 400 for invalid input, 401 for authentication failure, 403 for denied access, 404 for an unavailable owned resource, and 503 for missing scan configuration. Worker failures appear in the scan record after dispatch.
+AI POST endpoints can incur provider costs and send comment data to Gemini. They retain their existing context controls and ownership checks; see [assisted review](assisted-review.md). API errors use `{schemaVersion: 1, error: {code, message, requestId}}`. Typical statuses are 400 for invalid input, 401 for authentication failure, 403 for denied access, 404 for an unavailable owned resource, 429 when every configured Gemini project is rate-limited, and 503 for missing scan configuration. Worker failures appear in the scan record after dispatch.
