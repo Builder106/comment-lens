@@ -48,7 +48,7 @@ test("valid output with suggested rewrite is returned with v2 prompt version", a
   assert.equal(result.promptVersion, "comment-style-v2");
 });
 
-test("safe Gemini error metadata omits messages and arbitrary fields", () => {
+test("safe Gemini error metadata omits unstructured messages and arbitrary fields", () => {
   const error = Object.assign(new Error("private comment text"), {
     status: 503,
     code: "SERVICE_UNAVAILABLE",
@@ -60,6 +60,58 @@ test("safe Gemini error metadata omits messages and arbitrary fields", () => {
     status: 503,
     code: "SERVICE_UNAVAILABLE",
   });
+});
+
+test("safe Gemini error metadata records provider quota code and message", () => {
+  const error = Object.assign(new Error("The project has exceeded its daily quota."), {
+    statusCode: 429,
+    error: {
+    code: "quota_exceeded",
+    message: "The project has exceeded its daily quota.",
+    },
+    body: JSON.stringify({ error: {
+      code: "quota_exceeded",
+      message: "The project has exceeded its daily quota.",
+    } }),
+  });
+
+  assert.deepEqual(safeGeminiErrorMetadata(error), {
+    name: "Error",
+    status: 429,
+    providerCode: "quota_exceeded",
+    providerMessage: "The project has exceeded its daily quota.",
+  });
+});
+
+test("safe Gemini error metadata reads the provider error from the SDK body", () => {
+  const error = Object.assign(new Error("429 Too Many Requests"), {
+    statusCode: 429,
+    body: JSON.stringify({ error: {
+      code: "too_many_requests",
+      message: "Too many requests in a short period.",
+    } }),
+  });
+
+  assert.deepEqual(safeGeminiErrorMetadata(error), {
+    name: "Error",
+    status: 429,
+    providerCode: "too_many_requests",
+    providerMessage: "Too many requests in a short period.",
+  });
+});
+
+test("safe Gemini error metadata redacts key parameters and bounds 429 messages", () => {
+  const error = Object.assign(new Error("429 Too Many Requests"), {
+    status: 429,
+    error: { error: {
+    code: "rate_limit_exceeded",
+    message: `Wait here?key=do-not-log ${"x".repeat(400)}`,
+    } },
+  });
+  const metadata = safeGeminiErrorMetadata(error);
+
+  assert.equal(metadata.providerMessage?.includes("do-not-log"), false);
+  assert.equal(metadata.providerMessage?.length, 320);
 });
 
 test("safe Gemini error metadata rejects unbounded labels and invalid statuses", () => {

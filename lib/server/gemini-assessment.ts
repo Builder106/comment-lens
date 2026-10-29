@@ -10,25 +10,68 @@ type GeminiInteractionRequest = Parameters<GeminiInteractionCreate>[0];
 
 export interface AssessmentInput { commentId: string; comment: string; language: string | null; kind: CommentKind; symbol: SymbolContext | null; context: string | null; findings: Finding[]; }
 export interface GeminiAssessmentClient { interactions: { create(input: GeminiInteractionRequest): Promise<{ output_text?: string }> } }
-export function safeGeminiErrorMetadata(error: unknown): { name: string; status?: number; code?: string } {
+export function safeGeminiErrorMetadata(error: unknown): {
+  name: string;
+  status?: number;
+  code?: string;
+  providerCode?: string;
+  providerMessage?: string;
+} {
   const value = typeof error === "object" && error !== null ? error as Record<string, unknown> : {};
   const name = typeof value.name === "string"
     && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(value.name)
     ? value.name
     : "UnknownError";
-  const status = typeof value.status === "number"
-    && Number.isInteger(value.status)
-    && value.status >= 100
-    && value.status <= 599
-    ? value.status
+  const candidateStatus = typeof value.status === "number" ? value.status : value.statusCode;
+  const status = typeof candidateStatus === "number"
+    && Number.isInteger(candidateStatus)
+    && candidateStatus >= 100
+    && candidateStatus <= 599
+    ? candidateStatus
     : undefined;
   const code = typeof value.code === "string" && /^[A-Z0-9_]{1,64}$/.test(value.code)
     ? value.code
+    : undefined;
+  const asRecord = (candidate: unknown): Record<string, unknown> | undefined =>
+    typeof candidate === "object" && candidate !== null ? candidate as Record<string, unknown> : undefined;
+  const parsePayload = (candidate: unknown): Record<string, unknown> | undefined => {
+    if (typeof candidate !== "string" || candidate.length > 16_384) return undefined;
+    try {
+      return asRecord(JSON.parse(candidate));
+    } catch {
+      return undefined;
+    }
+  };
+  const errorObject = asRecord(value.error);
+  const dataObject = asRecord(value.data$);
+  const parsedBody = parsePayload(value.body);
+  const parsedMessage = parsePayload(value.message);
+  const providerError = [
+    asRecord(errorObject?.error),
+    errorObject,
+    asRecord(dataObject?.error),
+    asRecord(asRecord(parsedBody?.error)),
+    asRecord(asRecord(parsedMessage?.error)),
+  ].find((candidate) => candidate && (typeof candidate.code === "string" || typeof candidate.message === "string")) ?? {};
+  const providerCode = typeof providerError.code === "string" && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(providerError.code)
+    ? providerError.code
+    : undefined;
+  const providerMessage = status === 429
+    && typeof providerError.message === "string"
+    && providerError.message.trim().length > 0
+    ? providerError.message
+      .replace(/([?&](?:key|api_key|token)=)[^&\s]+/gi, "$1[REDACTED]")
+      .replace(/AIza[0-9A-Za-z_-]{20,}/g, "[REDACTED]")
+      .replace(/\b(Bearer\s+)[A-Za-z0-9._~+/-]+=*/gi, "$1[REDACTED]")
+      .replace(/[\r\n\t]+/g, " ")
+      .slice(0, 320)
     : undefined;
   return {
     name,
     ...(status === undefined ? {} : { status }),
     ...(code === undefined ? {} : { code }),
+    ...(providerCode === undefined ? {} : { providerCode }),
+    ...(providerMessage === undefined ? {} : { providerMessage }),
   };
 }
 function promptFor(input: AssessmentInput): string {
