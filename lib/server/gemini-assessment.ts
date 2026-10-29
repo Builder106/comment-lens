@@ -11,18 +11,35 @@ type GeminiInteractionRequest = Parameters<GeminiInteractionCreate>[0];
 
 export interface AssessmentInput { commentId: string; comment: string; language: string | null; kind: CommentKind; symbol: SymbolContext | null; context: string | null; findings: Finding[]; }
 export interface GeminiAssessmentClient { interactions: { create(input: GeminiInteractionRequest): Promise<{ output_text?: string }> } }
+function configuredGeminiApiKeys(environment: Record<string, string | undefined>): { key: string; slot: string }[] {
+  const numberedKeys = [1, 2, 3, 4].flatMap((index) => {
+    const key = environment[`GEMINI_API_KEY_${index}`]?.trim();
+    return key ? [{ key, slot: `GEMINI_API_KEY_${index}` }] : [];
+  });
+  const configuredKeys = numberedKeys.length > 0
+    ? numberedKeys
+    : environment.GEMINI_API_KEY?.trim()
+      ? [{ key: environment.GEMINI_API_KEY.trim(), slot: "GEMINI_API_KEY" }]
+      : [];
+  const seen = new Set<string>();
+  return configuredKeys.filter(({ key }) => {
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 export function getGeminiApiKeys(environment: Record<string, string | undefined> = process.env): string[] {
-  const numberedKeys = [1, 2, 3, 4]
-    .map((index) => environment[`GEMINI_API_KEY_${index}`]?.trim())
-    .filter((key): key is string => Boolean(key));
-  const configuredKeys = numberedKeys.length > 0 ? numberedKeys : [environment.GEMINI_API_KEY?.trim()];
-  return [...new Set(configuredKeys.filter((key): key is string => Boolean(key)))];
+  return configuredGeminiApiKeys(environment).map(({ key }) => key);
+}
+export function getGeminiApiKeySlots(environment: Record<string, string | undefined> = process.env): string[] {
+  return configuredGeminiApiKeys(environment).map(({ slot }) => slot);
 }
 
 export async function withGeminiApiKeyFallback<T>(
   apiKeys: string[],
   startIndex: number,
   request: (apiKey: string) => Promise<T>,
+  onRateLimit?: (keyIndex: number, metadata: ReturnType<typeof safeGeminiErrorMetadata>) => void,
 ): Promise<{ result: T; keyIndex: number }> {
   if (apiKeys.length === 0) throw new Error("GEMINI_API_KEY_MISSING");
   const firstIndex = Number.isInteger(startIndex) && startIndex >= 0 && startIndex < apiKeys.length ? startIndex : 0;
@@ -32,7 +49,9 @@ export async function withGeminiApiKeyFallback<T>(
     try {
       return { result: await request(apiKeys[keyIndex]), keyIndex };
     } catch (error) {
-      if (safeGeminiErrorMetadata(error).status !== 429) throw error;
+      const metadata = safeGeminiErrorMetadata(error);
+      if (metadata.status !== 429) throw error;
+      onRateLimit?.(keyIndex, metadata);
       lastRateLimitError = error;
     }
   }

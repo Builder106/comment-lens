@@ -15,6 +15,7 @@ import {
   createGeminiAssessmentClient,
   DEFAULT_GEMINI_MODEL,
   GEMINI_API_KEY_INDEX_HEADER,
+  getGeminiApiKeySlots,
   getGeminiApiKeys,
   safeGeminiErrorMetadata,
   withGeminiApiKeyFallback,
@@ -94,6 +95,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
 
     if (candidates.length) {
       const apiKeys = getGeminiApiKeys();
+      const apiKeySlots = getGeminiApiKeySlots();
       if (apiKeys.length === 0) return jsonError("internal_error", "Whole-scan review is not configured", 503);
       try {
         const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
@@ -106,7 +108,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
             language: row.language,
             kind: payload.kind,
             context: input.includeCodeContext ? row.context?.slice(0, 2048) ?? null : null,
-          })), createGeminiAssessmentClient(apiKey, 1), model));
+          })), createGeminiAssessmentClient(apiKey, 1), model), (keyIndex, metadata) => {
+            console.error("Gemini scan improvement key rate limited", {
+              keySlot: apiKeySlots[keyIndex] ?? "unknown",
+              ...metadata,
+            });
+          });
         usedGeminiKeyIndex = keyIndex;
         for (const result of modelResults) {
           results.set(result.commentId, CommentImprovement.parse({
@@ -120,8 +127,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ sca
         }
       } catch (error) {
         const metadata = safeGeminiErrorMetadata(error);
-        console.error("Gemini scan improvement request failed", metadata);
         if (metadata.status === 429) return jsonError("rate_limited", "All configured Gemini keys hit a rate limit", 429);
+        console.error("Gemini scan improvement request failed", metadata);
         return jsonError("internal_error", "Whole-scan review is temporarily unavailable", 502);
       }
     }
