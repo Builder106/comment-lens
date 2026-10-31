@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { requireSession } from "../../../lib/server/auth";
-import { listAccessibleRepositories } from "../../../lib/server/github-app";
-import { CONTRACT_SCHEMA_VERSION } from "../../../contracts";
-import { handleError } from "../../../lib/server/http";
+import { requireSession } from "@/lib/server/auth";
+import { listAccessibleRepositories } from "@/lib/server/github-app";
+import { CONTRACT_SCHEMA_VERSION } from "@/contracts";
+import { handleError } from "@/lib/server/http";
 export async function GET(request: Request) {
   try {
     const session = await requireSession(request);

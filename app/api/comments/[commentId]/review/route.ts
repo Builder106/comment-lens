@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { ReviewDecision, ReviewDecisionRequest, ReviewDecisionResponse, CONTRACT_SCHEMA_VERSION } from "../../../../../contracts";
-import { requireDb } from "../../../../../db";
-import { reviewDecisions } from "../../../../../db/schema";
-import { requireSession } from "../../../../../lib/server/auth";
-import { getLatestOwnedComment } from "../../../../../lib/server/data";
-import { handleError } from "../../../../../lib/server/http";
+import { ReviewDecision, ReviewDecisionRequest, ReviewDecisionResponse, CONTRACT_SCHEMA_VERSION } from "@/contracts";
+import { requireDb } from "@/db";
+import { reviewDecisions } from "@/db/schema";
+import { requireSession } from "@/lib/server/auth";
+import { getLatestOwnedComment } from "@/lib/server/data";
+import { handleError } from "@/lib/server/http";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {

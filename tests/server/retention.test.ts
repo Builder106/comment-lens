@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { GET as runRetention } from "../../app/api/cron/retention/route";
+import { GET as runRetention } from "@/app/api/cron/retention/route";
 
 test("retention route requires a configured bearer secret", async () => {
   const originalSecret = process.env.CRON_SECRET;

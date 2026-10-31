@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
-import { requireSession, verifyApiAuthorization } from "../../lib/server/auth";
-import { GET as listRepositories } from "../../app/api/repositories/route";
-import { GET as listScans, POST as createScan } from "../../app/api/scans/route";
-import { GET as scanStatus } from "../../app/api/scans/[scanId]/route";
-import { GET as scanComments } from "../../app/api/scans/[scanId]/comments/route";
-import { GET as exportScan } from "../../app/api/scans/[scanId]/export/route";
-import { PATCH as reviewComment } from "../../app/api/comments/[commentId]/review/route";
-import { POST as assessComment } from "../../app/api/comments/[commentId]/assessment/route";
-import { POST as assistComment } from "../../app/api/comments/[commentId]/assist/route";
-import { GET as improvements, POST as improve } from "../../app/api/scans/[scanId]/improvements/route";
+import { requireSession, verifyApiAuthorization } from "@/lib/server/auth";
+import { GET as listRepositories } from "@/app/api/repositories/route";
+import { GET as listScans, POST as createScan } from "@/app/api/scans/route";
+import { GET as scanStatus } from "@/app/api/scans/[scanId]/route";
+import { GET as scanComments } from "@/app/api/scans/[scanId]/comments/route";
+import { GET as exportScan } from "@/app/api/scans/[scanId]/export/route";
+import { PATCH as reviewComment } from "@/app/api/comments/[commentId]/review/route";
+import { POST as assessComment } from "@/app/api/comments/[commentId]/assessment/route";
+import { POST as assistComment } from "@/app/api/comments/[commentId]/assist/route";
+import { GET as improvements, POST as improve } from "@/app/api/scans/[scanId]/improvements/route";
 
 const token = "test-only-api-token-".padEnd(64, "x");
 const names = ["COMMENT_LENS_API_TOKEN_SHA256", "COMMENT_LENS_API_LOGIN", "ALLOWED_GITHUB_USER_ID"] as const;

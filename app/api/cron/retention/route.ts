@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { jsonError, handleError } from "../../../../lib/server/http";
-import { purgeExpiredData } from "../../../../lib/server/retention";
+import { jsonError, handleError } from "@/lib/server/http";
+import { purgeExpiredData } from "@/lib/server/retention";
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;

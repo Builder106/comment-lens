@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FindingAssistance, type Finding, type CommentKind } from "../../contracts";
+import { FindingAssistance, type Finding, type CommentKind } from "@/contracts";
 import type { GeminiAssessmentClient } from "./gemini-assessment";
 
 export const ASSISTANCE_PROMPT_VERSION = "comment-maintenance-v1";

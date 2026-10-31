@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, exists, gt, gte, ilike, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import { requireDb } from "../../db";
-import { assessments, chunks, commentIdentities, comments, repositoryInstallations, reviewDecisions, scanImprovements, scans } from "../../db/schema";
-import { ScanRecord as ScanRecordSchema, type CommentQuery } from "../../contracts";
+import { requireDb } from "@/db";
+import { assessments, chunks, commentIdentities, comments, repositoryInstallations, reviewDecisions, scanImprovements, scans } from "@/db/schema";
+import { ScanRecord as ScanRecordSchema, type CommentQuery } from "@/contracts";
 import type { SessionPayload } from "./auth";
 import { SCAN_IMPROVEMENT_PROMPT_VERSION } from "./scan-improvement-version";
 

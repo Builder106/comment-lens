@@ -1,6 +1,6 @@
 import { count, eq, inArray, lte, notExists } from "drizzle-orm";
-import { requireTransactionalDb } from "../../db";
-import { assessments, chunks, commentIdentities, comments, reviewDecisions, scans, scanImprovements } from "../../db/schema";
+import { requireTransactionalDb } from "@/db";
+import { assessments, chunks, commentIdentities, comments, reviewDecisions, scans, scanImprovements } from "@/db/schema";
 
 export async function purgeExpiredData(now = new Date()) {
   const db = requireTransactionalDb();

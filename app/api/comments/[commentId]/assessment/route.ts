@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { AssessmentRequest, AssessmentResponse, CommentRecord } from "../../../../../contracts";
-import { requireDb } from "../../../../../db";
-import { assessments } from "../../../../../db/schema";
-import { requireSession } from "../../../../../lib/server/auth";
-import { getOwnedComment, getOwnedScan } from "../../../../../lib/server/data";
-import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL, getGeminiApiKeys, requestGeminiAssessment, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "../../../../../lib/server/gemini-assessment";
-import { jsonError } from "../../../../../lib/server/http";
-import { sensitivePath } from "../../../../../lib/server/sensitive-path";
+import { AssessmentRequest, AssessmentResponse, CommentRecord } from "@/contracts";
+import { requireDb } from "@/db";
+import { assessments } from "@/db/schema";
+import { requireSession } from "@/lib/server/auth";
+import { getOwnedComment, getOwnedScan } from "@/lib/server/data";
+import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL, getGeminiApiKeys, requestGeminiAssessment, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "@/lib/server/gemini-assessment";
+import { jsonError } from "@/lib/server/http";
+import { sensitivePath } from "@/lib/server/sensitive-path";
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {
     const session = await requireSession(request);

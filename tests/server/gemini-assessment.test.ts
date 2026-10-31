@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getGeminiApiKeys, requestGeminiAssessment, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "../../lib/server/gemini-assessment";
-import type { Finding, SymbolContext } from "../../contracts";
+import { getGeminiApiKeys, requestGeminiAssessment, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "@/lib/server/gemini-assessment";
+import type { Finding, SymbolContext } from "@/contracts";
 
 const input = { commentId: "c1", comment: "Explain the value.", language: "typescript", kind: "line" as const, symbol: null as SymbolContext | null, context: "const value = 1;", findings: [{ ruleId: "verbosity", contribution: 1, evidence: { length: 20 }, explanation: "The comment is verbose." }] satisfies Finding[] };
 const client = (output: string): Parameters<typeof requestGeminiAssessment>[1] => ({ interactions: { create: async () => ({ output_text: output }) } });

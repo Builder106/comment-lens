@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { ScanCreateRequest, ScanCreateResponse, ScanListQuery, ScanListResponse } from "../../../contracts";
-import { requireDb } from "../../../db";
-import { repositoryInstallations, scans } from "../../../db/schema";
-import { requireSession } from "../../../lib/server/auth";
-import { listOwnedScans } from "../../../lib/server/data";
-import { listAccessibleRepositories, installationClient } from "../../../lib/server/github-app";
-import { handleError } from "../../../lib/server/http";
-import { getWorkflowConfig, getWorkflowTarget } from "../../../lib/server/workflow-config";
+import { ScanCreateRequest, ScanCreateResponse, ScanListQuery, ScanListResponse } from "@/contracts";
+import { requireDb } from "@/db";
+import { repositoryInstallations, scans } from "@/db/schema";
+import { requireSession } from "@/lib/server/auth";
+import { listOwnedScans } from "@/lib/server/data";
+import { listAccessibleRepositories, installationClient } from "@/lib/server/github-app";
+import { handleError } from "@/lib/server/http";
+import { getWorkflowConfig, getWorkflowTarget } from "@/lib/server/workflow-config";
 
 export async function GET(request: Request) {
   try {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { CommentQuery, ReviewDecisionRequest, WorkerChunkPayload } from "../../contracts";
+import { CommentQuery, ReviewDecisionRequest, WorkerChunkPayload } from "@/contracts";
 
 test("malformed comment queries fail closed", () => {
   assert.throws(() => CommentQuery.parse({ schemaVersion: 1, scanId: "scan", minScore: 90, maxScore: 10 }));

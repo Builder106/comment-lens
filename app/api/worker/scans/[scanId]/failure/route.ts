@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { WorkerFailurePayload, WorkerFailureResponse } from "../../../../../../contracts";
-import { requireDb } from "../../../../../../db";
-import { scans } from "../../../../../../db/schema";
-import { jsonError } from "../../../../../../lib/server/http";
-import { verifyWorkerRequest } from "../../../../../../lib/server/worker-auth";
+import { WorkerFailurePayload, WorkerFailureResponse } from "@/contracts";
+import { requireDb } from "@/db";
+import { scans } from "@/db/schema";
+import { jsonError } from "@/lib/server/http";
+import { verifyWorkerRequest } from "@/lib/server/worker-auth";
 
 export async function POST(request: Request, { params }: { params: Promise<{ scanId: string }> }) {
   const raw = await request.text();

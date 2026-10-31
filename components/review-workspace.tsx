@@ -6,7 +6,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import type {
   CommentImprovement, CommentImprovementOutcome, CommentPageResponse, CommentRecord, FindingAssistance, GeminiAssessmentOutput,
   RepositoryRef, ReviewDecision, ReviewMutationStatus, ReviewStatus, ScanImprovementsResponse, ScanRecord,
-} from "../contracts";
+} from "@/contracts";
 
 type View = "review" | "history";
 type Sort = "score" | "path" | "age" | "status";

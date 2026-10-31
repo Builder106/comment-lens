@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { requestGeminiScanImprovements } from "../../lib/server/gemini-scan-improvements";
+import { requestGeminiScanImprovements } from "@/lib/server/gemini-scan-improvements";
 
 const inputs = [
   { commentId: "comment-1", comment: "// This explains the operation.", language: "typescript", kind: "line" as const, context: null },

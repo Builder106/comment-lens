@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertScanOwner, scanResponse } from "../../lib/server/data";
-import { requireDb, db } from "../../db";
-import type { scans } from "../../db/schema";
+import { assertScanOwner, scanResponse } from "@/lib/server/data";
+import { requireDb, db } from "@/db";
+import type { scans } from "@/db/schema";
 
 test("assertScanOwner throws FORBIDDEN when user IDs do not match", () => {
   assert.throws(

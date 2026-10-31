@@ -1,5 +1,5 @@
-import { requestGeminiAssistance } from "../../lib/server/gemini-assistance";
-import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL } from "../../lib/server/gemini-assessment";
+import { requestGeminiAssistance } from "@/lib/server/gemini-assistance";
+import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL } from "@/lib/server/gemini-assessment";
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {

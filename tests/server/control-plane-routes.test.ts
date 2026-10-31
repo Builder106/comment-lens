@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getWorkflowConfig, WorkflowConfigurationError } from "../../lib/server/workflow-config";
+import { getWorkflowConfig, WorkflowConfigurationError } from "@/lib/server/workflow-config";
 
 const root = new URL("../../app/api/", import.meta.url);
 

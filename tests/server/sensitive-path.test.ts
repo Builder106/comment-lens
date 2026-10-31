@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { sensitivePath } from "../../lib/server/sensitive-path";
+import { sensitivePath } from "@/lib/server/sensitive-path";
 
 test("sensitive files and secret-bearing directories are excluded", () => {
   assert.equal(sensitivePath(".env"), true);

@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { WorkerChunkPayload, WorkerChunkResponse } from "../../../../../../contracts";
-import { requireTransactionalDb } from "../../../../../../db";
-import { chunks, commentIdentities, comments, scans } from "../../../../../../db/schema";
-import { handleError, jsonError } from "../../../../../../lib/server/http";
-import { verifyWorkerRequest } from "../../../../../../lib/server/worker-auth";
+import { WorkerChunkPayload, WorkerChunkResponse } from "@/contracts";
+import { requireTransactionalDb } from "@/db";
+import { chunks, commentIdentities, comments, scans } from "@/db/schema";
+import { handleError, jsonError } from "@/lib/server/http";
+import { verifyWorkerRequest } from "@/lib/server/worker-auth";
 
 export async function POST(request: Request, { params }: { params: Promise<{ scanId: string }> }) {
   const raw = await request.text();

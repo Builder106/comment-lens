@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { CONTRACT_SCHEMA_VERSION } from "../../contracts";
+import { CONTRACT_SCHEMA_VERSION } from "@/contracts";
 import { WorkflowConfigurationError } from "./workflow-config";
 
 type ErrorCode = "invalid_request" | "unauthenticated" | "forbidden" | "not_found" | "conflict" | "invalid_signature" | "stale_request" | "incompatible_schema" | "scan_failed" | "rate_limited" | "internal_error";

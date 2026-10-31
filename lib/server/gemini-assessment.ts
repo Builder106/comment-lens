@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import { GeminiAssessmentOutput } from "../../contracts";
-import type { CommentKind, Finding, SymbolContext } from "../../contracts";
+import { GeminiAssessmentOutput } from "@/contracts";
+import type { CommentKind, Finding, SymbolContext } from "@/contracts";
 
 export const ASSESSMENT_PROMPT_VERSION = "comment-style-v2";
 export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";

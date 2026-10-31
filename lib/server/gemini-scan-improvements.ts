@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
-import type { CommentImprovementOutcome, CommentKind } from "../../contracts";
+import type { CommentImprovementOutcome, CommentKind } from "@/contracts";
 import type { GeminiAssessmentClient } from "./gemini-assessment";
 
 export { SCAN_IMPROVEMENT_PROMPT_VERSION } from "./scan-improvement-version";

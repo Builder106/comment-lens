@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { CommentRecord, FindingAssistanceRequest, FindingAssistanceResponse } from "../../../../../contracts";
-import { requireSession } from "../../../../../lib/server/auth";
-import { getOwnedComment } from "../../../../../lib/server/data";
-import { requestGeminiAssistance } from "../../../../../lib/server/gemini-assistance";
-import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL, getGeminiApiKeys, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "../../../../../lib/server/gemini-assessment";
-import { handleError, jsonError } from "../../../../../lib/server/http";
-import { sensitivePath } from "../../../../../lib/server/sensitive-path";
+import { CommentRecord, FindingAssistanceRequest, FindingAssistanceResponse } from "@/contracts";
+import { requireSession } from "@/lib/server/auth";
+import { getOwnedComment } from "@/lib/server/data";
+import { requestGeminiAssistance } from "@/lib/server/gemini-assistance";
+import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL, getGeminiApiKeys, safeGeminiErrorMetadata, withGeminiApiKeyFallback } from "@/lib/server/gemini-assessment";
+import { handleError, jsonError } from "@/lib/server/http";
+import { sensitivePath } from "@/lib/server/sensitive-path";
 
 export async function POST(request: Request, { params }: { params: Promise<{ commentId: string }> }) {
   try {

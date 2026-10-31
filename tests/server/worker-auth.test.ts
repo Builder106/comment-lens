@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { verifyWorkerRequest } from "../../lib/server/worker-auth";
+import { verifyWorkerRequest } from "@/lib/server/worker-auth";
 
 test("worker signatures accept epoch-second timestamps and reject stale or altered requests", () => {
   process.env.WORKER_INGEST_SECRET = "test-secret";

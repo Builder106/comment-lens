@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { requestGeminiAssistance } from "../../lib/server/gemini-assistance";
+import { requestGeminiAssistance } from "@/lib/server/gemini-assistance";
 
 const input = {
   commentId: "comment-1",

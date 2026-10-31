@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { CommentPageResponse, CommentQuery, CONTRACT_SCHEMA_VERSION, ReviewDecision } from "../../../../../contracts";
-import { listComments } from "../../../../../lib/server/data";
-import { requireSession } from "../../../../../lib/server/auth";
-import { handleError } from "../../../../../lib/server/http";
+import { CommentPageResponse, CommentQuery, CONTRACT_SCHEMA_VERSION, ReviewDecision } from "@/contracts";
+import { listComments } from "@/lib/server/data";
+import { requireSession } from "@/lib/server/auth";
+import { handleError } from "@/lib/server/http";
 
 function optionalBoolean(value: string | null) {
   if (value === null) return undefined;

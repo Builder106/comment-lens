@@ -6,11 +6,11 @@ import {
   ScanImprovementBatchResponse,
   ScanImprovementRequest,
   ScanImprovementsResponse,
-} from "../../../../../contracts";
-import { requireDb } from "../../../../../db";
-import { comments, scanImprovements } from "../../../../../db/schema";
-import { requireSession } from "../../../../../lib/server/auth";
-import { getOwnedScan } from "../../../../../lib/server/data";
+} from "@/contracts";
+import { requireDb } from "@/db";
+import { comments, scanImprovements } from "@/db/schema";
+import { requireSession } from "@/lib/server/auth";
+import { getOwnedScan } from "@/lib/server/data";
 import {
   createGeminiAssessmentClient,
   DEFAULT_GEMINI_MODEL,
@@ -19,10 +19,10 @@ import {
   getGeminiApiKeys,
   safeGeminiErrorMetadata,
   withGeminiApiKeyFallback,
-} from "../../../../../lib/server/gemini-assessment";
-import { requestGeminiScanImprovements, SCAN_IMPROVEMENT_PROMPT_VERSION } from "../../../../../lib/server/gemini-scan-improvements";
-import { handleError, jsonError } from "../../../../../lib/server/http";
-import { sensitivePath } from "../../../../../lib/server/sensitive-path";
+} from "@/lib/server/gemini-assessment";
+import { requestGeminiScanImprovements, SCAN_IMPROVEMENT_PROMPT_VERSION } from "@/lib/server/gemini-scan-improvements";
+import { handleError, jsonError } from "@/lib/server/http";
+import { sensitivePath } from "@/lib/server/sensitive-path";
 
 const policyModel = "policy";
 

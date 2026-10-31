@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "../../../db/schema";
+import * as schema from "@/db/schema";
 
 const migrationDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "../../../db/migrations");
 

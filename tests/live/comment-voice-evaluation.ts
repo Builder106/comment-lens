@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
-import type { CommentKind } from "../../contracts";
-import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL } from "../../lib/server/gemini-assessment";
-import { requestGeminiScanImprovements, SCAN_IMPROVEMENT_PROMPT_VERSION } from "../../lib/server/gemini-scan-improvements";
+import type { CommentKind } from "@/contracts";
+import { createGeminiAssessmentClient, DEFAULT_GEMINI_MODEL } from "@/lib/server/gemini-assessment";
+import { requestGeminiScanImprovements, SCAN_IMPROVEMENT_PROMPT_VERSION } from "@/lib/server/gemini-scan-improvements";
 
 interface HistoricalCommentCase {
   id: string;

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { generateKeyPairSync } from "node:crypto";
-import { authorizedInstallations, installationClient, listAccessibleRepositories, type Installation } from "../../lib/server/github-app";
+import { authorizedInstallations, installationClient, listAccessibleRepositories, type Installation } from "@/lib/server/github-app";
 
 test("organization access requires explicit configuration and the authorized numeric owner", () => {
   const savedOrganizations = process.env.COMMENT_LENS_GITHUB_ORGANIZATIONS;

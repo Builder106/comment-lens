@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import { and, desc, eq, ne, notInArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { WorkerCompletePayload, WorkerCompleteResponse } from "../../../../../../contracts";
-import { requireTransactionalDb } from "../../../../../../db";
-import { chunks, comments, scans } from "../../../../../../db/schema";
-import { handleError, jsonError } from "../../../../../../lib/server/http";
-import { verifyWorkerRequest } from "../../../../../../lib/server/worker-auth";
+import { WorkerCompletePayload, WorkerCompleteResponse } from "@/contracts";
+import { requireTransactionalDb } from "@/db";
+import { chunks, comments, scans } from "@/db/schema";
+import { handleError, jsonError } from "@/lib/server/http";
+import { verifyWorkerRequest } from "@/lib/server/worker-auth";
 
 function sameParserVersions(stored: unknown, incoming: Record<string, string>) {
   if (!stored || typeof stored !== "object" || Array.isArray(stored)) return false;
