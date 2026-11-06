@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-11-06: Add OpenGraph and Twitter card metadata #decision
+
+Shared links to the review workspace had no preview. The root layout now sets `metadataBase` to `https://comment-lens-review.vercel.app`, plus OpenGraph and Twitter metadata. The 1200x630 card lives at `public/og.png` and pairs the wordmark with the app icon. Both tag sets reference that one file, instead of Next's `opengraph-image` convention, which would have needed a second copy for Twitter.
+
 ## 2026-10-29: Rotate Gemini project keys on rate limits #decision #gemini
 
 Gemini routes read `GEMINI_API_KEY_1` through `GEMINI_API_KEY_4` in order. They start with the key index sent by the client and try the next configured key after HTTP 429. Successful responses return that index in `x-comment-lens-gemini-key-index` for the next batch. A 429 after every key fails tells the runner to wait for quota to reset. These routes set SDK retries to one so each key gets one attempt before failover. If no numbered key is set, routes use `GEMINI_API_KEY`.
