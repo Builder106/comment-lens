@@ -13,7 +13,7 @@ Comment Lens extracts code comments and keeps them useful over time. The local c
 ## Installation
 
 ```bash
-pip install comment-lens
+pip install comment-lens-scanner
 ```
 
 Requires Python 3.12 or newer.
