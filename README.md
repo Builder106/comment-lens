@@ -5,8 +5,8 @@ Comment Lens extracts code comments and gives maintainers a place to review them
 ## Architecture
 
 - **Review workspace**: Next.js App Router interface for repository scans, evidence inspection, review decisions, export, and maintenance history.
-- **Scanner**: Python-based AST extractor utilizing Tree-sitter with Pygments fallback to extract comments and code context while enforcing strict retention boundaries.
-- **Worker & Ingestion**: Signed ingestion pipeline and control-plane dispatch workflow for asynchronous repository analysis.
+- **Scanner**: A Python AST extractor that uses Tree-sitter, with Pygments as a fallback. It extracts comments and code context within the retention boundaries.
+- **Worker & Ingestion**: A signed ingestion pipeline and control-plane dispatch workflow for asynchronous repository analysis.
 - **Database**: Drizzle ORM schema backed by PostgreSQL for scan metadata and comment records.
 
 ## Project Structure

@@ -1,19 +1,21 @@
 # Comment Lens Scanner
 
-Comment Lens extracts code comments and keeps them useful over time. The local command-line interface finds comments that deserve attention before they become maintenance debt, explains why with deterministic rule evidence, and helps teams maintain high comment quality without modifying repository files.
+Comment Lens extracts code comments for review. The local command-line interface flags comments that may need attention, explains each finding with deterministic rule evidence, and leaves repository files unchanged.
 
 ## Features
 
-- **AST-Aware Parsing**: Uses Tree-sitter grammars (with Pygments fallback) to distinguish docstrings, line comments, inline notes, and header blocks across major languages.
-- **Maintenance Signals**: Flags unresolved `TODO`/`FIXME`/`HACK` directives, symbol duplication, stale comments on changed code, and broken local file links.
-- **Git Differential Checks**: Fast pre-commit and CI checks using `--changed` to focus only on comments added or modified in the current branch.
-- **Multi-Format Export**: Emits findings in JSON, NDJSON, Markdown, and SARIF for GitHub Actions PR annotations.
-- **Zero-Network Default**: Fully local execution; code is inspected without being executed or transmitted to external servers.
+- **Parsing**: Uses Tree-sitter grammars, with a Pygments fallback, to distinguish docstrings, line comments, inline notes, and header blocks across major languages.
+- **Maintenance signals**: Flags unresolved `TODO`/`FIXME`/`HACK` directives, symbol duplication, comments near changed code, and broken local file links.
+- **Git checks**: Uses `--changed` to focus pre-commit and CI checks on comments added or modified in the current branch.
+- **Export**: Produces JSON, NDJSON, Markdown, and SARIF for GitHub Actions PR annotations.
+- **Local by default**: Inspects code without executing it or transmitting it to external servers.
 
 ## Installation
 
+From the repository root, install the scanner from this checkout:
+
 ```bash
-pip install comment-lens-scanner
+python3 -m pip install ./scanner
 ```
 
 Requires Python 3.12 or newer.
