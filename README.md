@@ -4,7 +4,7 @@ Comment Lens extracts code comments and gives maintainers a place to review them
 
 ## Architecture
 
-- **Landing page**: A static report-style page at `/` with one page per rule at `/rules/<rule>`. Its findings and exit codes come from real CLI runs; see [Landing page data](docs/landing-data.md).
+- **Landing page**: A static page at `/` that follows one real comment in pwndbg through its git history until Comment Lens flags it, with one page per rule at `/rules/<rule>`. Its code, dates, findings and exit codes come from real CLI runs and `git blame`; see [Landing page data](docs/landing-data.md).
 - **Review workspace**: Next.js App Router interface at `/workspace` for repository scans, evidence inspection, review decisions, export, and maintenance history.
 - **Scanner**: A Python AST extractor that uses Tree-sitter, with Pygments as a fallback. It extracts comments and code context within the retention boundaries.
 - **Worker & Ingestion**: A signed ingestion pipeline and control-plane dispatch workflow for asynchronous repository analysis.

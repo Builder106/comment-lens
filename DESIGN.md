@@ -69,52 +69,78 @@ Keep source context and exported results as selectable text. Let long paths and 
 
 Browser coverage should be added for these journeys before restoring a release gate.
 
-## Landing page (2026-11-14)
+## Landing page (2026-11-15)
 
-The landing page replaces the signed-out workspace welcome on `/`. The hosted workspace moves to `/workspace`. The audience is developers who maintain a repository and would run the CLI before they sign in anywhere. The hosted workspace is limited to one GitHub account, so the page leads with the CLI and does not invite strangers to sign in.
+The first landing page (2026-11-14) was a `comment-lens check` report with a `--fail-on` toy. It read as generated: markdown `#` prefixes on headings, four tables of another project's numbers, every block the same weight. This version replaces it. The hosted workspace stays at `/workspace`.
+
+### What the reference sites taught
+
+Ruff, Biome, Vale, Bun, Ghostty, Charm, Knip, esbuild, Oxc and Zed, studied 2026-11-15:
+
+- One short claim, set large, then one supporting line and an install command with a copy button.
+- One proof, not a data dump. esbuild is barely styled and still convincing because one chart carries it.
+- The product shown where it lives: a real terminal (Ghostty), a real editor (Zed), or Vale's guideline, rule and squiggle panels.
+- A mark built on one idea (Knip's scissors, Bun's dumpling).
+- Short pages that hand off to the docs.
 
 ### Concept card
 
 ```
-Idea:        The page is the output of `comment-lens check` on a real project, and the visitor sets the gate that decides its exit status.
-Metaphor:    A CI report: summary line, findings with severity and baseline state, then an exit status.
-Anchor:      Comment Lens produces a report with `new`, `existing` and `resolved` findings and exit status 0, 1 or 2. A first run on a real repository finds far more than anyone will fix, and the baseline is what makes a gate usable.
-Signature:   The gate. Four `--fail-on` levels and a baseline switch re-label every finding (blocking, advisory, existing) and flip the exit line between 0 and 1. Every number comes from a real run of the CLI.
-Emotion:     In three seconds: this is real output, I can read it, and I could run it on my repository today.
-Motion verb: Stamp. A label changes by settling 2px into place in 140 ms. Nothing counts up, slides or fades in on scroll.
-Screenshot:  The summary block reading `Blocking: 53` and `exit 1`, beside the baseline switch that takes it to `exit 0`.
-Structure:   The site is one report. A fixed console on the left holds the claim, the install line and the gate. The report scrolls on the right. The rule table inside the report is the navigation and links to one page per rule. One unit is a finding; opening it shows the comment, its evidence and a permalink.
-Escape hatch: The report is plain text in a table and `<details>` elements, and every rule has its own URL. A static table of all eight gate outcomes sits below the controls for readers without JavaScript.
+Idea:        Follow one real comment through its own git history until Comment Lens flags it.
+Metaphor:    A blame view. Every line carries the date git says it last changed.
+Anchor:      nearby_code_changed compares the blame date of a comment with the blame date of the
+             code beside it. No other linter reads the age of a comment against its code.
+Signature:   The story stage. The real file at three commits: the comment's own commit (2018),
+             the commit that removed the check it describes (2022), and the head commit (2026),
+             where an amber highlight sweeps over the comment and a squiggle draws under it.
+Emotion:     In three seconds: this is real code from a real project, and I have comments like this.
+Motion verb: Replace like a diff. A changed line slides out upward while its new text slides in from
+             below, and its blame date changes with it. Only lines that really changed move.
+Screenshot:  The highlighted comment over `if disable_colors:`, with the two dates 2018-01-12 and
+             2022-10-08 below it.
+Structure:   The home page is one sticky stage beside five chapters (2018 comment, 2022 code change,
+             2026 check, baseline, exit 1). The chapter rail above the stage is the in-page
+             navigation. After the story, an index of the eleven rules (one page each) and the commands.
+Escape hatch: Every chapter is a real section with an id, the rail links are plain anchors, and every
+             rule has its own URL. Without JavaScript each phone snapshot shows its own state.
 ```
+
+Concepts considered and dropped: a lens over a file that dims code and focuses comments (taken from the product name, fits any focus tool), and a terminal session as the page (fits any CLI). The blame view is the only one built on a fact of this tool.
 
 ### Data honesty
 
-- The findings come from `comment-lens` run on `pwndbg/pwndbg` at a pinned commit. The baseline was created at an older pinned commit of the same project. Exit codes in the gate table are the exit codes the CLI returned. `scripts/landing-report.py` rebuilds `lib/landing/report.json` from those runs.
-- The page lists a sample of the findings and says how many exist. It does not rank or characterize the project.
-- Install instructions use the git URL until a package is published.
+- The story file is `pwndbg/color/syntax_highlight.py`. `scripts/landing-drift.py` builds `lib/landing/drift.json` from `git blame` in a full clone, with dates in UTC so they match the finding's evidence. `tests/server/landing-drift.test.ts` checks that the first state is the comment's commit, that the head state's blame matches the evidence, and that the comment text never changes.
+- The commit that removed the check, `13e1608` ("Cleanup dependencies (#1251)"), replaced a `try: import pygments ... except ImportError` block with a plain import. The copy says exactly that and no more.
+- The terminal panel is the real `comment-lens compare --fail-on high` output, trimmed to its header and one blocking finding. The trims are marked with the number of omitted lines, and the exit status is the one the command returned.
+- Bar chart numbers and rule counts come from `lib/landing/report.json`, as before.
 
 ### System
 
-- Palette: the workspace palette. Ground `#f4f5f7`, surface `#ffffff`, ink `#24272b`, muted `#5b6066`, line `#d9dde3`, cobalt `#315cc6`, cobalt text `#23449d`. Muted text darkened from `#72777c` (4.14:1) to pass AA on the ground.
-- State labels are words (`blocking`, `advisory`, `existing`, `resolved`), never color alone.
-- Type: Schibsted Grotesk for prose and headings, JetBrains Mono for the report. Report headings use the report's own form, `path:line: rule (severity, state)`.
-- Idle state: still. A report does not move at rest. The gate change and the open/close of a finding carry the motion. Reduced motion removes the stamp.
+- Palette: ground `#fbfbfc`, ink `#111317`, muted `#545a62`, line `#e2e4e8`, amber `#f2b705` (the highlight, always under ink text), panel `#121417` with panel ink `#e6e8eb` and panel muted `#8e959e`. Diff green `#7ee2a0` marks only the code line a finding cites.
+- Type: Instrument Sans for prose and headings, Geist Mono for code, data and the rail. Familjen Grotesk was tried first and dropped: its spacing broke at body sizes ("Pyt hon").
+- Mark: drawn in Glaxnimate (`design/marks/`). A `//` comment marker whose second stroke has drifted out of step with the first. The workspace header uses it too.
+- Shape: 10 to 12px radius on dark panels, none elsewhere.
+- Motion: CSS transitions on `transform`, `opacity` and `clip-path`, driven by one `IntersectionObserver` that sets the active chapter. No scroll listeners, no animation loop, no GSAP: the motion is discrete state changes, so a library adds nothing. Primary links answer with the amber highlight sweep. Reduced motion removes every transition and shows final states.
+- Idle state: the terminal caret blinks. Everything else rests, by decision; the story moves only when the reader does.
 
 ### Structure plan
 
 ```
-Desktop (1200+)                                  Phone (390)
-+-----------------+-------------------------+    +---------------------------+
-| Comment Lens    | # Comment Lens report   |    | Comment Lens   Rules  Docs|
-| h1, pitch       | Repository, Commit,     |    | h1, pitch                 |
-| install         | Comments, Blocking      |    | install                   |
-| GATE            | By rule (table, links)  |    | GATE                      |
-|  --fail-on  o o | Findings (details)      |    | # report summary          |
-|  [x] baseline   | Run it on your repo     |    | By rule                   |
-| exit 1          | What it does not do     |    | Findings                  |
-| (sticky)        | Hosted workspace        |    | Run it                    |
-+-----------------+-------------------------+    | [sticky] exit 1 | 53 block|
-                                                 +---------------------------+
-/rules/<rule>: the same console column, the rule's definition, config, one real finding.
-404: the report with `error: ... does not exist` and `exit 2`.
+Desktop (1000+)                                       Phone (390)
++-------------------+-------------------------------+ +---------------------------+
+| // Comment Lens   |                Rules Docs GitHub| | //          Rules Docs GH |
+| h1 claim          | [2018][2022][2026][base][exit]| | h1, lede, install         |
+| lede, install     | +---------------------------+ | | [file at 2018]            |
+|                   | | file at the active commit | | | 2022 chapter text         |
+| 2022 chapter      | | blame | n | code          | | | [file at 2022]            |
+| 2026 chapter      | | evidence: two dates       | | | 2026 chapter text         |
+| baseline chapter  | +---------------------------+ | | [file at 2026, flagged]   |
+| exit 1 chapter    |  (sticky; swaps to the chart  | | baseline text, [chart]    |
+|                   |   and the terminal)           | | exit 1 text, [terminal]   |
++-------------------+-------------------------------+ | Rules (grouped), Run it   |
+| Eleven rules: group title | rule rows with counts | | footer                    |
+| Run it: three commands, limits paragraph          | +---------------------------+
++---------------------------------------------------+
+/rules/<rule>: one column document with a real pwndbg example.
+404: "This page has no history." with the real `git blame` error.
 ```
