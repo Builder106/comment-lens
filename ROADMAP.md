@@ -2,15 +2,9 @@
 
 Comment Lens will evolve into a local-first developer utility for keeping code comments useful over time. It will identify comments that deserve attention, explain why, and let teams enforce selected maintenance rules without executing or modifying target repositories.
 
-**Content type**: Conceptual roadmap
-
-**Goal**: Define the path from a hosted comment review dashboard to a local, CI, and team maintenance utility
-
-**Audience**: Developers, repository maintainers, and contributors planning Comment Lens work
-
 ## Product direction
 
-The core promise is: Comment Lens tells developers which comments deserve attention before they become maintenance debt.
+The core promise is that Comment Lens tells developers which comments deserve attention before they become maintenance debt.
 
 Comment Lens should not become a general artificial intelligence code reviewer. Its durable advantage is explainable comment maintenance built on repository structure, source context, Git history, and deterministic rules. Artificial intelligence can explain or suggest changes for selected findings, but it should not decide whether a change blocks Continuous Integration (CI).
 

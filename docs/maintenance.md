@@ -1,8 +1,9 @@
 # Maintenance findings and history
 
-Phase 3 adds deterministic maintenance signals to the local report. Run a
-full check to keep a JSON snapshot, then summarize snapshots from local or
-CI runs:
+The local report includes maintenance signals: tasks with no follow-up, task
+age, code that changed beside a comment, and links to files that are gone.
+Run a full check to keep a JSON snapshot, then summarize snapshots from
+local or CI runs:
 
 ```bash
 comment-lens check . --format json --output .comment-lens/first.json

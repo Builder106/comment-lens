@@ -25,11 +25,11 @@ Apply these interaction patterns in Comment Lens's existing visual language.
 
 ## Primary review journey
 
-1. **Choose the source.** If GitHub is disconnected or no repository is available, show the exact next action. Otherwise show the repository, ref, selected scan, and its state together. Before starting a scan, state that it reads repository files and retains comments with short context.
-2. **Wait for a complete scan.** Show queued, running, and failed states in the same repository context. A failed or incomplete scan must not appear as a finished review queue.
-3. **Find a comment.** Order the queue by review priority by default. Each row should show a path and line, comment excerpt, leading rule when one exists, priority, and review state. Search, sort, and filters help narrow the queue without hiding its scan context.
-4. **Inspect the evidence.** Selecting a row opens the comment with short source context, deterministic findings, score explanation, and available provenance. A protected comment or a comment with no triggered rule needs a plain explanation instead of an unexplained number.
-5. **Record the decision.** Keep, Rewrite, Delete, and Unsure record review intent and may include a private note. They do not edit repository files. The selected state should remain visible in the queue and detail view. Export decisions from the same workspace.
+1. Choose the source. If GitHub is disconnected or no repository is available, show the exact next action. Otherwise show the repository, ref, selected scan, and its state together. Before starting a scan, state that it reads repository files and retains comments with short context.
+2. Wait for a complete scan. Show queued, running, and failed states in the same repository context. A failed or incomplete scan must not appear as a finished review queue.
+3. Find a comment. Order the queue by review priority by default. Each row should show a path and line, comment excerpt, leading rule when one exists, priority, and review state. Search, sort, and filters help narrow the queue without hiding its scan context.
+4. Inspect the evidence. Selecting a row opens the comment with short source context, deterministic findings, score explanation, and available provenance. A protected comment or a comment with no triggered rule needs a plain explanation instead of an unexplained number.
+5. Record the decision. Keep, Rewrite, Delete, and Unsure record review intent and may include a private note. They do not edit repository files. The selected state should remain visible in the queue and detail view. Export decisions from the same workspace.
 
 The local CLI, CI checks, and editor diagnostics use the scanner's findings and identifiers. Link to their instructions from the workspace and documentation. The hosted review journey remains the main task on this page.
 
