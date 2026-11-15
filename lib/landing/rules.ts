@@ -69,7 +69,7 @@ export const rules: RuleDoc[] = [
     detects: "The nearest line of code within five lines of the comment was last changed in a later commit than the comment itself. The evidence names both commits and both dates.",
     needsHistory: true,
     evidence: '{"codeLine": 3, "commentCommit": "...", "codeCommit": "...", "commentAuthoredAt": "...", "codeAuthoredAt": "..."}',
-    limits: "A changed line does not mean a wrong comment. On a long-lived project this is the most common finding, so most teams keep it at review severity and read it only on changed lines, with comment-lens check --changed.",
+    limits: "A changed line does not mean a wrong comment. This is the most common finding in the pwndbg run, so it is easier to read on changed lines only, with comment-lens check --changed.",
     tune: 'nearby_code_changed = "low"',
   },
   {
@@ -89,7 +89,7 @@ export const rules: RuleDoc[] = [
     detects: "The comment text contains the enclosing symbol name, ignoring case. The evidence names the symbol.",
     needsHistory: false,
     evidence: '{"symbol": "test"}',
-    limits: "Short symbol names such as test match inside ordinary words. Read these findings as prompts, not errors.",
+    limits: "Short symbol names such as test match inside ordinary words, so treat these findings as prompts to look.",
     tune: 'restates_symbol = "off"',
   },
   {
@@ -109,7 +109,7 @@ export const rules: RuleDoc[] = [
     detects: "A comment with at least thresholds.hedge_terms of the words may, might, could, possibly, generally or typically. The default is 3.",
     needsHistory: false,
     evidence: '{"hedgeCount": 3, "minimum": 3}',
-    limits: "Documentation of genuinely uncertain behavior will match. That is a reason to read it, not to rewrite it.",
+    limits: "Documentation of behavior that really is uncertain will match, and it can stay as written.",
     tune: "[thresholds]\nhedge_terms = 4",
   },
   {
