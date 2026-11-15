@@ -1,55 +1,39 @@
-# Developer distribution and launch playbook
+# Developer distribution notes
 
-Notes on introducing Comment Lens to developers and engineering teams, including messaging, demonstrations, and ways to use it on real projects.
+Notes on introducing Comment Lens to developers and engineering teams: what to say, what to show, and where to say it.
 
-## 1. Positioning and core value
+## Positioning
 
-Comment Lens focuses on existing comments and gives reviewers evidence for each finding:
+Comment Lens looks at comments that already exist and gives a reviewer the evidence behind each finding.
 
-- **Existing comments only**: The scanner does not enforce docstring coverage or ask developers to add comments to private functions.
-- **Deterministic first**: Local rule evaluation runs without sending source code over the network.
-- **Maintenance evidence**: Findings can point to broken local paths, task markers without issue links, comments that duplicate symbol names, and changes to surrounding code. A reviewer still decides what needs attention.
-- **Baselines**: Teams can record existing findings in `.comment-lens-baseline.json` and configure CI to block only new ones.
+- It does not enforce docstring coverage or ask anyone to add comments to private functions.
+- Rules run locally and send no source code over the network.
+- A finding can point to a broken local path, a task marker with no issue link, a comment that repeats a symbol name, or code that changed beside a comment. A reviewer decides what needs attention.
+- A baseline in `.comment-lens-baseline.json` records the current findings, so CI can block only new ones.
 
-## 2. Core messaging angles
+## Messages
 
-### Angle A: Stale comments introduce subtle bugs
-> "The only thing worse than no documentation is documentation that lies."
+Each message below is tied to something the product does. The quoted lines are candidates, not fixed slogans.
 
-When code changes but a nearby comment does not, the comment may no longer describe the implementation. Comment Lens flags those cases for review.
+Stale comments cause bugs. When code changes and the comment beside it does not, the comment may no longer describe the implementation, and Comment Lens flags those cases for review. A possible line: "The only thing worse than no documentation is documentation that lies."
 
-### Angle B: Deterministic rules, not AI noise
-> "Not an AI code-review nag. 100% deterministic rules."
+The rules are deterministic. The core engine uses Tree-sitter, with a Pygments fallback, plus Git history. AI is optional and only explains a finding you select. A possible line: "The checks are deterministic rules, and AI only explains a finding when you ask."
 
-AI assistance is optional and limited to explaining selected findings. The core engine uses deterministic parsing and Git context analysis; Tree-sitter is the primary parser, with a Pygments fallback.
+A team can adopt it without clearing the backlog. A baseline records the findings a team has already seen. A possible line: "Turn on a comment check without fixing five years of old comments first."
 
-### Angle C: Zero-friction adoption
-> "Audit your comments without fixing five years of legacy debt first."
+## What to show
 
-A baseline records findings a team has already reviewed, so it can adopt checks without resolving the entire backlog first.
+- The home page. It follows one real pwndbg comment through its git history until Comment Lens flags it, so it works as the lead demo for a post.
+- A short recorded terminal session of `comment-lens check . --changed origin/main...HEAD --fail-on high` catching an unresolved task or a broken link.
+- A before and after pair: an echo comment (`// calculate total price` above `calculateTotalPrice()`) next to a comment that explains an edge-case rounding constraint.
+- Screenshots of the review workspace with comments, parser context and scoring traces side by side.
 
-## 3. High-signal visual assets
+## Channels
 
-Show the tool through terminal output, diffs, and the review workspace:
+Hacker News (Show HN): say what the tool does and how to try it. Start with the author's real reason for building it, such as a production incident caused by a stale comment, if that is what happened. Mention Tree-sitter parsing with a Pygments fallback and local SARIF output. For the quick start, use `python3 -m pip install comment-lens-scanner` and `comment-lens check .`.
 
-1. **Terminal demonstration**: A short recorded terminal session showing `comment-lens check . --changed origin/main...HEAD --fail-on high` catching an unresolved task or broken link.
-2. **Before / After examples**: Illustrating an echo comment (`// calculate total price` above `calculateTotalPrice()`) contrasted with a clear explanation of an edge-case rounding constraint.
-3. **Workspace interface**: Screenshots of the review grid displaying comments, AST parser context, and deterministic scoring traces together.
+Reddit: in r/Python, lead with fast extraction that does not execute target code or download grammars at runtime. In r/devops and r/github, lead with the GitHub Actions integration, SARIF annotations and baseline comparison.
 
-## 4. Distribution and outreach channels
+GitHub Marketplace: publish an action wrapper, for example `comment-lens-action`, so adding the check to a workflow takes one line.
 
-### Hacker News (Show HN)
-For a Show HN post, explain what the tool does and how to try it:
-- **Angle**: Explain the motivation (e.g. debugging a production incident caused by a stale comment).
-- **Technical specifics**: Detail the Tree-sitter parsing engine, Pygments fallback, and local SARIF generation.
-- **Quick start**: Show the repository installation described in the README and local use with `comment-lens check .`. Update this when a package is published.
-
-### Communities (r/Python, r/programming, r/devops)
-- **r/Python**: Emphasize fast AST extraction without executing target code or downloading grammars at runtime.
-- **r/devops & r/github**: Highlight GitHub Actions integration, SARIF annotations, and zero-debt baseline comparisons.
-
-### GitHub Actions ecosystem
-Publish a dedicated action wrapper (e.g., `comment-lens-action`) on the GitHub Marketplace to make pull request checks a one-line addition to existing CI workflows.
-
-### Open-source dogfooding
-Run `comment-lens scan` on open-source projects to look for actionable issues, such as broken relative links or stale tasks. Verify each finding against the code before proposing a focused fix.
+Open-source projects: run `comment-lens scan` on projects you do not maintain to look for real problems, such as broken relative links or stale tasks. Check each finding against the code before proposing a focused fix.
