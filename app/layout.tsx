@@ -7,7 +7,7 @@ const card = {
   url: "/og.png",
   width: 1200,
   height: 630,
-  alt: "Comment Lens wordmark beside its three tilted comment bars.",
+  alt: "Find the comments your code has outgrown. A pwndbg comment from 2018 is highlighted above a line of code changed in 2022.",
 };
 
 export const metadata: Metadata = {

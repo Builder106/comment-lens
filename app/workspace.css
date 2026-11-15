@@ -16,9 +16,7 @@ code{overflow-wrap:anywhere}
 .site-header{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
 .wordmark{text-decoration:none;display:inline-flex;align-items:center;gap:13px;font-size:21px;font-weight:700;letter-spacing:-.055em}
 .wordmark-light{font-weight:400}
-.brand-mark{height:29px;width:29px;display:flex;flex-direction:column;justify-content:center;gap:4px;transform:rotate(-11deg)}
-.brand-mark span{height:3px;background:var(--blue);display:block;border-radius:2px}
-.brand-mark span:nth-child(1){width:67%;margin-left:20%}.brand-mark span:nth-child(2){width:100%}.brand-mark span:nth-child(3){width:65%;margin-left:7%}
+.brand-mark{height:28px;width:28px;flex:none;color:var(--ink)}
 .site-header nav{display:flex;gap:32px;font-size:13px;font-weight:600}
 .site-header nav a{text-decoration:none}.site-header nav a:hover,.site-footer a:hover,.text-action:hover{text-decoration:underline}
 .site-header nav span{color:var(--blue)}

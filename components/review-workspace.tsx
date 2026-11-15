@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { ChangeEvent, FormEvent } from "react";
+import { Mark } from "@/components/landing/mark";
 import type {
   CommentImprovement, CommentImprovementOutcome, CommentPageResponse, CommentRecord, FindingAssistance, GeminiAssessmentOutput,
   RepositoryRef, ReviewDecision, ReviewMutationStatus, ReviewStatus, ScanImprovementsResponse, ScanRecord,
@@ -403,7 +404,7 @@ export function ReviewWorkspace({ accessDenied = false }: { accessDenied?: boole
     <a className="skip-link" href="#main">Skip to workspace</a>
     <div className="app-shell">
       <header className="site-header">
-        <Link className="wordmark" href="/"><span className="brand-mark" aria-hidden="true"><span /><span /><span /></span><span>Comment<span className="wordmark-light">Lens</span></span></Link>
+        <Link className="wordmark" href="/"><Mark className="brand-mark" /><span>Comment<span className="wordmark-light">Lens</span></span></Link>
         <nav aria-label="Primary"><a href={siteDocs} target="_blank" rel="noreferrer">Documentation <span aria-hidden="true">↗</span></a><a href="https://github.com/Builder106/comment-lens" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a></nav>
       </header>
       <main id="main" tabIndex={-1}>
