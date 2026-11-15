@@ -94,4 +94,5 @@ To adopt the workflow in another repository, copy
 `.github/workflows/comment-lens-quality.yml`, install the scanner from a
 reviewed Comment Lens source revision, and commit that repository's baseline
 and policy. The workflow in this repository installs `./scanner`
-directly because the package has not been published to PyPI.
+directly so that it tests the code in the same commit. Other repositories can
+install the released package with `python3 -m pip install comment-lens-scanner`.
