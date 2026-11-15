@@ -2,6 +2,8 @@
 
 Comment Lens will evolve into a local-first developer utility for keeping code comments useful over time. It will identify comments that deserve attention, explain why, and let teams enforce selected maintenance rules without executing or modifying target repositories.
 
+Status on 2026-11-15: Phases 1, 2, 3 and 5 are built, and Phase 4 is partly built. Each phase heading below says what shipped. The text under each heading is the original plan.
+
 ## Product direction
 
 The core promise is that Comment Lens tells developers which comments deserve attention before they become maintenance debt.
@@ -20,7 +22,7 @@ The repository already supports the main parts of this direction:
 - A hosted dashboard with repository connection, scan progress, filtering, review decisions, and export
 - Optional Gemini assessment that remains separate from deterministic scoring
 
-The existing hosted workflow remains the team aggregation layer. The next product slice should make the scanner useful without GitHub, PostgreSQL, or the dashboard.
+The existing hosted workflow remains the team aggregation layer. Phase 1 made the scanner useful without GitHub, PostgreSQL, or the dashboard.
 
 ## Product surfaces
 
@@ -35,6 +37,8 @@ Comment Lens should support three related surfaces:
 The local command-line interface must remain useful when the hosted service is unavailable. Uploading results should require an explicit action.
 
 ## Phase 1: local command-line utility
+
+Status: done on 2026-10-16. `comment-lens` has `scan`, `check` and `export`, Git-based selection, exit codes 0, 1 and 2, `.comment-lens.toml`, and JSON, Markdown and SARIF output. The package is on PyPI as `comment-lens-scanner` (2026-11-09).
 
 Make the scanner useful during development and before a commit. Preserve `comment-lens-scan` as a compatibility alias for the current workflow, then add a broader `comment-lens` command with subcommands.
 
@@ -66,6 +70,8 @@ The first release should report findings by default. It should block only when a
 
 ## Phase 2: CI adoption and baselines
 
+Status: done on 2026-10-16. Baselines, `compare`, per-rule thresholds, and a GitHub Actions workflow that writes job summaries and pull request annotations. It stays advisory until a policy opts into blocking.
+
 Let teams adopt Comment Lens without fixing every historical comment at once. A baseline separates existing maintenance debt from findings introduced by a new change.
 
 Phase 2 should deliver:
@@ -80,6 +86,8 @@ Phase 2 should deliver:
 The default CI policy should remain advisory. Repositories should opt into blocking behavior after reviewing their baseline and rule set.
 
 ## Phase 3: comment maintenance intelligence
+
+Status: done on 2026-10-16, except two items. Task age, missing task references, nearby code changes and missing local links are in the reports, and the workspace reads a history summary in the browser and shows its trends. Checking external URLs and inferring team ownership are not built.
 
 Extend deterministic analysis from comment quality signals to repository maintenance signals. Each new finding must include evidence that a developer can inspect without trusting an opaque model.
 
@@ -96,6 +104,8 @@ Candidate capabilities include:
 The dashboard should aggregate local and CI results without making the CLI depend on the dashboard database.
 
 ## Phase 4: optional assisted review
+
+Status: partly done. The single-finding request shipped on 2026-10-16, and whole-scan review in five-comment batches shipped on 2026-10-19. The full pass over a large set of repositories was stopped after repeated Gemini rate-limit errors and has not resumed.
 
 Keep the existing one-finding Gemini guidance for people who want to review comments one at a time. Add a separate, opt-in whole-scan workflow for people who want Comment Lens to prepare improvements across a scan.
 
@@ -116,6 +126,8 @@ Show a summary and the exact diff before any proposed change reaches a repositor
 Assisted review must remain opt-in, non-blocking, and server-side. The existing one-finding request stays bounded to its selected finding and required context. For whole-scan review, explain what comment text and source context will be sent before the user starts; source context remains a separate opt-in choice. Do not rewrite or delete repository content without an explicit user action.
 
 ## Phase 5: editor integration
+
+Status: done as a first adapter on 2026-10-17. The VS Code extension shows findings for the saved file.
 
 Add an editor integration after the command-line interface and CI behavior are stable. A Visual Studio Code extension could display findings beside comments and invoke the same scanner and policy engine used by local and CI commands.
 
@@ -190,12 +202,10 @@ Comment Lens reaches the next maturity level when:
 - The dashboard shows maintenance trends rather than only a single scan result
 - Optional artificial intelligence improves selected reviews without becoming a required dependency
 
-## Decisions before Phase 1
+## Decisions made before Phase 1
 
-Before implementation begins, record decisions for:
-
-- Package distribution: repository installation, Python Package Index (PyPI), or both
-- The default rule set and severity names
-- The `.comment-lens.toml` configuration shape
-- Whether baseline files belong in repositories or CI artifacts
-- The first CI systems beyond GitHub Actions, if any
+- Package distribution: Python Package Index (PyPI). `comment-lens-scanner` was published on 2026-11-09.
+- Severity names: `low`, `review` and `high`. Each rule's default is on its page under `/rules`.
+- Configuration: a `.comment-lens.toml` file at the repository root.
+- Baselines: a JSON file committed to the repository, `.comment-lens-baseline.json` by default.
+- CI systems beyond GitHub Actions: still open.
