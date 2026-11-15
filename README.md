@@ -4,7 +4,8 @@ Comment Lens extracts code comments and gives maintainers a place to review them
 
 ## Architecture
 
-- **Review workspace**: Next.js App Router interface for repository scans, evidence inspection, review decisions, export, and maintenance history.
+- **Landing page**: A static report-style page at `/` with one page per rule at `/rules/<rule>`. Its findings and exit codes come from real CLI runs; see [Landing page data](docs/landing-data.md).
+- **Review workspace**: Next.js App Router interface at `/workspace` for repository scans, evidence inspection, review decisions, export, and maintenance history.
 - **Scanner**: A Python AST extractor that uses Tree-sitter, with Pygments as a fallback. It extracts comments and code context within the retention boundaries.
 - **Worker & Ingestion**: A signed ingestion pipeline and control-plane dispatch workflow for asynchronous repository analysis.
 - **Database**: Drizzle ORM schema backed by PostgreSQL for scan metadata and comment records.
@@ -33,11 +34,13 @@ Comment Lens extracts code comments and gives maintainers a place to review them
 
 ### Local comment checks
 
-Install the scanner from this checkout with Python 3.12 or newer:
+Install the released scanner with Python 3.12 or newer:
 
 ```bash
-python3 -m pip install ./scanner
+python3 -m pip install comment-lens-scanner
 ```
+
+To run the code in this checkout instead, use `python3 -m pip install ./scanner`.
 
 Run `comment-lens scan` from a Git repository to write compatible
 `.comment-lens/scan.json` and `.comment-lens/comments.ndjson` artifacts. Run
@@ -106,6 +109,8 @@ For local findings beside comments in Visual Studio Code, see
 [Editor integration](docs/editor.md).
 For bearer authentication, scripted hosted scans, and account-wide scan commands,
 see [Hosted API](docs/api.md).
+For how the home page's sample report was produced, see
+[Landing page data](docs/landing-data.md).
 
 ### Installation
 
@@ -232,7 +237,7 @@ intentional and the resulting migration is reviewed and committed first.
 
 After deployment and configuration verification, use an authorized account:
 
-1. Connect GitHub and confirm the target repository is available.
+1. Open `/workspace`, connect GitHub, and confirm the target repository is available. The home page is a public project page and does not sign anyone in.
 2. Start a scan for `Builder106/comment-lens` on `main`.
 3. Confirm the `comment-lens-scan.yml` workflow run starts and completes.
 4. Confirm signed chunks are accepted and the scan count matches the manifest.

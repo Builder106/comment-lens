@@ -68,3 +68,53 @@ Keep source context and exported results as selectable text. Let long paths and 
 - The interface makes scan retention, local summary import, and optional AI data sharing clear at the point of use.
 
 Browser coverage should be added for these journeys before restoring a release gate.
+
+## Landing page (2026-11-14)
+
+The landing page replaces the signed-out workspace welcome on `/`. The hosted workspace moves to `/workspace`. The audience is developers who maintain a repository and would run the CLI before they sign in anywhere. The hosted workspace is limited to one GitHub account, so the page leads with the CLI and does not invite strangers to sign in.
+
+### Concept card
+
+```
+Idea:        The page is the output of `comment-lens check` on a real project, and the visitor sets the gate that decides its exit status.
+Metaphor:    A CI report: summary line, findings with severity and baseline state, then an exit status.
+Anchor:      Comment Lens produces a report with `new`, `existing` and `resolved` findings and exit status 0, 1 or 2. A first run on a real repository finds far more than anyone will fix, and the baseline is what makes a gate usable.
+Signature:   The gate. Four `--fail-on` levels and a baseline switch re-label every finding (blocking, advisory, existing) and flip the exit line between 0 and 1. Every number comes from a real run of the CLI.
+Emotion:     In three seconds: this is real output, I can read it, and I could run it on my repository today.
+Motion verb: Stamp. A label changes by settling 2px into place in 140 ms. Nothing counts up, slides or fades in on scroll.
+Screenshot:  The summary block reading `Blocking: 53` and `exit 1`, beside the baseline switch that takes it to `exit 0`.
+Structure:   The site is one report. A fixed console on the left holds the claim, the install line and the gate. The report scrolls on the right. The rule table inside the report is the navigation and links to one page per rule. One unit is a finding; opening it shows the comment, its evidence and a permalink.
+Escape hatch: The report is plain text in a table and `<details>` elements, and every rule has its own URL. A static table of all eight gate outcomes sits below the controls for readers without JavaScript.
+```
+
+### Data honesty
+
+- The findings come from `comment-lens` run on `pwndbg/pwndbg` at a pinned commit. The baseline was created at an older pinned commit of the same project. Exit codes in the gate table are the exit codes the CLI returned. `scripts/landing-report.py` rebuilds `lib/landing/report.json` from those runs.
+- The page lists a sample of the findings and says how many exist. It does not rank or characterize the project.
+- Install instructions use the git URL until a package is published.
+
+### System
+
+- Palette: the workspace palette. Ground `#f4f5f7`, surface `#ffffff`, ink `#24272b`, muted `#5b6066`, line `#d9dde3`, cobalt `#315cc6`, cobalt text `#23449d`. Muted text darkened from `#72777c` (4.14:1) to pass AA on the ground.
+- State labels are words (`blocking`, `advisory`, `existing`, `resolved`), never color alone.
+- Type: Schibsted Grotesk for prose and headings, JetBrains Mono for the report. Report headings use the report's own form, `path:line: rule (severity, state)`.
+- Idle state: still. A report does not move at rest. The gate change and the open/close of a finding carry the motion. Reduced motion removes the stamp.
+
+### Structure plan
+
+```
+Desktop (1200+)                                  Phone (390)
++-----------------+-------------------------+    +---------------------------+
+| Comment Lens    | # Comment Lens report   |    | Comment Lens   Rules  Docs|
+| h1, pitch       | Repository, Commit,     |    | h1, pitch                 |
+| install         | Comments, Blocking      |    | install                   |
+| GATE            | By rule (table, links)  |    | GATE                      |
+|  --fail-on  o o | Findings (details)      |    | # report summary          |
+|  [x] baseline   | Run it on your repo     |    | By rule                   |
+| exit 1          | What it does not do     |    | Findings                  |
+| (sticky)        | Hosted workspace        |    | Run it                    |
++-----------------+-------------------------+    | [sticky] exit 1 | 53 block|
+                                                 +---------------------------+
+/rules/<rule>: the same console column, the rule's definition, config, one real finding.
+404: the report with `error: ... does not exist` and `exit 2`.
+```

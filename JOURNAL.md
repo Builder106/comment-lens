@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-11-14: Rewrite the home page as a real report #decision #design
+
+The home page was the signed-out workspace, and the workspace only admits one GitHub account, so strangers hit a raw 403 after sign-in. `/` is now a public project page built as the output of `comment-lens check`: a console column with the claim, install line and a `--fail-on` and baseline control, and a report column that re-labels real findings and flips the exit status. Every figure comes from real runs on pwndbg at pinned commits (`docs/landing-data.md`), and a test checks the on-screen arithmetic against the recorded exit codes. The install line uses the released `comment-lens-scanner` 0.1.0 from PyPI (published 2026-11-09 by the tag-triggered workflow; its scanner code matches `main`), so no new release was cut. The workspace moved to `/workspace`, the OAuth callback redirects there, each rule has a page under `/rules`, and muted text was darkened to pass AA. A first baseline attempt matched nothing because finding IDs include the repository name, so both clones need the same remote URL.
+
 ## 2026-11-06: Add OpenGraph and Twitter card metadata #decision
 
 Shared links to the review workspace had no preview. The root layout now sets `metadataBase` to `https://comment-lens-review.vercel.app`, plus OpenGraph and Twitter metadata. The 1200x630 card lives at `public/og.png` and pairs the wordmark with the app icon. Both tag sets reference that one file, instead of Next's `opengraph-image` convention, which would have needed a second copy for Twitter.
