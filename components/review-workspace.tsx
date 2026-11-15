@@ -68,7 +68,7 @@ function validateSummary(value: unknown): value is HistorySummary {
     && Array.isArray(data.trends) && data.trends.every((item) => item && typeof item.repository === "string" && typeof item.scanId === "string" && typeof item.source === "string" && typeof item.coverage === "string" && (item.findings === null || typeof item.findings === "number") && (item.newSincePrevious === null || typeof item.newSincePrevious === "number") && (item.resolvedSincePrevious === null || typeof item.resolvedSincePrevious === "number"));
 }
 
-export function ReviewWorkspace() {
+export function ReviewWorkspace({ accessDenied = false }: { accessDenied?: boolean }) {
   const [repositories, setRepositories] = useState<RepositoryRef[]>([]);
   const [repositoryId, setRepositoryId] = useState("");
   const [scans, setScans] = useState<ScanRecord[]>([]);
@@ -86,7 +86,7 @@ export function ReviewWorkspace() {
   const [loadingScans, setLoadingScans] = useState(false);
   const [loadingPage, setLoadingPage] = useState(false);
   const [busy, setBusy] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(accessDenied ? "That GitHub account is not allowed to use this deployment. It accepts one account. To review your own repositories, deploy your own copy." : "");
   const [notice, setNotice] = useState("");
   const [decisionDraft, setDecisionDraft] = useState<ReviewMutationStatus | "">("");
   const [noteDraft, setNoteDraft] = useState("");

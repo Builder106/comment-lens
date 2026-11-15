@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/workspace" },
 };
 
-export default function Workspace() {
-  return <ReviewWorkspace />;
+export default async function Workspace({ searchParams }: { searchParams: Promise<{ auth?: string }> }) {
+  const { auth } = await searchParams;
+  return <ReviewWorkspace accessDenied={auth === "denied"} />;
 }
