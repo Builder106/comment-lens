@@ -33,6 +33,19 @@ python3 scripts/landing-report.py <directory-with-meta.txt-and-reports> lib/land
 
 The script drops author names, keeps only snippets whose line numbers match the checked-out file, and picks a sample that covers the rules and both baseline states. `tests/server/landing-report.test.ts` checks that the on-screen gate arithmetic agrees with every recorded exit status.
 
+## The comment history
+
+The story at the top of the home page comes from `lib/landing/drift.json`. Build it from a full-history clone of the project at the head commit, after running the check and the baseline comparison from the recipe above in that clone:
+
+```bash
+comment-lens check . --format json --output ../check.json
+comment-lens compare . --baseline .comment-lens-baseline.json --fail-on high > ../compare-high.md
+echo $?
+python3 scripts/landing-drift.py <clone> check.json lib/landing/drift.json compare-high.md <exit status>
+```
+
+The script finds the `nearby_code_changed` finding for `pwndbg/color/syntax_highlight.py`, then records `git blame` for eight lines around the comment at three commits: the commit that wrote the comment, the commit named as the code change in the finding's evidence, and the head commit. Dates are in UTC so they match the evidence. The terminal panel is the Markdown report trimmed to its header and one blocking finding, with the number of omitted lines recorded on each side. `tests/server/landing-drift.test.ts` checks the blame against the evidence.
+
 ## Replace the example project
 
 Change `REPOSITORY` and the two commits, run the recipe against your own repository, and rebuild. Keep the clones under the same remote URL for the baseline and the comparison.

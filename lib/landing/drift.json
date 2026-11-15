@@ -1,0 +1,218 @@
+{
+  "repository": "pwndbg/pwndbg",
+  "path": "pwndbg/color/syntax_highlight.py",
+  "states": [
+    {
+      "commit": {
+        "sha": "cbc4f779fcab95f18623d4205b4cfa70895a5de8",
+        "short": "cbc4f77",
+        "date": "2018-01-12",
+        "subject": "Implement asm&source syntax highlight (#390)"
+      },
+      "lines": [
+        {
+          "n": 36,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "def syntax_highlight(code, filename):"
+        },
+        {
+          "n": 37,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    # No syntax highlight if pygment is not installed"
+        },
+        {
+          "n": 38,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    if not pygments:"
+        },
+        {
+          "n": 39,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "        return code"
+        },
+        {
+          "n": 40,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": ""
+        },
+        {
+          "n": 41,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    filename = os.path.basename(filename)"
+        },
+        {
+          "n": 42,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": ""
+        },
+        {
+          "n": 43,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    formatter = pygments.formatters.Terminal256Formatter("
+        }
+      ]
+    },
+    {
+      "commit": {
+        "sha": "13e1608ecdd2482b78cd46ab422ebceae16f20e9",
+        "short": "13e1608",
+        "date": "2022-10-08",
+        "subject": "Cleanup dependencies (#1251)"
+      },
+      "lines": [
+        {
+          "n": 45,
+          "commit": "b3a560e",
+          "date": "2022-08-30",
+          "text": "def syntax_highlight(code, filename=\".asm\"):"
+        },
+        {
+          "n": 46,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    # No syntax highlight if pygment is not installed"
+        },
+        {
+          "n": 47,
+          "commit": "13e1608",
+          "date": "2022-10-08",
+          "text": "    if disable_colors:"
+        },
+        {
+          "n": 48,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "        return code"
+        },
+        {
+          "n": 49,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": ""
+        },
+        {
+          "n": 50,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    filename = os.path.basename(filename)"
+        },
+        {
+          "n": 51,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": ""
+        },
+        {
+          "n": 52,
+          "commit": "a3da3f0",
+          "date": "2018-02-24",
+          "text": "    lexer = lexer_cache.get(filename, None)"
+        }
+      ]
+    },
+    {
+      "commit": {
+        "sha": "f6fed0cb49495f58a1dd4f972f2f610cf16b1754",
+        "short": "f6fed0c",
+        "date": "2026-10-21",
+        "subject": "Bump version to 2026.10.22 (#4252)"
+      },
+      "lines": [
+        {
+          "n": 87,
+          "commit": "c4b71af",
+          "date": "2024-01-02",
+          "text": "def syntax_highlight(code: str, filename: str = \".asm\") -> str:"
+        },
+        {
+          "n": 88,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    # No syntax highlight if pygment is not installed"
+        },
+        {
+          "n": 89,
+          "commit": "13e1608",
+          "date": "2022-10-08",
+          "text": "    if disable_colors:"
+        },
+        {
+          "n": 90,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "        return code"
+        },
+        {
+          "n": 91,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": ""
+        },
+        {
+          "n": 92,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": "    filename = os.path.basename(filename)"
+        },
+        {
+          "n": 93,
+          "commit": "cbc4f77",
+          "date": "2018-01-12",
+          "text": ""
+        },
+        {
+          "n": 94,
+          "commit": "ade3018",
+          "date": "2026-05-28",
+          "text": "    lexer = lexer_cache.get(filename)"
+        }
+      ]
+    }
+  ],
+  "commitsSinceChange": 18,
+  "finding": {
+    "rule": "nearby_code_changed",
+    "severity": "review",
+    "message": "Nearby code changed after this comment.",
+    "line": 88,
+    "evidence": {
+      "codeLine": 89,
+      "commentCommit": "cbc4f779fcab95f18623d4205b4cfa70895a5de8",
+      "codeCommit": "13e1608ecdd2482b78cd46ab422ebceae16f20e9",
+      "commentAuthoredAt": "2018-01-12T15:24:34+00:00",
+      "codeAuthoredAt": "2022-10-08T02:48:28+00:00",
+      "codeSource": "commit"
+    },
+    "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/color/syntax_highlight.py#L88"
+  },
+  "terminal": {
+    "command": "comment-lens compare . --baseline .comment-lens-baseline.json --fail-on high",
+    "header": [
+      "# Comment Lens report",
+      "",
+      "Repository: `pwndbg/pwndbg`",
+      "Selection: all tracked files",
+      "Comments: 6135, New: 154, Existing: 1797, Blocking: 14",
+      "",
+      "Resolved: 142"
+    ],
+    "skippedBefore": 884,
+    "section": [
+      "## pwndbg/aglib/auxv.py:186: fixme (high, new)",
+      "",
+      "FIXME marker needs a resolution path.",
+      "",
+      "Evidence: `{\"marker\": \"FIXME\"}`"
+    ],
+    "skippedAfter": 40462,
+    "exit": 1
+  }
+}
