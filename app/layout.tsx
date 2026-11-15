@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./workspace.css";
 
-const description = "Inspect code comments, review the evidence, and record decisions for a repository scan.";
+const description = "A local CLI and CI check that reports code comments a person should review: unresolved tasks, broken links, and comments whose nearby code changed. A baseline lets you adopt it without fixing old findings.";
 const card = {
   url: "/og.png",
   width: 1200,
@@ -12,7 +12,7 @@ const card = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://comment-lens-review.vercel.app"),
-  title: "Review workspace | Comment Lens",
+  title: "Comment Lens: a CI check for code comments",
   description,
   openGraph: {
     type: "website",
