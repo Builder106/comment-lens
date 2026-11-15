@@ -4,25 +4,25 @@ Comment Lens extracts code comments for review. The local command-line interface
 
 ## Features
 
-- **Parsing**: Uses Tree-sitter grammars, with a Pygments fallback, to distinguish docstrings, line comments, inline notes, and header blocks across major languages.
-- **Maintenance signals**: Flags unresolved `TODO`/`FIXME`/`HACK` directives, symbol duplication, comments near changed code, and broken local file links.
-- **Git checks**: Uses `--changed` to focus pre-commit and CI checks on comments added or modified in the current branch.
-- **Export**: Produces JSON, NDJSON, Markdown, and SARIF for GitHub Actions PR annotations.
-- **Local by default**: Inspects code without executing it or transmitting it to external servers.
+- Parsing: Tree-sitter grammars, with a Pygments fallback, separate docstrings, line comments, inline notes and header blocks.
+- Maintenance signals: flags unresolved `TODO`, `FIXME` and `HACK` comments, comments that repeat a symbol name, comments near changed code, and broken local file links.
+- Git checks: `--changed` limits a pre-commit or CI check to comments added or modified on the current branch.
+- Export: JSON, NDJSON, Markdown and SARIF, which GitHub Actions can turn into pull request annotations.
+- Local by default: reads code without executing it and sends nothing to external servers.
 
 ## Installation
 
-From the repository root, install the scanner from this checkout:
+Install the scanner from PyPI. It needs Python 3.12 or newer.
 
 ```bash
-python3 -m pip install ./scanner
+python3 -m pip install comment-lens-scanner
 ```
 
-Requires Python 3.12 or newer.
+To run the code in a checkout of the repository instead, use `python3 -m pip install ./scanner` from the repository root.
 
 ## Usage
 
-### Scan a Repository
+### Scan a repository
 
 Scan the current repository and generate local finding manifests (`.comment-lens/scan.json` and `.comment-lens/comments.ndjson`):
 
@@ -30,9 +30,9 @@ Scan the current repository and generate local finding manifests (`.comment-lens
 comment-lens scan .
 ```
 
-### Check Changed Comments (Pre-Commit or CI)
+### Check changed comments
 
-Check only comments touching lines changed between `origin/main` and `HEAD`, failing if any high-severity findings are introduced:
+Check only comments on lines changed between `origin/main` and `HEAD`. The command exits 1 if a high-severity finding is introduced:
 
 ```bash
 comment-lens check . --changed origin/main...HEAD --fail-on high
@@ -44,7 +44,7 @@ Generate SARIF output for CI integration:
 comment-lens check . --changed HEAD --scope files --format sarif --output findings.sarif
 ```
 
-### Export an Existing Scan
+### Export an existing scan
 
 Convert an existing scan artifact into Markdown or JSON:
 
@@ -67,7 +67,7 @@ fail_on = "none"
 [policy.rules]
 todo = "review"
 fixme = "high"
-symbol_duplication = "review"
+restates_symbol = "review"
 missing_local_reference = "high"
 ```
 

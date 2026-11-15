@@ -1,16 +1,16 @@
 # Comment Lens
 
-Comment Lens extracts code comments and gives maintainers a place to review them. The hosted workspace pairs each comment with source context and scanner evidence, then records a decision without changing repository files. A local CLI, CI reports, and a VS Code adapter use the same scanner findings.
+Comment Lens reports the code comments a person should read again, such as unresolved tasks, links to files that no longer exist, and comments whose nearby code changed after they were written. The local CLI and CI checks make no upload request. The hosted workspace pairs each comment with source context and scanner evidence and records a review decision without changing repository files. A VS Code adapter shows the same findings beside the code.
 
 ## Architecture
 
-- **Landing page**: A static page at `/` that follows one real comment in pwndbg through its git history until Comment Lens flags it, with one page per rule at `/rules/<rule>`. Its code, dates, findings and exit codes come from real CLI runs and `git blame`; see [Landing page data](docs/landing-data.md).
-- **Review workspace**: Next.js App Router interface at `/workspace` for repository scans, evidence inspection, review decisions, export, and maintenance history.
-- **Scanner**: A Python AST extractor that uses Tree-sitter, with Pygments as a fallback. It extracts comments and code context within the retention boundaries.
-- **Worker & Ingestion**: A signed ingestion pipeline and control-plane dispatch workflow for asynchronous repository analysis.
-- **Database**: Drizzle ORM schema backed by PostgreSQL for scan metadata and comment records.
+- Landing page: a static home page at `/` that follows one real pwndbg comment through its git history until Comment Lens flags it, plus a page for each rule at `/rules/<rule>`. The code, dates and findings come from `git blame` and real CLI runs; see [Landing page data](docs/landing-data.md).
+- Review workspace: a Next.js App Router interface at `/workspace` for repository scans, evidence inspection, review decisions, export and maintenance history.
+- Scanner: a Python package that extracts comments with Tree-sitter, falling back to Pygments, along with short code context within the retention limits.
+- Worker and ingestion: a signed ingestion pipeline and a control-plane dispatch workflow for asynchronous repository analysis.
+- Database: a Drizzle ORM schema on PostgreSQL for scan metadata and comment records.
 
-## Project Structure
+## Project structure
 
 ```
 ├── app/                  # Next.js App Router routes and layouts
@@ -24,7 +24,7 @@ Comment Lens extracts code comments and gives maintainers a place to review them
 └── worker/               # Ingestion upload and failure notification scripts
 ```
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
@@ -99,18 +99,14 @@ Exit status `0` means the check completed without blocking findings;
 configuration, extraction, or artifact handling failed. The existing
 `comment-lens-scan` command remains available for the hosted worker.
 
-For baselines, pull request annotations, and scheduled checks, see
-[CI checks and baselines](docs/ci.md).
-For comment age, local references, and cross-scan history, see
-[Maintenance findings and history](docs/maintenance.md).
-For optional, finding-specific Gemini guidance in the hosted workspace,
-see [Assisted review](docs/assisted-review.md).
-For local findings beside comments in Visual Studio Code, see
-[Editor integration](docs/editor.md).
-For bearer authentication, scripted hosted scans, and account-wide scan commands,
-see [Hosted API](docs/api.md).
-For how the home page's sample report was produced, see
-[Landing page data](docs/landing-data.md).
+More documentation:
+
+- [CI checks and baselines](docs/ci.md): baselines, pull request annotations and scheduled checks.
+- [Maintenance findings and history](docs/maintenance.md): comment age, local references and history across scans.
+- [Assisted review](docs/assisted-review.md): optional Gemini guidance for one finding in the hosted workspace.
+- [Editor integration](docs/editor.md): local findings beside comments in Visual Studio Code.
+- [Hosted API](docs/api.md): bearer authentication, scripted hosted scans and account-wide scan commands.
+- [Landing page data](docs/landing-data.md): how the home page's sample report was produced.
 
 ### Installation
 
@@ -145,7 +141,7 @@ The four `COMMENT_LENS_WORKFLOW_*` values are required. The application fails
 closed with a 503 before creating a scan if any is missing. A workflow dispatch
 failure after scan creation marks that scan as failed.
 
-### Verification & Testing
+### Verification and testing
 
 ```bash
 pnpm run typecheck
