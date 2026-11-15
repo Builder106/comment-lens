@@ -1,0 +1,372 @@
+{
+  "repository": "pwndbg/pwndbg",
+  "url": "https://github.com/pwndbg/pwndbg",
+  "commit": "f6fed0cb49495f58a1dd4f972f2f610cf16b1754",
+  "commitDate": "2026-10-21",
+  "baselineCommit": "22bec9756a9cc2aaa410829d452971be17900fac",
+  "baselineDate": "2026-09-14",
+  "selection": "all tracked files",
+  "files": 579,
+  "comments": 6135,
+  "gate": [
+    {
+      "baseline": false,
+      "failOn": "none",
+      "exit": 0,
+      "findings": 1951,
+      "new": 1951,
+      "existing": 0,
+      "resolved": 0,
+      "blocking": 0
+    },
+    {
+      "baseline": false,
+      "failOn": "low",
+      "exit": 1,
+      "findings": 1951,
+      "new": 1951,
+      "existing": 0,
+      "resolved": 0,
+      "blocking": 1951
+    },
+    {
+      "baseline": false,
+      "failOn": "review",
+      "exit": 1,
+      "findings": 1951,
+      "new": 1951,
+      "existing": 0,
+      "resolved": 0,
+      "blocking": 1931
+    },
+    {
+      "baseline": false,
+      "failOn": "high",
+      "exit": 1,
+      "findings": 1951,
+      "new": 1951,
+      "existing": 0,
+      "resolved": 0,
+      "blocking": 53
+    },
+    {
+      "baseline": true,
+      "failOn": "none",
+      "exit": 0,
+      "findings": 1951,
+      "new": 154,
+      "existing": 1797,
+      "resolved": 142,
+      "blocking": 0
+    },
+    {
+      "baseline": true,
+      "failOn": "low",
+      "exit": 1,
+      "findings": 1951,
+      "new": 154,
+      "existing": 1797,
+      "resolved": 142,
+      "blocking": 154
+    },
+    {
+      "baseline": true,
+      "failOn": "review",
+      "exit": 1,
+      "findings": 1951,
+      "new": 154,
+      "existing": 1797,
+      "resolved": 142,
+      "blocking": 154
+    },
+    {
+      "baseline": true,
+      "failOn": "high",
+      "exit": 1,
+      "findings": 1951,
+      "new": 154,
+      "existing": 1797,
+      "resolved": 142,
+      "blocking": 14
+    }
+  ],
+  "byRule": [
+    {
+      "rule": "nearby_code_changed",
+      "severity": "review",
+      "new": 64,
+      "existing": 919
+    },
+    {
+      "rule": "excessive_verbosity",
+      "severity": "review",
+      "new": 22,
+      "existing": 218
+    },
+    {
+      "rule": "task_without_reference",
+      "severity": "review",
+      "new": 23,
+      "existing": 158
+    },
+    {
+      "rule": "restates_symbol",
+      "severity": "review",
+      "new": 16,
+      "existing": 151
+    },
+    {
+      "rule": "aged_task",
+      "severity": "review",
+      "new": 5,
+      "existing": 154
+    },
+    {
+      "rule": "todo",
+      "severity": "review",
+      "new": 10,
+      "existing": 138
+    },
+    {
+      "rule": "fixme",
+      "severity": "high",
+      "new": 14,
+      "existing": 38
+    },
+    {
+      "rule": "promotional_or_vague_language",
+      "severity": "low",
+      "new": 0,
+      "existing": 19
+    },
+    {
+      "rule": "hack",
+      "severity": "high",
+      "new": 0,
+      "existing": 1
+    },
+    {
+      "rule": "hedge_stack",
+      "severity": "low",
+      "new": 0,
+      "existing": 1
+    }
+  ],
+  "sample": [
+    {
+      "id": "8a6f84ea60a0",
+      "rule": "hack",
+      "severity": "high",
+      "state": "existing",
+      "path": "pwndbg/commands/rop.py",
+      "line": 110,
+      "message": "HACK marker needs a resolution path.",
+      "evidence": {
+        "marker": "HACK"
+      },
+      "context": "    options = args.getArgs()\n    c = Core(options)\n\n    if start_addr is not None:\n        # HACK: to load from our class\n        c._Core__binary = RawMemoryBinary(options, start_addr=start_addr)\n    else:\n        c.do_binary(file_path, silent=True)\n\n    # Find gadgets",
+      "startLine": 106,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/rop.py#L110"
+    },
+    {
+      "id": "aac8490378bf",
+      "rule": "task_without_reference",
+      "severity": "review",
+      "state": "new",
+      "path": "pwndbg/commands/search.py",
+      "line": 294,
+      "message": "Task comment has no issue, owner, or resolution marker.",
+      "evidence": {
+        "issue": false,
+        "owner": false,
+        "resolution": false
+      },
+      "context": "        print(\"Searching for instruction (assembled value): \" + repr(value_bytes))\n    else:\n        print(\"Searching for byte: \" + repr(value_bytes))\n\n    if next:\n        # FIXME[lint]: what? how can it be unbound?\n        val_len = len(value_bytes)\n        new_saved = set()\n\n        i = 0\n        for addr in saved:",
+      "startLine": 289,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/search.py#L294"
+    },
+    {
+      "id": "f4b732cc113c",
+      "rule": "restates_symbol",
+      "severity": "review",
+      "state": "existing",
+      "path": "pwndbg/commands/segments.py",
+      "line": 33,
+      "message": "Comment repeats the enclosing symbol name.",
+      "evidence": {
+        "symbol": "gsbase"
+      },
+      "context": "    Prints out the GS base address. See also $gsbase.\n    \"\"\"\n    print(hex(int(pwndbg.aglib.regs.gsbase)))\n\n\n# See pwndbg.gdblib.functions for the $fsbase() and $gsbase() definitions.",
+      "startLine": 28,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/segments.py#L33"
+    },
+    {
+      "id": "e9c457a8b7a8",
+      "rule": "fixme",
+      "severity": "high",
+      "state": "new",
+      "path": "pwndbg/commands/stackvis.py",
+      "line": 134,
+      "message": "FIXME marker needs a resolution path.",
+      "evidence": {
+        "marker": "FIXME"
+      },
+      "context": "            continue\n\n        if high_addr is None:\n            # I think this can only happen on the oldest frame, so we are kind of\n            # gucci, but idk\n            # FIXME: add test\n            high_addr = low_addr\n\n        if c == 0:\n            # mark start of dump\n            start = low_addr",
+      "startLine": 129,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/stackvis.py#L134"
+    },
+    {
+      "id": "3191d47e3946",
+      "rule": "fixme",
+      "severity": "high",
+      "state": "existing",
+      "path": "pwndbg/dintegration/__init__.py",
+      "line": 44,
+      "message": "FIXME marker needs a resolution path.",
+      "evidence": {
+        "marker": "FIXME"
+      },
+      "context": "# we may send them as strings.\n\n\n@dataclass\nclass GlobalVariable:\n    # FIXME: Currently, global variables don't acknowledge their actual size.\n    name: str\n    # Mapped address in the address space.\n    addr: int",
+      "startLine": 39,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/dintegration/__init__.py#L44"
+    },
+    {
+      "id": "0f4cfc890c93",
+      "rule": "aged_task",
+      "severity": "review",
+      "state": "existing",
+      "path": "pwndbg/gdblib/info.py",
+      "line": 14,
+      "message": "Task comment is older than the configured age threshold.",
+      "evidence": {
+        "ageDays": 1493,
+        "minimumDays": 180,
+        "authoredAt": "2022-10-13T18:46:56+00:00",
+        "commit": "e5e73fa65461df16efc41fb40942caa89c36ff3f"
+      },
+      "context": "import gdb\n\nimport pwndbg.lib.cache\n\n# TODO: Add symbol, threads, dll, program\n\n\n@pwndbg.lib.cache.cache_until(\"exit\")\ndef proc_mappings() -> str:\n    try:",
+      "startLine": 10,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/gdblib/info.py#L14"
+    },
+    {
+      "id": "266caa2cc44b",
+      "rule": "fixme",
+      "severity": "high",
+      "state": "existing",
+      "path": "pwndbg/lib/arch.py",
+      "line": 66,
+      "message": "FIXME marker needs a resolution path.",
+      "evidence": {
+        "marker": "FIXME"
+      },
+      "context": "    \"rv32\": \"riscv32\",\n    \"rv64\": \"riscv64\",\n    \"powerpc\": \"powerpc\",\n    \"sparc\": \"sparc\",\n    \"loongarch64\": \"none\",\n    \"s390x\": \"s390\",  # FIXME: I believe this should be s390x, but that's not supported\n}\n\n\n# The platform being debugged\nclass Platform(Enum):",
+      "startLine": 61,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/lib/arch.py#L66"
+    },
+    {
+      "id": "039968e4f2b0",
+      "rule": "nearby_code_changed",
+      "severity": "review",
+      "state": "existing",
+      "path": "pwndbg/lib/funcparser.py",
+      "line": 107,
+      "message": "Nearby code changed after this comment.",
+      "evidence": {
+        "codeLine": 108,
+        "commentCommit": "79ca9d5fa116baf13908d49ee38f2169d45581bc",
+        "codeCommit": "c4b71af3568f8998d9a7a5048dcf947c723fcc2e",
+        "commentAuthoredAt": "2015-05-12T00:36:58+00:00",
+        "codeAuthoredAt": "2024-01-02T18:17:09+00:00",
+        "codeSource": "commit"
+      },
+      "context": "            return func\n    except Exception:\n        import traceback\n\n        traceback.print_exc()\n        # eat it\n    return None",
+      "startLine": 102,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/lib/funcparser.py#L107"
+    },
+    {
+      "id": "b2ee38a0acb6",
+      "rule": "todo",
+      "severity": "review",
+      "state": "existing",
+      "path": "pwndbg/lib/mmap.py",
+      "line": 3,
+      "message": "TODO marker needs a resolution path.",
+      "evidence": {
+        "marker": "TODO"
+      },
+      "context": "from __future__ import annotations\n\n# TODO: take these sorts of things from pwndbg.lib.functions\n\nPROT_DICT = {\n    \"PROT_NONE\": 0x0,\n    \"PROT_READ\": 0x1,\n    \"PROT_WRITE\": 0x2,",
+      "startLine": 1,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/lib/mmap.py#L3"
+    },
+    {
+      "id": "fc86ee947a4d",
+      "rule": "nearby_code_changed",
+      "severity": "review",
+      "state": "new",
+      "path": "pwndbg/libc/facade.py",
+      "line": 28,
+      "message": "Nearby code changed after this comment.",
+      "evidence": {
+        "codeLine": 29,
+        "commentCommit": "ee237b18d328762d5c914f9da0e373d49c9af561",
+        "codeCommit": "3f84b30e9eeeb34b60ddd37a6a15f2f8af214e5a",
+        "commentAuthoredAt": "2026-01-26T10:58:34+00:00",
+        "codeAuthoredAt": "2026-09-21T21:04:49+00:00",
+        "codeSource": "commit"
+      },
+      "context": "from . import util\nfrom .dispatch import LibcProvider\nfrom .dispatch import LibcType\nfrom .dispatch import LibcURLs\n\n# Order is important.\n_libc_implementations: tuple[LibcProvider, ...] = (glibc, musl, bionic, unknown)\n\n\nclass LibcNotFound(Exception):\n    pass",
+      "startLine": 23,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/libc/facade.py#L28"
+    },
+    {
+      "id": "6a31f124eb02",
+      "rule": "aged_task",
+      "severity": "review",
+      "state": "new",
+      "path": "tests/unit_tests/test_compiler_asm.py",
+      "line": 200,
+      "message": "Task comment is older than the configured age threshold.",
+      "evidence": {
+        "ageDays": 463,
+        "minimumDays": 180,
+        "authoredAt": "2025-08-08T15:26:45+00:00",
+        "commit": "f9f90d9f0241bfabfc07c115b1c73c786e04d87c"
+      },
+      "context": "        \"li %r1, FROM_INCLUDE_VALUE\",\n        None,\n        None,\n        None,\n        None,\n    ),  # FIXME: UC_MODE_LITTLE_ENDIAN, Not supported by Unicorn\n    \"powerpc64le\": (\n        ArchDefinition(name=\"powerpc\", ptrsize=8, endian=\"little\", platform=Platform.LINUX),\n        \"li %r1, FROM_INCLUDE_VALUE\",\n        None,\n        None,",
+      "startLine": 195,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/tests/unit_tests/test_compiler_asm.py#L200"
+    },
+    {
+      "id": "2d3138e1827d",
+      "rule": "fixme",
+      "severity": "high",
+      "state": "new",
+      "path": "tests/unit_tests/test_compiler_asm.py",
+      "line": 216,
+      "message": "FIXME marker needs a resolution path.",
+      "evidence": {
+        "marker": "FIXME"
+      },
+      "context": "        \"addi.d $r1, $r1, FROM_INCLUDE_VALUE\",\n        None,\n        None,\n        None,\n        None,\n    ),  # FIXME: Not supported by Unicorn\n}\ntest_cases = [\n    pytest.param(\n        name,\n        marks=pytest.mark.xfail(",
+      "startLine": 211,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/tests/unit_tests/test_compiler_asm.py#L216"
+    },
+    {
+      "id": "94c2d27a74e7",
+      "rule": "promotional_or_vague_language",
+      "severity": "low",
+      "state": "existing",
+      "path": "tests/unit_tests/test_sock_diag.py",
+      "line": 73,
+      "message": "Comment uses vague or promotional wording.",
+      "evidence": {
+        "terms": [
+          "simply"
+        ]
+      },
+      "context": "def test_find_socket_inode_owners_empty_input() -> None:\n    assert find_socket_inode_owners(set()) == {}\n\n\ndef test_find_socket_inode_owners_unknown_inode() -> None:\n    # An inode that no process has open should simply be absent from the\n    # returned dict, not raise.\n    assert find_socket_inode_owners({2**32 - 1}) == {}",
+      "startLine": 68,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/tests/unit_tests/test_sock_diag.py#L73"
+    }
+  ]
+}
