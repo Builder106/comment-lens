@@ -28,13 +28,6 @@ export const metadata: Metadata = {
     description,
     images: [card.url],
   },
-  icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    apple: "/apple-icon.png",
-  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
