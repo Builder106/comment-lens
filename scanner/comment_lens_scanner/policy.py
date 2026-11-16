@@ -11,15 +11,15 @@ from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
 
-from .maintenance import comment_blame, signals
+from .maintenance import comment_blame, documented_symbol, prose_word_count, restates_symbol, signals
 
 SEVERITY_ORDER = {"low": 0, "review": 1, "high": 2}
 DEFAULT_RULES = {
     "todo": "review",
     "fixme": "high",
     "hack": "high",
-    "restates_symbol": "review",
-    "excessive_verbosity": "review",
+    "restates_symbol": "low",
+    "excessive_verbosity": "low",
     "hedge_stack": "low",
     "promotional_or_vague_language": "low",
     "task_without_reference": "review",
@@ -41,7 +41,7 @@ class ConfigError(ValueError):
 class Policy:
     exclusions: tuple[str, ...] = ()
     fail_on: str | None = None
-    max_words: int = 45
+    max_words: int = 100
     hedge_terms: int = 3
     rules: dict[str, str] = field(default_factory=lambda: DEFAULT_RULES.copy())
     fail_on_rules: dict[str, str | None] = field(default_factory=dict)
@@ -114,7 +114,7 @@ def load_policy(root: Path, config_path: Path | None = None, *, excludes: tuple[
         baseline_path = _exclusion(baseline_path)
 
     thresholds = _table(top.get("thresholds", {}), "thresholds", {"max_words", "hedge_terms", "age_days"})
-    max_words = thresholds.get("max_words", 45)
+    max_words = thresholds.get("max_words", 100)
     hedge_terms = thresholds.get("hedge_terms", 3)
     age_days = thresholds.get("age_days", 180)
     if type(max_words) is not int or max_words < 1:
@@ -144,9 +144,6 @@ def findings_for_comment(comment: dict[str, object], policy: Policy, *, as_of: d
     body = str(comment["bodyText"])
     if PROTECTED_MARKERS.search(body.strip()):
         return []
-    symbol_context = comment.get("symbol")
-    enclosing = symbol_context.get("enclosing") if isinstance(symbol_context, dict) else None
-    symbol = enclosing.get("name") if isinstance(enclosing, dict) else None
     line, column, _ = _location(comment)
     blame = comment_blame(comment) if "git" in comment else None
     findings: list[dict[str, object]] = []
@@ -174,9 +171,10 @@ def findings_for_comment(comment: dict[str, object], policy: Policy, *, as_of: d
 
     for marker in sorted({match.upper() for match in TASK_MARKERS.findall(body)}):
         add(marker.lower(), {"marker": marker}, f"{marker} marker needs a resolution path.")
-    if isinstance(symbol, str) and re.search(rf"\b{re.escape(symbol)}\b", body, re.I):
-        add("restates_symbol", {"symbol": symbol}, "Comment repeats the enclosing symbol name.")
-    word_count = len(re.findall(r"\b\w+\b", body))
+    documented = documented_symbol(comment)
+    if documented and restates_symbol(body, documented):
+        add("restates_symbol", {"symbol": documented}, "Comment repeats the name of the symbol it documents.")
+    word_count = prose_word_count(body)
     if word_count > policy.max_words:
         add("excessive_verbosity", {"wordCount": word_count, "maxWords": policy.max_words}, "Comment exceeds the configured word limit.")
     hedge_count = len(HEDGE_WORDS.findall(body))

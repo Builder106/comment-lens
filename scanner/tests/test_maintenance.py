@@ -171,3 +171,26 @@ def test_edit_to_a_middle_line_of_a_long_comment_counts_as_touching_it(tmp_path:
     _commit(tmp_path, {"a.py": before}, "2020-01-01T00:00:00Z")
     _commit(tmp_path, {"a.py": after}, "2022-01-01T00:00:00Z")
     assert _findings(tmp_path, capsys, "nearby_code_changed") == []
+
+
+def test_restates_symbol_only_for_the_declaration_a_comment_documents(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    source = (
+        "# Represents the while loop.\nclass WhileLoop:\n    pass\n\n\n"
+        "# Gets the user name.\ndef get_user_name(user):\n    # Gets the user name here.\n    return user.name\n\n\n"
+        "# Issue 1288: automatic options are not added when 'options' is lowercase in methods\ndef options(app):\n    return app\n"
+    )
+    _init(tmp_path)
+    _commit(tmp_path, {"a.py": source}, "2020-01-01T00:00:00Z")
+    found = _findings(tmp_path, capsys, "restates_symbol")
+    assert [(item["line"], item["evidence"]["symbol"]) for item in found] == [(1, "WhileLoop"), (6, "get_user_name")]
+
+
+def test_excessive_verbosity_counts_prose_not_tags_or_diagrams(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    tags = "\n".join(f"    # @param {{string}} name{i} The value that the caller passes in for item {i}" for i in range(8))
+    diagram = "\n".join(f"    # s{i}[label=\"Node {i}\"]; s{i}->s{i + 1};" for i in range(30))
+    prose = "    # " + " ".join(["This comment keeps explaining the same point in more words than a reader needs."] * 12)
+    source = f"def a():\n{tags}\n    return 1\n\n\ndef b():\n{diagram}\n    return 2\n\n\ndef c():\n{prose}\n    return 3\n"
+    _init(tmp_path)
+    _commit(tmp_path, {"a.py": source}, "2020-01-01T00:00:00Z")
+    found = _findings(tmp_path, capsys, "excessive_verbosity")
+    assert [item["line"] for item in found] == [source.splitlines().index(prose) + 1]

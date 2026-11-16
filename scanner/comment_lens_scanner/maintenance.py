@@ -74,6 +74,55 @@ def _terms(text: str) -> set[str]:
     return {word.lower() for word in WORDS.findall(text) if len(word) >= 3 or word.isdigit()} - FUNCTION_WORDS
 
 
+FILLER = FUNCTION_WORDS | frozenset("function method class return returns returning get gets set sets".split())
+
+
+def _same_word(first: str, second: str) -> bool:
+    plural = first.rstrip("s") == second.rstrip("s")
+    return first == second or plural or (min(len(first), len(second)) >= 4 and (first.startswith(second) or second.startswith(first)))
+
+
+DECLARATION = re.compile(
+    r"^(?:(?:export|default|async|public|private|protected|static|abstract|final|pub|unsafe|extern)\s+)*"
+    r"(?:(?:def|function\*?|class|interface|struct|enum|trait|fn|func|type)\s+([A-Za-z_$][\w$]*)"
+    r"|(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*="
+    r"|([A-Za-z_$][\w$]*)\s*\()"
+)
+NOT_NAMES = frozenset("if for while switch return catch with else do try await yield new typeof function super".split())
+
+
+def documented_symbol(comment: dict[str, object]) -> str | None:
+    """The name of the declaration on the comment's next code line, if there is one."""
+    parts = _lines_after(comment)
+    if parts is None:
+        return None
+    lines, context_start, end = parts
+    for line in lines[max(0, end + 1 - context_start):end + 6 - context_start]:
+        text = line.strip()
+        if not text or text.startswith(COMMENT_PREFIX) or text.startswith("@"):
+            continue
+        match = DECLARATION.match(text)
+        name = next((group for group in match.groups() if group), None) if match else None
+        return name if name and name not in NOT_NAMES else None
+    return None
+
+
+def restates_symbol(body: str, symbol: str) -> bool:
+    """True when the comment uses the symbol's name and adds at most one word of its own."""
+    name = {word.lower() for word in WORDS.findall(symbol)}
+    words = _terms(DOC_TAG.sub(" ", body))
+    covered = {word for word in words if any(_same_word(word, part) for part in name)}
+    return bool(covered) and len(words - covered - FILLER) <= 1
+
+
+PROSE_LINE = re.compile(r"[A-Za-z][A-Za-z'-]*(?:\s+[A-Za-z][A-Za-z'-]*){2,}")
+
+
+def prose_word_count(body: str) -> int:
+    """Words in lines of running text. Tag lines such as `@param`, tables and diagrams do not count."""
+    return sum(len(re.findall(r"\b\w+\b", line)) for line in body.splitlines() if not line.lstrip().startswith("@") and PROSE_LINE.search(line))
+
+
 def _describes_file(comment: dict[str, object]) -> bool:
     """A banner, a file tag, a tool directive or a header block at the top of a file is not about the next line of code."""
     body = str(comment["bodyText"])
