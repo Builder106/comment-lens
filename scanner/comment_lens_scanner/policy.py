@@ -315,7 +315,7 @@ def _sarif(report: dict[str, object]) -> str:
         "version": "2.1.0",
         "runs": [{"tool": {"driver": {
             "name": "Comment Lens",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "rules": [{"id": rule, "shortDescription": {"text": rule.replace("_", " ")}} for rule in rules],
         }}, "results": results}],
     }
