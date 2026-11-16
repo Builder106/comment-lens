@@ -25,9 +25,11 @@ as repository data when sharing the file.
 | Rule | Evidence | Limit |
 | --- | --- | --- |
 | `task_without_reference` | A TODO, FIXME, or HACK comment has no issue key, owner marker, or resolution phrase | The marker check is syntactic; it cannot know whether a task is tracked elsewhere. |
-| `aged_task` | Git blame date, commit, author, and age in days | Only committed task comments with a blame date qualify. |
-| `nearby_code_changed` | The nearest code line in the short source context has a newer Git commit, or an uncommitted worktree change | Proximity does not prove that the comment describes that code line. |
+| `aged_task` | Git blame date, commit, author, and age in days | Only committed task comments with a blame date qualify. Whitespace-only edits and commits in `.git-blame-ignore-revs` do not reset the age. |
+| `nearby_code_changed` | The nearest code line in the short source context was last changed after the comment's latest edit, and that change added or removed a word or number the comment mentions (listed as `sharedTerms`). An uncommitted worktree change is reported without the word check. | Proximity does not prove that the comment describes that code line. The check compares words and numbers, not meaning, so a changed operator is missed. Banner, file-header and tool-directive comments (such as `# mypy:`) are skipped. |
 | `missing_local_reference` | A relative Markdown link in a comment points to a missing local path | HTTP links are not fetched or judged stale. This rule runs only against the current checkout during a check. |
+
+Blame ignores whitespace-only edits (`git blame -w`). If the repository has a `.git-blame-ignore-revs` file, blame also skips the commits listed in it, so a reformatting commit does not make old comments and code look new. If git rejects that file, for example because a listed commit is missing from a shallow clone, Comment Lens blames without it.
 
 Set the age threshold in `.comment-lens.toml`:
 
