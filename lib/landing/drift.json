@@ -189,7 +189,10 @@
       "codeCommit": "13e1608ecdd2482b78cd46ab422ebceae16f20e9",
       "commentAuthoredAt": "2018-01-12T15:24:34+00:00",
       "codeAuthoredAt": "2022-10-08T02:48:28+00:00",
-      "codeSource": "commit"
+      "codeSource": "commit",
+      "sharedTerms": [
+        "pygment"
+      ]
     },
     "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/color/syntax_highlight.py#L88"
   },
@@ -200,11 +203,11 @@
       "",
       "Repository: `pwndbg/pwndbg`",
       "Selection: all tracked files",
-      "Comments: 6135, New: 154, Existing: 1797, Blocking: 14",
+      "Comments: 6135, New: 66, Existing: 698, Blocking: 14",
       "",
-      "Resolved: 142"
+      "Resolved: 65"
     ],
-    "skippedBefore": 884,
+    "skippedBefore": 369,
     "section": [
       "## pwndbg/aglib/auxv.py:186: fixme (high, new)",
       "",
@@ -212,7 +215,7 @@
       "",
       "Evidence: `{\"marker\": \"FIXME\"}`"
     ],
-    "skippedAfter": 40462,
+    "skippedAfter": 15406,
     "exit": 1
   }
 }

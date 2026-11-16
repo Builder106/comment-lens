@@ -35,9 +35,8 @@ WANTED = [
     ("excessive_verbosity", "new", 1),
     ("promotional_or_vague_language", None, 1),
     ("hedge_stack", None, 1),
-    ("nearby_code_changed", "existing", 1),
-    ("nearby_code_changed", "new", 1),
 ]
+PINNED = [("nearby_code_changed", "pwndbg/color/syntax_highlight.py")]
 MAX_COLUMNS = 100
 MAX_CONTEXT_LINES = 11
 
@@ -80,6 +79,31 @@ def clean_context(text: str, line: int, repo: Path, path: str) -> tuple[str, int
 def pick_sample(findings: list[dict], commit: str, repo: Path) -> list[dict]:
     chosen: list[dict] = []
     used_comments: set[str] = set()
+
+    def entry(finding: dict, context: str, first_line: int) -> dict:
+        evidence = {key: value for key, value in finding["evidence"].items() if key != "author"}
+        return {
+            "id": finding["findingId"][4:16],
+            "rule": finding["ruleId"],
+            "severity": finding["severity"],
+            "state": finding["baselineState"],
+            "path": finding["path"],
+            "line": finding["line"],
+            "message": finding["message"],
+            "evidence": evidence,
+            "context": context,
+            "startLine": first_line,
+            "permalink": f"https://github.com/{REPOSITORY}/blob/{commit}/{finding['path']}#L{finding['line']}",
+        }
+
+    for rule, path in PINNED:
+        for finding in findings:
+            if finding["ruleId"] == rule and finding["path"] == path:
+                cleaned = clean_context(finding.get("sourceContext") or "", finding["line"], repo, path)
+                if cleaned:
+                    used_comments.add(finding["commentId"])
+                    chosen.append(entry(finding, *cleaned))
+                break
     for rule, state, count in WANTED:
         pool = []
         for finding in findings:
@@ -94,22 +118,7 @@ def pick_sample(findings: list[dict], commit: str, repo: Path) -> list[dict]:
         pool.sort(key=lambda item: item[:3])
         for _, _, _, finding, (context, first_line) in pool[:count]:
             used_comments.add(finding["commentId"])
-            evidence = {key: value for key, value in finding["evidence"].items() if key != "author"}
-            chosen.append(
-                {
-                    "id": finding["findingId"][4:16],
-                    "rule": finding["ruleId"],
-                    "severity": finding["severity"],
-                    "state": finding["baselineState"],
-                    "path": finding["path"],
-                    "line": finding["line"],
-                    "message": finding["message"],
-                    "evidence": evidence,
-                    "context": context,
-                    "startLine": first_line,
-                    "permalink": f"https://github.com/{REPOSITORY}/blob/{commit}/{finding['path']}#L{finding['line']}",
-                }
-            )
+            chosen.append(entry(finding, context, first_line))
     chosen.sort(key=lambda item: (item["path"], item["line"], item["rule"]))
     return chosen
 

@@ -2,7 +2,7 @@
 
 The home page shows a real report. `lib/landing/report.json` holds the numbers, the exit codes and a sample of the findings. Nothing in it is typed by hand. `scripts/landing-report.py` builds it from the CLI's own JSON reports.
 
-The current file comes from `pwndbg/pwndbg` at commit `f6fed0cb49495f58a1dd4f972f2f610cf16b1754` (2026-10-21). The baseline was created from commit `22bec9756a9cc2aaa410829d452971be17900fac` (2026-09-14) of the same project. Findings are shown as the scanner reports them. They describe comments, not the project's quality.
+The current files were built with `comment-lens-scanner` 0.1.1 from PyPI. The current file comes from `pwndbg/pwndbg` at commit `f6fed0cb49495f58a1dd4f972f2f610cf16b1754` (2026-10-21). The baseline was created from commit `22bec9756a9cc2aaa410829d452971be17900fac` (2026-09-14) of the same project. Findings are shown as the scanner reports them. They describe comments, not the project's quality.
 
 ## Rebuild it
 

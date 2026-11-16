@@ -13,8 +13,8 @@
       "baseline": false,
       "failOn": "none",
       "exit": 0,
-      "findings": 1951,
-      "new": 1951,
+      "findings": 764,
+      "new": 764,
       "existing": 0,
       "resolved": 0,
       "blocking": 0
@@ -23,28 +23,28 @@
       "baseline": false,
       "failOn": "low",
       "exit": 1,
-      "findings": 1951,
-      "new": 1951,
+      "findings": 764,
+      "new": 764,
       "existing": 0,
       "resolved": 0,
-      "blocking": 1951
+      "blocking": 764
     },
     {
       "baseline": false,
       "failOn": "review",
       "exit": 1,
-      "findings": 1951,
-      "new": 1951,
+      "findings": 764,
+      "new": 764,
       "existing": 0,
       "resolved": 0,
-      "blocking": 1931
+      "blocking": 701
     },
     {
       "baseline": false,
       "failOn": "high",
       "exit": 1,
-      "findings": 1951,
-      "new": 1951,
+      "findings": 764,
+      "new": 764,
       "existing": 0,
       "resolved": 0,
       "blocking": 53
@@ -53,56 +53,44 @@
       "baseline": true,
       "failOn": "none",
       "exit": 0,
-      "findings": 1951,
-      "new": 154,
-      "existing": 1797,
-      "resolved": 142,
+      "findings": 764,
+      "new": 66,
+      "existing": 698,
+      "resolved": 65,
       "blocking": 0
     },
     {
       "baseline": true,
       "failOn": "low",
       "exit": 1,
-      "findings": 1951,
-      "new": 154,
-      "existing": 1797,
-      "resolved": 142,
-      "blocking": 154
+      "findings": 764,
+      "new": 66,
+      "existing": 698,
+      "resolved": 65,
+      "blocking": 66
     },
     {
       "baseline": true,
       "failOn": "review",
       "exit": 1,
-      "findings": 1951,
-      "new": 154,
-      "existing": 1797,
-      "resolved": 142,
-      "blocking": 154
+      "findings": 764,
+      "new": 66,
+      "existing": 698,
+      "resolved": 65,
+      "blocking": 66
     },
     {
       "baseline": true,
       "failOn": "high",
       "exit": 1,
-      "findings": 1951,
-      "new": 154,
-      "existing": 1797,
-      "resolved": 142,
+      "findings": 764,
+      "new": 66,
+      "existing": 698,
+      "resolved": 65,
       "blocking": 14
     }
   ],
   "byRule": [
-    {
-      "rule": "nearby_code_changed",
-      "severity": "review",
-      "new": 64,
-      "existing": 919
-    },
-    {
-      "rule": "excessive_verbosity",
-      "severity": "review",
-      "new": 22,
-      "existing": 218
-    },
     {
       "rule": "task_without_reference",
       "severity": "review",
@@ -110,16 +98,16 @@
       "existing": 158
     },
     {
-      "rule": "restates_symbol",
-      "severity": "review",
-      "new": 16,
-      "existing": 151
-    },
-    {
       "rule": "aged_task",
       "severity": "review",
       "new": 5,
-      "existing": 154
+      "existing": 157
+    },
+    {
+      "rule": "nearby_code_changed",
+      "severity": "review",
+      "new": 14,
+      "existing": 143
     },
     {
       "rule": "todo",
@@ -132,6 +120,18 @@
       "severity": "high",
       "new": 14,
       "existing": 38
+    },
+    {
+      "rule": "excessive_verbosity",
+      "severity": "low",
+      "new": 0,
+      "existing": 22
+    },
+    {
+      "rule": "restates_symbol",
+      "severity": "low",
+      "new": 0,
+      "existing": 21
     },
     {
       "rule": "promotional_or_vague_language",
@@ -153,6 +153,44 @@
     }
   ],
   "sample": [
+    {
+      "id": "d982eb3517ca",
+      "rule": "nearby_code_changed",
+      "severity": "review",
+      "state": "existing",
+      "path": "pwndbg/color/syntax_highlight.py",
+      "line": 88,
+      "message": "Nearby code changed after this comment.",
+      "evidence": {
+        "codeLine": 89,
+        "commentCommit": "cbc4f779fcab95f18623d4205b4cfa70895a5de8",
+        "codeCommit": "13e1608ecdd2482b78cd46ab422ebceae16f20e9",
+        "commentAuthoredAt": "2018-01-12T15:24:34+00:00",
+        "codeAuthoredAt": "2022-10-08T02:48:28+00:00",
+        "codeSource": "commit",
+        "sharedTerms": [
+          "pygment"
+        ]
+      },
+      "context": "    # either we can't find it or there are multiple matches to choose from\n    return pygments.lexers.guess_lexer_for_filename(filename, code, **options)\n\n\ndef syntax_highlight(code: str, filename: str = \".asm\") -> str:\n    # No syntax highlight if pygment is not installed\n    if disable_colors:\n        return code\n\n    filename = os.path.basename(filename)",
+      "startLine": 83,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/color/syntax_highlight.py#L88"
+    },
+    {
+      "id": "fb6be3ff35f8",
+      "rule": "restates_symbol",
+      "severity": "low",
+      "state": "existing",
+      "path": "pwndbg/commands/branch.py",
+      "line": 113,
+      "message": "Comment repeats the name of the symbol it documents.",
+      "evidence": {
+        "symbol": "BreakOnConditionalBranch"
+      },
+      "context": "                \"The current architecture is not supported for breaking on conditional branches\"\n            )\n        )\n        return\n\n    # Install the breakpoint.\n    BreakOnConditionalBranch(instruction, taken)",
+      "startLine": 108,
+      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/branch.py#L113"
+    },
     {
       "id": "8a6f84ea60a0",
       "rule": "hack",
@@ -184,21 +222,6 @@
       "context": "        print(\"Searching for instruction (assembled value): \" + repr(value_bytes))\n    else:\n        print(\"Searching for byte: \" + repr(value_bytes))\n\n    if next:\n        # FIXME[lint]: what? how can it be unbound?\n        val_len = len(value_bytes)\n        new_saved = set()\n\n        i = 0\n        for addr in saved:",
       "startLine": 289,
       "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/search.py#L294"
-    },
-    {
-      "id": "f4b732cc113c",
-      "rule": "restates_symbol",
-      "severity": "review",
-      "state": "existing",
-      "path": "pwndbg/commands/segments.py",
-      "line": 33,
-      "message": "Comment repeats the enclosing symbol name.",
-      "evidence": {
-        "symbol": "gsbase"
-      },
-      "context": "    Prints out the GS base address. See also $gsbase.\n    \"\"\"\n    print(hex(int(pwndbg.aglib.regs.gsbase)))\n\n\n# See pwndbg.gdblib.functions for the $fsbase() and $gsbase() definitions.",
-      "startLine": 28,
-      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/commands/segments.py#L33"
     },
     {
       "id": "e9c457a8b7a8",
@@ -239,7 +262,7 @@
       "line": 14,
       "message": "Task comment is older than the configured age threshold.",
       "evidence": {
-        "ageDays": 1493,
+        "ageDays": 1495,
         "minimumDays": 180,
         "authoredAt": "2022-10-13T18:46:56+00:00",
         "commit": "e5e73fa65461df16efc41fb40942caa89c36ff3f"
@@ -264,26 +287,6 @@
       "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/lib/arch.py#L66"
     },
     {
-      "id": "039968e4f2b0",
-      "rule": "nearby_code_changed",
-      "severity": "review",
-      "state": "existing",
-      "path": "pwndbg/lib/funcparser.py",
-      "line": 107,
-      "message": "Nearby code changed after this comment.",
-      "evidence": {
-        "codeLine": 108,
-        "commentCommit": "79ca9d5fa116baf13908d49ee38f2169d45581bc",
-        "codeCommit": "c4b71af3568f8998d9a7a5048dcf947c723fcc2e",
-        "commentAuthoredAt": "2015-05-12T00:36:58+00:00",
-        "codeAuthoredAt": "2024-01-02T18:17:09+00:00",
-        "codeSource": "commit"
-      },
-      "context": "            return func\n    except Exception:\n        import traceback\n\n        traceback.print_exc()\n        # eat it\n    return None",
-      "startLine": 102,
-      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/lib/funcparser.py#L107"
-    },
-    {
       "id": "b2ee38a0acb6",
       "rule": "todo",
       "severity": "review",
@@ -299,26 +302,6 @@
       "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/lib/mmap.py#L3"
     },
     {
-      "id": "fc86ee947a4d",
-      "rule": "nearby_code_changed",
-      "severity": "review",
-      "state": "new",
-      "path": "pwndbg/libc/facade.py",
-      "line": 28,
-      "message": "Nearby code changed after this comment.",
-      "evidence": {
-        "codeLine": 29,
-        "commentCommit": "ee237b18d328762d5c914f9da0e373d49c9af561",
-        "codeCommit": "3f84b30e9eeeb34b60ddd37a6a15f2f8af214e5a",
-        "commentAuthoredAt": "2026-01-26T10:58:34+00:00",
-        "codeAuthoredAt": "2026-09-21T21:04:49+00:00",
-        "codeSource": "commit"
-      },
-      "context": "from . import util\nfrom .dispatch import LibcProvider\nfrom .dispatch import LibcType\nfrom .dispatch import LibcURLs\n\n# Order is important.\n_libc_implementations: tuple[LibcProvider, ...] = (glibc, musl, bionic, unknown)\n\n\nclass LibcNotFound(Exception):\n    pass",
-      "startLine": 23,
-      "permalink": "https://github.com/pwndbg/pwndbg/blob/f6fed0cb49495f58a1dd4f972f2f610cf16b1754/pwndbg/libc/facade.py#L28"
-    },
-    {
       "id": "6a31f124eb02",
       "rule": "aged_task",
       "severity": "review",
@@ -327,7 +310,7 @@
       "line": 200,
       "message": "Task comment is older than the configured age threshold.",
       "evidence": {
-        "ageDays": 463,
+        "ageDays": 465,
         "minimumDays": 180,
         "authoredAt": "2025-08-08T15:26:45+00:00",
         "commit": "f9f90d9f0241bfabfc07c115b1c73c786e04d87c"
