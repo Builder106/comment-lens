@@ -74,7 +74,7 @@ const chapters: Chapter[] = [
         <p className="cl-when">{head.short}, {head.date}</p>
         <h2 id="check-title" className="cl-h2">Comment Lens compares when the comment and the code last changed.</h2>
         <p>
-          For every comment, it asks git when the comment last changed and when the nearest line of code did. If the code is newer, the finding records both commits. The file has had {drift.commitsSinceChange} commits since that change, and the comment still describes a check that no longer exists.
+          For every comment, it asks git when the comment last changed and when the nearest line of code did. If the code is newer and the change added or removed a word the comment mentions, the finding records both commits and those words. Reformatting does not count. The file has had {drift.commitsSinceChange} commits since that change, and the comment still describes a check that no longer exists.
         </p>
         <p className="cl-note">
           Ten other rules cover things like tasks with no issue or owner and links to files that no longer exist. <Link href="#rules">See all eleven</Link>.
