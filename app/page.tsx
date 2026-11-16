@@ -40,6 +40,30 @@ function found(id: string) {
   return row ? row.new + row.existing : 0;
 }
 
+const demoText = `$ comment-lens check . --fail-on review > report.md
+$ echo $?
+1
+$ grep '^## ' report.md | head -9
+## docs/Makefile:1: nearby_code_changed (review, new)
+## examples/tutorial/flaskr/__init__.py:23: nearby_code_changed (review, new)
+## src/flask/app.py:531: nearby_code_changed (review, new)
+## src/flask/app.py:1219: nearby_code_changed (review, new)
+## src/flask/cli.py:312: nearby_code_changed (review, new)
+## src/flask/helpers.py:613: nearby_code_changed (review, new)
+## src/flask/sansio/app.py:216: nearby_code_changed (review, new)
+## src/flask/sansio/scaffold.py:102: nearby_code_changed (review, new)
+## src/flask/sessions.py:213: nearby_code_changed (review, new)
+$ comment-lens baseline create . --output .comment-lens-baseline.json > /dev/null
+$ comment-lens compare . --baseline .comment-lens-baseline.json --fail-on review > report.md
+$ echo $?
+0
+$ head -6 report.md
+# Comment Lens report
+
+Repository: \`pallets/flask\`
+Selection: all tracked files
+Comments: 566, New: 0, Existing: 20, Blocking: 0`;
+
 const chapters: Chapter[] = [
   {
     id: "top",
@@ -166,6 +190,19 @@ export default function Home() {
             <p>Commit the baseline, then gate on what is new.</p>
           </li>
         </ol>
+        <figure className="cl-demo">
+          <video controls muted playsInline preload="none" poster="/demo-poster.jpg" width={1280} height={720} aria-describedby="demo-text">
+            <source src="/demo.mp4" type="video/mp4" />
+          </video>
+          <figcaption>
+            A real run on pallets/flask with scanner 0.1.1: a check that exits 1, then a baseline that brings it to exit 0. The typing is automated and the output is not.
+          </figcaption>
+          <details id="demo-text">
+            <summary>Text version of the demo</summary>
+            <pre tabIndex={0}><code>{demoText}</code></pre>
+          </details>
+        </figure>
+
         <p className="cl-limits">
           Comment Lens reads files without running them, uploads nothing and never edits a comment. Each finding comes with its evidence so a person can decide what to do. The examples on this page come from {report.repository} at {shortSha(report.commit)}, and <a href={`${repoUrl}/blob/main/docs/landing-data.md`}>this page explains how they were made</a>. There is also a hosted review workspace. Each deployment accepts one account, so <Link href="/workspace">open it</Link> if it is yours, or run your own copy from the <a href={`${repoUrl}#deployment-runbook`}>deployment runbook</a>.
         </p>
