@@ -133,7 +133,15 @@ def _tracked(root: Path, include_untracked: bool) -> tuple[list[str], Diagnostic
     return sorted(set(paths)), None
 
 def _blame(root: Path, path: str, line_count: int) -> tuple[list[dict[str, object]], str | None]:
-    output, error = _git(root, ["blame", "--line-porcelain", "--", path])
+    # -w keeps whitespace-only edits from taking over a line. A project's own
+    # .git-blame-ignore-revs lists its reformatting commits for the same reason.
+    # If git rejects that file (a listed commit missing from a shallow clone),
+    # blame again without it.
+    ignore = root / ".git-blame-ignore-revs"
+    base = ["blame", "-w", "--line-porcelain"]
+    output, error = _git(root, [*base, "--ignore-revs-file", ignore.name, "--", path] if ignore.is_file() else [*base, "--", path])
+    if not output and ignore.is_file():
+        output, error = _git(root, [*base, "--", path])
     if not output:
         return ([{"startLine0": 0, "endLine0": max(0, line_count - 1), "commit": None, "authorName": None, "authorEmail": None, "authoredAt": None, "source": "unavailable"}], error)
     spans: list[dict[str, object]] = []
@@ -267,7 +275,7 @@ def _comment_record(root: Path, repository_id: str, scan_id: str, path: str, dat
     primary_blame = next((item for item in blame if "startLine0" in item and "endLine0" in item and item["startLine0"] <= start_line <= item["endLine0"]), None)
     if primary_blame is None and blame and "startLine0" not in blame[0]:
         primary_blame = blame[0]
-    relevant_lines = {*range(max(0, start_line - 5), start_line), start_line, *range(end_line + 1, end_line + 6)}
+    relevant_lines = set(range(max(0, start_line - 5), end_line + 6))
     comment_blame = []
     for item in blame:
         span_start = item.get("startLine0")
