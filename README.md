@@ -1,6 +1,6 @@
 # Comment Lens
 
-Comment Lens reports the code comments a person should read again, such as unresolved tasks, links to files that no longer exist, and comments whose nearby code changed after they were written. The local CLI and CI checks make no upload request. The hosted workspace pairs each comment with source context and scanner evidence and records a review decision without changing repository files. A VS Code adapter shows the same findings beside the code.
+Comment Lens reports the code comments a person should read again, such as unresolved tasks, links to files that no longer exist, and comments whose nearby code changed after they were written. The local CLI and CI checks make no upload request. The hosted workspace pairs each comment with source context and scanner evidence and records a review decision without changing repository files. A VS Code adapter shows the same findings beside the code. [Watch a one-minute demo](https://comment-lens-review.vercel.app/demo.mp4).
 
 ## Architecture
 
