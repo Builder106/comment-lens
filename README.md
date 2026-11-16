@@ -82,13 +82,13 @@ fail_on = "none"
 todo = "review"
 fixme = "high"
 hack = "high"
-restates_symbol = "review"
-excessive_verbosity = "review"
+restates_symbol = "low"
+excessive_verbosity = "low"
 hedge_stack = "low"
 promotional_or_vague_language = "low"
 
 [thresholds]
-max_words = 45
+max_words = 100
 hedge_terms = 3
 ```
 
