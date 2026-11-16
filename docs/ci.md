@@ -12,6 +12,26 @@ Exit code 0 means the scan completed without blocking findings. Exit code 1
 means a new finding met a blocking threshold. Exit code 2 means the scan or
 configuration failed. A scanner failure is never treated as a clean check.
 
+## Run it before each commit
+
+With [pre-commit](https://pre-commit.com), add a local hook. It checks the comments on the lines a commit changes and blocks the commit when a `FIXME` or `HACK` is added:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: comment-lens
+        name: comment-lens
+        entry: comment-lens check . --changed HEAD --fail-on high
+        language: python
+        language_version: python3.12
+        additional_dependencies: ["comment-lens-scanner==0.1.1"]
+        pass_filenames: false
+        types: [text]
+```
+
+The scanner needs Python 3.12 or newer, so the hook sets `language_version`. Pin the scanner version you have tested. Use `--fail-on review` to block review-level findings as well.
+
 ## Create a baseline
 
 Run a full scan on the default branch after reviewing the rule set:

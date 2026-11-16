@@ -101,7 +101,7 @@ configuration, extraction, or artifact handling failed. The existing
 
 More documentation:
 
-- [CI checks and baselines](docs/ci.md): baselines, pull request annotations and scheduled checks.
+- [CI checks and baselines](docs/ci.md): a pre-commit hook, baselines, pull request annotations and scheduled checks.
 - [Maintenance findings and history](docs/maintenance.md): comment age, local references and history across scans.
 - [Assisted review](docs/assisted-review.md): optional Gemini guidance for one finding in the hosted workspace.
 - [Editor integration](docs/editor.md): local findings beside comments in Visual Studio Code.
