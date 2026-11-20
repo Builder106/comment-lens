@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- Poster for public/demo.mp4: the recorded transcript (the same text as the page's
+     "Text version of the demo"), with the grep output trimmed and the trim counted. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+  html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#121417}
+  body{display:flex;align-items:center}
+  pre{margin:0;padding:0 64px;font:400 20px/1.8 "Geist Mono",ui-monospace,monospace;color:#e6e8eb;white-space:pre}
+  .p{color:#f2b705}
+  .o{color:#8e959e}
+  .d{color:#5d646d}
+  mark{background:#f2b705;color:#111317;padding:1px 9px;margin-left:-9px;border-radius:2px;font-weight:500}
+  .c{display:inline-block;width:.62em;height:1.15em;vertical-align:-.22em;background:#f2b705}
+</style>
+</head>
+<body>
+<pre><span class="p">$</span> comment-lens check . --fail-on review &gt; report.md
+<span class="p">$</span> echo $?
+<mark>1</mark>
+<span class="p">$</span> grep '^## ' report.md | head -9
+<span class="o">## docs/Makefile:1: nearby_code_changed (review, new)</span>
+<span class="o">## src/flask/app.py:531: nearby_code_changed (review, new)</span>
+<span class="d">   7 more lines</span>
+<span class="p">$</span> comment-lens baseline create . --output .comment-lens-baseline.json &gt; /dev/null
+<span class="p">$</span> comment-lens compare . --baseline .comment-lens-baseline.json --fail-on review &gt; report.md
+<span class="p">$</span> echo $?
+<mark>0</mark>
+<span class="p">$</span> <span class="c"></span></pre>
+</body>
+</html>
