@@ -176,6 +176,23 @@
 .cl-pager{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:56px;padding-top:20px;border-top:1px solid var(--line);font-family:var(--mono);font-size:15px}
 .cl-pager a{text-decoration:none;padding:4px 0}
 
+/* Entrance: the file loads like blame output, line by line from the top, then the mark's
+   second stroke slips out of step. Runs once on mount; reduced motion shows the end state. */
+@media (prefers-reduced-motion:no-preference){
+  .cl-stage .cl-panel,#top .cl-panel{animation:cl-rise .6s var(--ease) backwards}
+  .cl-stage .cl-line,#top .cl-line{animation:cl-load .5s var(--ease) backwards;animation-delay:calc(.2s + var(--i,0) * 45ms)}
+  .cl-stage .cl-finding,#top .cl-finding{animation:cl-rise .5s var(--ease) .85s backwards}
+  .cl-rail{animation:cl-fade .5s var(--ease) .95s backwards}
+  #top .cl-lede,#top .cl-command,#top .cl-after{animation:cl-rise .6s var(--ease) backwards}
+  #top .cl-command{animation-delay:.08s}
+  #top .cl-after{animation-delay:.16s}
+  .cl-mark-drift{animation:cl-drift .8s var(--ease) .6s backwards}
+}
+@keyframes cl-rise{from{opacity:0;transform:translateY(12px)}}
+@keyframes cl-load{from{opacity:0;transform:translateY(70%)}}
+@keyframes cl-fade{from{opacity:0}}
+@keyframes cl-drift{from{transform:translateY(-4px)}}
+
 @media (prefers-reduced-motion:reduce){
   .cl *,.cl *:before{transition:none!important;animation:none!important}
 }

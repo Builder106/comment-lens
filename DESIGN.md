@@ -120,7 +120,7 @@ Concepts considered and dropped: a lens over a file that dims code and focuses c
 - Type: Instrument Sans for prose and headings, Geist Mono for code, data and the rail. Familjen Grotesk was tried first and dropped: its spacing broke at body sizes ("Pyt hon").
 - Mark: drawn in Glaxnimate (`design/marks/`). A `//` comment marker whose second stroke has drifted out of step with the first. The workspace header uses it too.
 - Shape: 10 to 12px radius on dark panels, none elsewhere.
-- Motion: CSS transitions on `transform`, `opacity` and `clip-path`, driven by one `IntersectionObserver` that sets the active chapter. No scroll listeners, no animation loop, no GSAP: the motion is discrete state changes, so a library adds nothing. Primary links answer with the amber highlight sweep. Reduced motion removes every transition and shows final states.
+- Motion: CSS transitions on `transform`, `opacity` and `clip-path`, driven by one `IntersectionObserver` that sets the active chapter. No scroll listeners, no animation loop, no GSAP: the motion is discrete state changes, so a library adds nothing. Primary links answer with the amber highlight sweep. On load, the stage file enters like blame output, one line at a time from the top, and the mark's amber stroke slips out of step; both are CSS keyframes that run once. Reduced motion removes every transition and animation and shows final states.
 - Idle state: the terminal caret blinks. Everything else rests, by decision; the story moves only when the reader does.
 
 ### Structure plan

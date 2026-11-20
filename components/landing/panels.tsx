@@ -37,7 +37,7 @@ export function CodePanel({ step }: { step: 0 | 1 | 2 }) {
           const comment = index === COMMENT_ROW;
           const changed = index === CODE_ROW && step > 0 && row[step].text !== row[0].text;
           return (
-            <div key={index} className={comment ? "cl-line cl-line-comment" : "cl-line"} data-changed={changed ? "" : undefined}>
+            <div key={index} className={comment ? "cl-line cl-line-comment" : "cl-line"} data-changed={changed ? "" : undefined} style={{ "--i": index } as React.CSSProperties}>
               <Cell className="cl-blame" values={row.map((line) => line.date)} step={step} render={(value) => value} />
               <Cell className="cl-num" values={row.map((line) => line.n)} step={step} render={(value) => value} />
               {comment ? (
