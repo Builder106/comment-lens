@@ -1,33 +1,33 @@
 <!doctype html>
-<!-- Poster for public/demo.mp4: the recorded transcript (the same text as the page's
-     "Text version of the demo"), with the grep output trimmed and the trim counted. -->
+<!-- Poster for public/demo.mp4: scene.jpg (rendered by type-poster.py) with the site's headline,
+     its amber highlight, and the mark. Render: see design/poster/README.md. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400&family=Instrument+Sans:wght@600&display=block" rel="stylesheet">
 <style>
-  html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#121417}
-  body{display:flex;align-items:center}
-  pre{margin:0;padding:0 64px;font:400 20px/1.8 "Geist Mono",ui-monospace,monospace;color:#e6e8eb;white-space:pre}
-  .p{color:#f2b705}
-  .o{color:#8e959e}
-  .d{color:#5d646d}
-  mark{background:#f2b705;color:#111317;padding:1px 9px;margin-left:-9px;border-radius:2px;font-weight:500}
-  .c{display:inline-block;width:.62em;height:1.15em;vertical-align:-.22em;background:#f2b705}
+  html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#fbfbfc}
+  body{position:relative;background:url(scene.jpg) center/cover;color:#111317}
+  body:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(251,251,252,.96) 0%,rgba(251,251,252,.7) 26%,rgba(251,251,252,0) 44%)}
+  header{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:50px 64px}
+  h1{margin:0;font:600 52px/1.02 "Instrument Sans",system-ui,sans-serif;letter-spacing:-.045em;max-width:19ch}
+  h1 span{position:relative;z-index:0}
+  h1 span:before{content:"";position:absolute;inset:4px -6px 0;z-index:-1;background:#f2b705}
+  p{margin:16px 0 0;font:400 16px/1.6 "Geist Mono",ui-monospace,monospace;color:#545a62;max-width:80ch}
+  .mark{display:flex;align-items:center;gap:12px;font:600 21px "Instrument Sans",system-ui,sans-serif;letter-spacing:-.03em;padding-top:8px;white-space:nowrap}
+  .mark svg{width:32px;height:32px}
 </style>
 </head>
 <body>
-<pre><span class="p">$</span> comment-lens check . --fail-on review &gt; report.md
-<span class="p">$</span> echo $?
-<mark>1</mark>
-<span class="p">$</span> grep '^## ' report.md | head -9
-<span class="o">## docs/Makefile:1: nearby_code_changed (review, new)</span>
-<span class="o">## src/flask/app.py:531: nearby_code_changed (review, new)</span>
-<span class="d">   7 more lines</span>
-<span class="p">$</span> comment-lens baseline create . --output .comment-lens-baseline.json &gt; /dev/null
-<span class="p">$</span> comment-lens compare . --baseline .comment-lens-baseline.json --fail-on review &gt; report.md
-<span class="p">$</span> echo $?
-<mark>0</mark>
-<span class="p">$</span> <span class="c"></span></pre>
+  <header>
+    <div>
+      <h1>Find the comments your code has <span>outgrown.</span></h1>
+      <p>Comment Lens compares each comment's git blame date with the code beside it.</p>
+    </div>
+    <div class="mark">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="8,54 18,54 34,10 24,10" fill="#111317"/><polygon fill="#f2b705" points="28,58 38,58 54,14 44,14"/></svg>
+      Comment Lens
+    </div>
+  </header>
 </body>
 </html>
