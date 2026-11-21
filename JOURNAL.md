@@ -2,6 +2,22 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-11-21: Add media to the README and finish the docs pass #decision #docs
+
+The README now opens with the demo poster and shows three real pieces of media, stored in `docs/media/`: the pwndbg finding panel and the baseline chart, both captured from the live home page, and a 614 KB GIF of the flask demo made with FFmpeg. Every `.md` file in the repo was read. `docs/distribution.md` lost its quoted slogans, and `scanner/README.md`, which PyPI shows, gained the finding image by absolute URL, so it appears after the next release.
+
+## 2026-11-20: Render the demo poster in 3D #decision #design
+
+Two earlier posters, a pair of exit-code cards and a plain transcript, were rejected as generic and as only terminal and code. The poster is now a Blender render (`design/poster/type-poster.py`) of lines 87 to 94 of the pwndbg file as black type on the site's white ground, with blame dates beside each line. The 2018 comment and its date sit on amber highlights and have slid out of line, like the mark's second stroke. `design/poster/demo-poster.html` adds the headline and mark, and `public/demo-poster.jpg` is the export. The camera is raised and the type flattened so the code stays readable.
+
+## 2026-11-19: Add an entrance animation to the home page #decision #design
+
+The stage file now loads one line at a time from the top, like blame output, then the finding box and chapter rail fade in, the intro text rises, and the mark's amber stroke slips out of step. These are CSS keyframes that run once, with a `backwards` fill so the existing hover transitions still work, and nothing animates under reduced motion. Checked on a production build at 450 ms, 950 ms and the end state, with no horizontal overflow at phone width.
+
+## 2026-11-16: Add a terminal demo and a pre-commit hook #decision #docs
+
+The home page has a one-minute recording of a real run on pallets/flask: a check that exits 1, a baseline, then a compare that exits 0. It was recorded in a virtual X display with xterm, xdotool keystrokes and ffmpeg, so the typing is automated and the output is real. A text version sits beside it. `docs/ci.md` documents a local pre-commit hook that checks the comments on changed lines.
+
 ## 2026-11-16: Cut scanner noise and release 0.1.1 #decision #scanner
 
 Scanning ten popular repositories (25,053 comments) with 0.1.0 gave 6,107 findings, and in hand-labeled samples almost none of the high-volume ones were worth a look. `nearby_code_changed` (65% of findings) fired on formatting commits, banners and refactors, and Prettier or black commits reset blame dates, which also made `aged_task` ages wrong. Blame now ignores whitespace edits and `.git-blame-ignore-revs`, and stores every comment line. `nearby_code_changed` needs the code change to add or remove a word or number the comment mentions, and skips comments edited in the same commit, banners, headers, tool directives and three-word labels. `restates_symbol` now applies only to a comment directly above a declaration, and `excessive_verbosity` counts prose only with a 100-word default. Both are low severity by default because long or name-echoing comments are style signals. The same repositories now give 937 findings, with every known positive kept. The useful share is estimated at about 10% for `nearby_code_changed` and about 60% for `restates_symbol` from small AI-labeled samples, so those figures stay out of public copy. The home page data (pwndbg, 764 findings instead of 1,951) was rebuilt from the released package, and the rule page for `nearby_code_changed` now pins the `pygment` finding as its example.
