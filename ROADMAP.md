@@ -2,7 +2,7 @@
 
 Comment Lens will evolve into a local-first developer utility for keeping code comments useful over time. It will identify comments that deserve attention, explain why, and let teams enforce selected maintenance rules without executing or modifying target repositories.
 
-Status on 2026-11-15: Phases 1, 2, 3 and 5 are built, and Phase 4 is partly built. Each phase heading below says what shipped. The text under each heading is the original plan.
+Status on 2026-11-21: Phases 1, 2, 3 and 5 are built, and Phase 4 is partly built. Scanner 0.1.1 (2026-11-16) cut the false positives in the maintenance rules. Each phase heading below says what shipped. The text under each heading is the original plan.
 
 ## Product direction
 
@@ -70,7 +70,7 @@ The first release should report findings by default. It should block only when a
 
 ## Phase 2: CI adoption and baselines
 
-Status: done on 2026-10-16. Baselines, `compare`, per-rule thresholds, and a GitHub Actions workflow that writes job summaries and pull request annotations. It stays advisory until a policy opts into blocking.
+Status: done on 2026-10-16. Baselines, `compare`, per-rule thresholds, and a GitHub Actions workflow that writes job summaries and pull request annotations. It stays advisory until a policy opts into blocking. A pre-commit hook for changed comments is documented in `docs/ci.md`.
 
 Let teams adopt Comment Lens without fixing every historical comment at once. A baseline separates existing maintenance debt from findings introduced by a new change.
 
