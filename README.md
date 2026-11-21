@@ -1,6 +1,37 @@
 # Comment Lens
 
-Comment Lens reports the code comments a person should read again, such as unresolved tasks, links to files that no longer exist, and comments whose nearby code changed after they were written. The local CLI and CI checks make no upload request. The hosted workspace pairs each comment with source context and scanner evidence and records a review decision without changing repository files. A VS Code adapter shows the same findings beside the code. [Watch a one-minute demo](https://comment-lens-review.vercel.app/demo.mp4).
+[![Comment Lens: find the comments your code has outgrown. Click to watch the one-minute demo.](public/demo-poster.jpg)](https://comment-lens-review.vercel.app/demo.mp4)
+
+Comment Lens is a checker for code comments. It uses git history to find the ones a person should read again: tasks with no follow-up, links to files that no longer exist, and comments whose nearby code changed after they were written. The CLI and the CI checks run locally and upload nothing. A hosted workspace shows each finding with its source context and scanner evidence and records review decisions, and a VS Code adapter shows the same findings beside the code. Nothing in the project edits your repository files.
+
+## What it finds
+
+This comment in pwndbg was written in January 2018, above a check for a missing Pygments. In October 2022 a cleanup commit replaced that check with a plain import. The comment stayed. Comment Lens reads both dates from `git blame` and reports the comment with the evidence.
+
+![Lines 87 to 94 of pwndbg/color/syntax_highlight.py with each line's blame date. The comment on line 88 is dated 2018-01-12 and is highlighted. The line below it, dated 2022-10-08, is marked as changed. A finding box lists both commits.](docs/media/flagged-comment.png)
+
+It reports a comment only when the code change added or removed a word or number the comment mentions. Whitespace-only edits, commits listed in `.git-blame-ignore-revs` and banner comments do not count. The home page lists all [eleven rules](https://comment-lens-review.vercel.app/#rules), and [Maintenance findings and history](docs/maintenance.md) explains how the maintenance rules decide.
+
+## Try it
+
+```bash
+python3 -m pip install comment-lens-scanner
+comment-lens check .
+```
+
+The scanner needs Python 3.12 or newer. `check` prints a Markdown report and exits 0 until you set a blocking threshold with `--fail-on`.
+
+![A terminal recording of comment-lens check on pallets/flask exiting 1 with new findings, then comment-lens baseline create, then comment-lens compare exiting 0.](docs/media/demo.gif)
+
+This is a real run on pallets/flask with scanner 0.1.1: a check that exits 1, then a baseline that brings the same check to exit 0. The typing is automated and the output is not. The [full video](https://comment-lens-review.vercel.app/demo.mp4) has playback controls.
+
+## Adopt it without fixing the backlog
+
+The first run on an old repository reports more than anyone fixes in one pull request. A baseline records those findings once, and after that only new findings can fail a build. On pwndbg, a full scan with `--fail-on high` blocks on 53 findings. With a baseline recorded on 2026-09-14, it blocks on the 14 FIXME comments added since.
+
+![Bar chart of findings that fail the build in pwndbg at three thresholds. With no baseline: 764 at low, 701 at review, 53 at high. With a baseline: 66 at low, 66 at review, 14 at high.](docs/media/baseline-gate.png)
+
+[CI checks and baselines](docs/ci.md) covers the baseline file, the pre-commit hook and the GitHub Actions workflow.
 
 ## Architecture
 
