@@ -1,6 +1,6 @@
 # Comment Lens website design
 
-Comment Lens is a workspace for reviewing hosted scans. It shares findings with the local CLI, CI checks and baselines, maintenance reports, and VS Code adapter.
+Comment Lens is a workspace for reviewing hosted scans. It shares findings with the local CLI, CI checks and baselines, maintenance reports, and VS Code adapter. The public home page and the rule pages are described under "Landing page (2026-11-15)" below.
 
 ## The job
 
@@ -122,6 +122,7 @@ Concepts considered and dropped: a lens over a file that dims code and focuses c
 - Shape: 10 to 12px radius on dark panels, none elsewhere.
 - Motion: CSS transitions on `transform`, `opacity` and `clip-path`, driven by one `IntersectionObserver` that sets the active chapter. No scroll listeners, no animation loop, no GSAP: the motion is discrete state changes, so a library adds nothing. Primary links answer with the amber highlight sweep. On load, the stage file enters like blame output, one line at a time from the top, and the mark's amber stroke slips out of step; both are CSS keyframes that run once. Reduced motion removes every transition and animation and shows final states.
 - Idle state: the terminal caret blinks. Everything else rests, by decision; the story moves only when the reader does.
+- Demo: `public/demo.mp4` is a real run on pallets/flask, shown under "Run it on your repository" with a text version beside it. Its poster, `public/demo-poster.jpg`, is a Blender render in the logo's black and amber, built from `design/poster/`.
 
 ### Structure plan
 
@@ -139,7 +140,7 @@ Desktop (1000+)                                       Phone (390)
 |                   |   and the terminal)           | | exit 1 text, [terminal]   |
 +-------------------+-------------------------------+ | Rules (grouped), Run it   |
 | Eleven rules: group title | rule rows with counts | | footer                    |
-| Run it: three commands, limits paragraph          | +---------------------------+
+| Run it: three commands, demo, limits              | +---------------------------+
 +---------------------------------------------------+
 /rules/<rule>: one column document with a real pwndbg example.
 404: "This page has no history." with the real `git blame` error.
