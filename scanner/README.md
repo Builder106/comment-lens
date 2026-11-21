@@ -2,6 +2,12 @@
 
 Comment Lens extracts code comments for review. The local command-line interface flags comments that may need attention, explains each finding with deterministic rule evidence, and leaves repository files unchanged.
 
+## What it finds
+
+This pwndbg comment was written in 2018, above a check for a missing Pygments. A 2022 cleanup commit replaced that check with a plain import, and the comment stayed. Comment Lens reads both dates from `git blame` and reports the comment with the evidence.
+
+![Lines 87 to 94 of pwndbg/color/syntax_highlight.py with each line's blame date. The comment on line 88 is dated 2018-01-12 and is highlighted. The line below it, dated 2022-10-08, is marked as changed. A finding box lists both commits.](https://raw.githubusercontent.com/Builder106/comment-lens/main/docs/media/flagged-comment.png)
+
 ## Features
 
 - Parsing: Tree-sitter grammars, with a Pygments fallback, separate docstrings, line comments, inline notes and header blocks.
@@ -52,6 +58,17 @@ Convert an existing scan artifact into Markdown or JSON:
 comment-lens export . --format markdown
 comment-lens export . --format json
 ```
+
+### Adopt it with a baseline
+
+Record the current findings once, then let only new findings fail a build:
+
+```bash
+comment-lens baseline create . --output .comment-lens-baseline.json
+comment-lens compare . --baseline .comment-lens-baseline.json --fail-on high
+```
+
+See [CI checks and baselines](https://github.com/Builder106/comment-lens/blob/main/docs/ci.md) for the pre-commit hook and the GitHub Actions workflow.
 
 ## Configuration
 
