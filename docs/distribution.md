@@ -13,18 +13,18 @@ Comment Lens looks at comments that already exist and gives a reviewer the evide
 
 ## Messages
 
-Each message below is tied to something the product does. The quoted lines are candidates, not fixed slogans.
+Each message below is tied to something the product does. Use plain statements and a real example, such as the pwndbg comment on the home page, instead of slogans.
 
-Stale comments cause bugs. When code changes and the comment beside it does not, the comment may no longer describe the implementation, and Comment Lens flags those cases for review. A possible line: "The only thing worse than no documentation is documentation that lies."
+Stale comments cause bugs. When code changes and the comment beside it does not, the comment may no longer describe the implementation, and Comment Lens flags those cases for review.
 
-The rules are deterministic. The core engine uses Tree-sitter, with a Pygments fallback, plus Git history. AI is optional and only explains a finding you select. A possible line: "The checks are deterministic rules, and AI only explains a finding when you ask."
+The rules are deterministic. The core engine uses Tree-sitter, with a Pygments fallback, plus Git history. AI is optional and only explains a finding you select.
 
-A team can adopt it without clearing the backlog. A baseline records the findings a team has already seen. A possible line: "Turn on a comment check without fixing five years of old comments first."
+A team can adopt it without clearing the backlog. A baseline records the findings a team has already seen, so CI blocks only new ones.
 
 ## What to show
 
 - The home page. It follows one real pwndbg comment through its git history until Comment Lens flags it, so it works as the lead demo for a post.
-- A short recorded terminal session of `comment-lens check . --changed origin/main...HEAD --fail-on high` catching an unresolved task or a broken link.
+- The demo recording (`public/demo.mp4`, also `docs/media/demo.gif` for the README): a real run on pallets/flask that exits 1, then exits 0 once a baseline is recorded.
 - A before and after pair: an echo comment (`// calculate total price` above `calculateTotalPrice()`) next to a comment that explains an edge-case rounding constraint.
 - Screenshots of the review workspace with comments, parser context and scoring traces side by side.
 
