@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@google/genai':
-        specifier: ^3.2.0
-        version: 3.2.0(supports-color@7.2.0)
+        specifier: ^3.6.1
+        version: 3.6.1(supports-color@7.2.0)
       '@neondatabase/serverless':
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.2.1
+        version: 1.2.1
       drizzle-orm:
         specifier: ^0.45.4
-        version: 0.45.4(@neondatabase/serverless@1.2.0)(@types/pg@8.23.1)(pg@8.23.1)
+        version: 0.45.4(@neondatabase/serverless@1.2.1)(@types/pg@8.23.1)(pg@8.23.1)
       next:
         specifier: ^16.4.6
         version: 16.4.6(@babel/core@7.29.7(supports-color@7.2.0))(@playwright/test@1.64.1)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -647,8 +647,8 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@google/genai@3.2.0':
-    resolution: {integrity: sha512-AyT5kezsBpxRr8ljz7RmfhrxfjTse0aIDv7DGoNmk6lyta0A13AEOiGpw7VFcrYSmXq8HtkbWYBAeqqdALv6gw==}
+  '@google/genai@3.6.1':
+    resolution: {integrity: sha512-DQIkZkl+VoZc+RUSaJ41vRuywjQDpP0t/oUf5/ddQhNW6JsPjVULW2EgHmuJ1mrr6ACtrmUdPlqtNXF1yfKySg==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       '@modelcontextprotocol/sdk': ^1.25.2
@@ -861,8 +861,8 @@ packages:
       '@emnapi/core': ^1.7.1 || ^2.0.0-alpha.4
       '@emnapi/runtime': ^1.7.1 || ^2.0.0-alpha.4
 
-  '@neondatabase/serverless@1.2.0':
-    resolution: {integrity: sha512-tnaqgixUengZQNd9ZrS3ytQfamJzLKY8QxgqWQTNHHtB+KrFQWk77JTbbpg4RD+J3qE4eO2lVytvGDX5Kj6FdQ==}
+  '@neondatabase/serverless@1.2.1':
+    resolution: {integrity: sha512-PI2JjuyEFE7oZDTkV/s6WP4KEceCwnjQHClfunhysuIATtvcVTBLdA4UgHTnJo7C0mkK+OZ6U7SV1NDnYa0HgA==}
     engines: {node: '>=19.0.0'}
 
   '@next/env@16.4.6':
@@ -3343,7 +3343,7 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
-  '@google/genai@3.2.0(supports-color@7.2.0)':
+  '@google/genai@3.6.1(supports-color@7.2.0)':
     dependencies:
       google-auth-library: 10.9.1(supports-color@7.2.0)
       p-retry: 4.6.2
@@ -3503,7 +3503,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@neondatabase/serverless@1.2.0': {}
+  '@neondatabase/serverless@1.2.1': {}
 
   '@next/env@16.4.6': {}
 
@@ -4257,9 +4257,9 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.15
 
-  drizzle-orm@0.45.4(@neondatabase/serverless@1.2.0)(@types/pg@8.23.1)(pg@8.23.1):
+  drizzle-orm@0.45.4(@neondatabase/serverless@1.2.1)(@types/pg@8.23.1)(pg@8.23.1):
     optionalDependencies:
-      '@neondatabase/serverless': 1.2.0
+      '@neondatabase/serverless': 1.2.1
       '@types/pg': 8.23.1
       pg: 8.23.1
 
