@@ -127,7 +127,8 @@ Set a rule to `off`, or override `fail_on` for one run with
 `--fail-on low|review|high`. Findings are advisory by default.
 Exit status `0` means the check completed without blocking findings;
 `1` means findings met the chosen blocking severity; `2` means
-configuration, extraction, or artifact handling failed. The existing
+configuration, extraction, or artifact handling failed. `check` and
+`compare` also print that result on one line to stderr. The existing
 `comment-lens-scan` command remains available for the hosted worker.
 
 More documentation:

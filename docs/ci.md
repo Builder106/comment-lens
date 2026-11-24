@@ -11,6 +11,8 @@ The workflow is advisory until `fail_on` or a per-rule threshold is set.
 Exit code 0 means the scan completed without blocking findings. Exit code 1
 means a new finding met a blocking threshold. Exit code 2 means the scan or
 configuration failed. A scanner failure is never treated as a clean check.
+`check` and `compare` also print one line to stderr with the outcome and the
+exit code, so a report sent to a file still tells you how the run ended.
 
 ## Run it before each commit
 
