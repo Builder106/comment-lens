@@ -2,6 +2,10 @@
 
 > Dated log of decisions, pitches, and engineering direction. Reverse-chronological; one paragraph max per entry.
 
+## 2026-11-23: Print the result of check and compare, release 0.1.2 #decision #scanner
+
+Recording a terminal demo showed a gap in the CLI: with the report sent to a file, `check` and `compare` printed nothing, and the demo needed `echo $?` to show that the first run failed and the second passed. Both commands now write one line to stderr with the outcome and the exit code, for example `no blocking findings, 0 new and 20 already in the baseline. Exit 0.` Stdout and the exit codes are unchanged, and the VS Code extension reads stderr only when a scan fails. 0.1.2 went out through the tag-triggered release workflow, so the PyPI page now shows the finding image added to `scanner/README.md` on 11-21.
+
 ## 2026-11-21: Add media to the README and finish the docs pass #decision #docs
 
 The README now opens with the demo poster and shows three real pieces of media, stored in `docs/media/`: the pwndbg finding panel and the baseline chart, both captured from the live home page, and a 614 KB GIF of the flask demo made with FFmpeg. Every `.md` file in the repo was read. `docs/distribution.md` lost its quoted slogans, and `scanner/README.md`, which PyPI shows, gained the finding image by absolute URL, so it appears after the next release.
