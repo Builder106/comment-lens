@@ -164,6 +164,23 @@ def _scan(args: argparse.Namespace) -> int:
     return 2 if _failed(result) else 0
 
 
+def _result_line(report: dict[str, object], code: int) -> str:
+    """One line for stderr, so a redirected report still says how the check ended."""
+    if code == 2:
+        return "the scan failed, so the result is incomplete. Exit 2."
+    summary = report["summary"]
+    blocking = summary["blocking"]
+    if report["baseline"]:
+        counts = f"{summary['new']} new and {summary['existing']} already in the baseline"
+        lead = f"{blocking} blocking" if blocking else "no blocking findings"
+        return f"{lead}, {counts}. Exit {code}."
+    findings = summary["findings"]
+    total = f"{findings} finding{'' if findings == 1 else 's'}"
+    if blocking:
+        return f"{blocking} blocking of {total}. Exit {code}."
+    return f"no blocking findings among {total}. Exit {code}."
+
+
 def _check(args: argparse.Namespace) -> int:
     root = args.root.resolve()
     policy = load_policy(root, args.config, excludes=tuple(args.exclude), fail_on=args.fail_on)
@@ -205,9 +222,9 @@ def _check(args: argparse.Namespace) -> int:
     )
     output = args.output if args.output is None or args.output.is_absolute() else root / args.output
     _write_text(output, render_report(report, args.format))
-    if _failed(result):
-        return 2
-    return 1 if report["summary"]["blocking"] else 0
+    code = 2 if _failed(result) else 1 if report["summary"]["blocking"] else 0
+    print(f"comment-lens: {_result_line(report, code)}", file=sys.stderr)
+    return code
 
 
 def _baseline_create(args: argparse.Namespace) -> int:

@@ -173,6 +173,25 @@ def test_baseline_sarif_annotations_and_scanner_failure(tmp_path: Path, capsys: 
     assert report["scanFailed"] is True
 
 
+def test_check_and_compare_end_with_one_line_on_stderr(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".comment-lens.toml").write_text('[policy.fail_on_rules]\ntodo = "review"\n', encoding="utf-8")
+    assert main(["check", str(tmp_path), "--format", "json"]) == 1
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["summary"]["blocking"] == 1
+    assert captured.err == "comment-lens: 1 blocking of 2 findings. Exit 1.\n"
+
+    assert main(["baseline", "create", str(tmp_path)]) == 0
+    capsys.readouterr()
+    assert main(["compare", str(tmp_path), "--format", "json"]) == 0
+    captured = capsys.readouterr()
+    assert captured.err == "comment-lens: no blocking findings, 0 new and 2 already in the baseline. Exit 0.\n"
+
+    (tmp_path / "a.py").write_bytes(b"# \xff")
+    assert main(["compare", str(tmp_path), "--format", "json"]) == 2
+    assert capsys.readouterr().err == "comment-lens: the scan failed, so the result is incomplete. Exit 2.\n"
+
+
 def test_comment_ids_survive_unrelated_insertion(tmp_path: Path) -> None:
     _repo(tmp_path)
     before = core.scan_repository(tmp_path, offline=True)
