@@ -331,7 +331,7 @@ def scan_repository(root: Path, *, include_untracked: bool = False, exclusions: 
                 comments.append(_comment_record(root, repo_identity, effective_scan_id, path, data, start, end, kind, raw, parser, blame, blame_error, collision))
     config_hash = hashlib.sha256(json.dumps(sorted(exclusion_set)).encode()).hexdigest()
     completed = datetime.now(UTC).isoformat()
-    return {"schemaVersion": SCHEMA_VERSION, "scanId": effective_scan_id, "repoId": repo_identity, "sourceMode": "worktree", "headCommit": head, "worktreeFingerprint": hashlib.sha256("\0".join(f["path"] + str(f["contentSha256"]) for f in files).encode()).hexdigest(), "configHash": config_hash, "extractorVersion": "comment-lens-scanner/0.1.1", "parserVersions": {"tree-sitter-language-pack": "1+", "pygments": "2.17+"}, "startedAt": started, "completedAt": completed, "files": files, "diagnostics": diagnostics, "_comments": comments}
+    return {"schemaVersion": SCHEMA_VERSION, "scanId": effective_scan_id, "repoId": repo_identity, "sourceMode": "worktree", "headCommit": head, "worktreeFingerprint": hashlib.sha256("\0".join(f["path"] + str(f["contentSha256"]) for f in files).encode()).hexdigest(), "configHash": config_hash, "extractorVersion": "comment-lens-scanner/0.1.2", "parserVersions": {"tree-sitter-language-pack": "1+", "pygments": "2.17+"}, "startedAt": started, "completedAt": completed, "files": files, "diagnostics": diagnostics, "_comments": comments}
 
 def write_output(result: dict[str, object], manifest_path: Path, ndjson_path: Path | None = None) -> None:
     manifest = {key: value for key, value in result.items() if key != "_comments"}
