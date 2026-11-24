@@ -23,7 +23,7 @@ The scanner needs Python 3.12 or newer. `check` prints a Markdown report and exi
 
 ![A terminal recording of comment-lens check on pallets/flask exiting 1 with new findings, then comment-lens baseline create, then comment-lens compare exiting 0.](docs/media/demo.gif)
 
-This is a real run on pallets/flask with scanner 0.1.1: a check that exits 1, then a baseline that brings the same check to exit 0. The typing is automated and the output is not. The [full video](https://comment-lens-review.vercel.app/demo.mp4) has playback controls.
+This is a real run on pallets/flask with scanner 0.1.2: a check that exits 1, then a baseline that brings the same check to exit 0. The typing is automated and the output is not. The waits while it scans are sped up. The [full video](https://comment-lens-review.vercel.app/demo.mp4) has playback controls.
 
 ## Adopt it without fixing the backlog
 
