@@ -41,8 +41,7 @@ function found(id: string) {
 }
 
 const demoText = `$ comment-lens check . --fail-on review > report.md
-$ echo $?
-1
+comment-lens: 20 blocking of 20 findings. Exit 1.
 $ grep '^## ' report.md | head -9
 ## docs/Makefile:1: nearby_code_changed (review, new)
 ## examples/tutorial/flaskr/__init__.py:23: nearby_code_changed (review, new)
@@ -55,8 +54,7 @@ $ grep '^## ' report.md | head -9
 ## src/flask/sessions.py:213: nearby_code_changed (review, new)
 $ comment-lens baseline create . --output .comment-lens-baseline.json > /dev/null
 $ comment-lens compare . --baseline .comment-lens-baseline.json --fail-on review > report.md
-$ echo $?
-0
+comment-lens: no blocking findings, 0 new and 20 already in the baseline. Exit 0.
 $ head -6 report.md
 # Comment Lens report
 
@@ -195,7 +193,7 @@ export default function Home() {
             <source src="/demo.mp4" type="video/mp4" />
           </video>
           <figcaption>
-            A real run on pallets/flask with scanner 0.1.1: a check that exits 1, then a baseline that brings it to exit 0. The typing is automated and the output is not.
+            A real run on pallets/flask with scanner 0.1.2: a check that exits 1, then a baseline that brings it to exit 0. The typing is automated and the output is not. The waits while it scans are sped up.
           </figcaption>
           <details id="demo-text">
             <summary>Text version of the demo</summary>
