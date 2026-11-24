@@ -27,7 +27,7 @@ repos:
         entry: comment-lens check . --changed HEAD --fail-on high
         language: python
         language_version: python3.12
-        additional_dependencies: ["comment-lens-scanner==0.1.1"]
+        additional_dependencies: ["comment-lens-scanner==0.1.2"]
         pass_filenames: false
         types: [text]
 ```
